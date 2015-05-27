@@ -89,7 +89,7 @@ object PhantomBuild extends Build {
 
   lazy val phantomDse = Project(
   	id = "phantom-dse",
-  	base = file("phantom-dsl"),
+  	base = file("phantom-dse"),
   	settings = Defaults.coreDefaultSettings ++ sharedSettings
   ).settings(
    	fork := true,
