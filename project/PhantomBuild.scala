@@ -70,9 +70,7 @@ object PhantomBuild extends Build {
     testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
     testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
     fork in PerformanceTest := true
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++
-      GitProject.gitSettings ++
-      VersionManagement.newSettings
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ GitProject.gitSettings ++ VersionManagement.newSettings
 
 
   lazy val phantomEnterprise = Project(
@@ -81,8 +79,6 @@ object PhantomBuild extends Build {
     settings = sharedSettings
   ).configs(
     PerformanceTest
-  ).settings(
-    inConfig(PerformanceTest)(Defaults.testTasks): _*
   ).settings(
     name := "phantom-enterprise"
   ).aggregate(
@@ -94,9 +90,7 @@ object PhantomBuild extends Build {
   lazy val phantomDse = Project(
   	id = "phantom-dse",
   	base = file("phantom-dsl"),
-  	settings = Defaults.coreDefaultSettings ++ sharedSettings ++ publishSettings
-  ).settings(
-      inConfig(PerformanceTest)(Defaults.testTasks): _*
+  	settings = Defaults.coreDefaultSettings ++ sharedSettings
   ).settings(
    	fork := true,
     testOptions in Test += Tests.Argument("-oF"),
@@ -108,15 +102,20 @@ object PhantomBuild extends Build {
   		"com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
   		"com.datastax.cassandra"       %  "cassandra-driver-dse"             % DatastaxDriverVersion,
   		"com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided"
-  )
+  	)
+	)
 
 	lazy val phantomMigrations = Project(
 		id = "phantom-migrations",
 		base = file("phantom-migrations"),
 		settings = Defaults.coreDefaultSettings ++ sharedSettings
 	).settings(
-		"com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
-  	"com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided"
+		libraryDependencies ++= Seq(
+			"com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
+			"com.websudos" 								 %% "phantom-testkit" 								 % PhantomVersion         % "test, provided",
+  		"com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided"
+		)		
+	
 	).dependsOn(
 		phantomDse
 	)
@@ -126,8 +125,6 @@ object PhantomBuild extends Build {
 		base = file("phantom-spark"),
 		settings = Defaults.coreDefaultSettings ++ sharedSettings
 	).settings(
-    inConfig(PerformanceTest)(Defaults.testTasks): _*
-  ).settings(
 		libraryDependencies ++= Seq(
 			"com.datastax.spark"           %% "spark-cassandra-connector"        % SparkCassandraVersion,
 			"com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
