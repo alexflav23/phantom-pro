@@ -8,10 +8,10 @@ import com.websudos.phantom.builder.query.{ColumnDiff, CQLQuery}
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 
-sealed case class TableDiff(columns: Set[ColumnDiff], table: String) {
+sealed case class Diff(columns: Set[ColumnDiff], table: String) {
 
-  final def diff(other: TableDiff): TableDiff = {
-    TableDiff(columns.filterNot(item => other.columns.exists(_.name == item.name)), s"$table - ${other.table}")
+  final def diff(other: Diff): Diff = {
+    Diff(columns.filterNot(item => other.columns.exists(_.name == item.name)), s"$table - ${other.table}")
   }
 
   def hasPrimaryPart: Boolean = {
@@ -40,13 +40,13 @@ sealed case class TableDiff(columns: Set[ColumnDiff], table: String) {
 
 }
 
-object TableDiff {
+object Diff {
 
   private[this] def contains(column: ColumnMetadata, clustering: List[String]): Boolean = {
     clustering.exists(column.getName ==)
   }
 
-  def apply(metadata: TableMetadata): TableDiff = {
+  def apply(metadata: TableMetadata): Diff = {
 
     val primary = metadata.getPrimaryKey.asScala.map(_.getName).toList
 
@@ -60,10 +60,10 @@ object TableDiff {
       )
     })
 
-    TableDiff(columns, metadata.getName)
+    Diff(columns, metadata.getName)
   }
 
-  def apply(table: CassandraTable[_, _]): TableDiff = {
+  def apply(table: CassandraTable[_, _]): Diff = {
     val cols = table.columns.toSet[AbstractColumn[_]].map {
       column => {
         ColumnDiff(
@@ -75,6 +75,6 @@ object TableDiff {
         )
       }
     }
-    TableDiff(cols, table.tableName)
+    Diff(cols, table.tableName)
   }
 }

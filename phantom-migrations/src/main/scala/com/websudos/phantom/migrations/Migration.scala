@@ -75,8 +75,8 @@ sealed case class Migration(additions: Set[ColumnDiff], deletions: Set[ColumnDif
 object Migration {
   def apply(metadata: TableMetadata, table: CassandraTable[_, _]): Migration = {
 
-    val dbTable = TableDiff(metadata)
-    val phantomTable = TableDiff(table)
+    val dbTable = Diff(metadata)
+    val phantomTable = Diff(table)
 
     Migration(
       phantomTable diff dbTable migrations(),
