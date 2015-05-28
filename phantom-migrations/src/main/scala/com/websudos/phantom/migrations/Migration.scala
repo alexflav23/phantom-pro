@@ -39,7 +39,7 @@ import com.websudos.phantom.dsl.Session
 import scala.concurrent.ExecutionContext
 
 
-sealed case class ColumnDiff(
+case class ColumnDiff(
   name: String,
   cassandraType: String,
   isPrimary: Boolean,

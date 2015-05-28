@@ -1,10 +1,11 @@
 package com.websudos.phantom.migrations
 
+import com.websudos.phantom.builder.query.CQLQuery
+
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.{TableMetadata, ColumnMetadata}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.builder.query.{ColumnDiff, CQLQuery}
 import com.websudos.phantom.column.AbstractColumn
 import com.websudos.phantom.connectors.KeySpace
 
