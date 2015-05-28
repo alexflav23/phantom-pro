@@ -89,7 +89,16 @@ object Migration {
       phantomTable diff dbTable migrations(),
       dbTable diff phantomTable migrations()
     )
+  }
 
+  def apply(first: CassandraTable[_, _], second: CassandraTable[_, _]): Migration = {
+    val firstDiff = Diff(first)
+    val secondDiff = Diff(second)
+
+    Migration(
+      firstDiff diff secondDiff migrations(),
+      secondDiff diff firstDiff migrations()
+    )
   }
 }
 
