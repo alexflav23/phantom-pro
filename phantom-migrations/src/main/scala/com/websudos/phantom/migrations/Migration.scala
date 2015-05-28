@@ -39,7 +39,14 @@ import com.websudos.phantom.dsl.Session
 import scala.concurrent.ExecutionContext
 
 
-sealed case class ColumnDiff(name: String, cassandraType: String, isPrimary: Boolean, isSecondary: Boolean, isStatic: Boolean)
+sealed case class ColumnDiff(
+  name: String,
+  cassandraType: String,
+  isPrimary: Boolean,
+  isSecondary: Boolean,
+  isStatic: Boolean
+)
+
 sealed case class Migration(additions: Set[ColumnDiff], deletions: Set[ColumnDiff]) {
 
   def additiveQueries(table: CassandraTable[_, _])
