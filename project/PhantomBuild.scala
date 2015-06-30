@@ -15,16 +15,14 @@
  *
  */
 
-import com.twitter.sbt.GitProject
-import com.twitter.sbt.VersionManagement
-import com.twitter.scrooge.ScroogeSBT
+import com.twitter.sbt.{GitProject, VersionManagement}
 import sbt.Keys._
 import sbt._
 
 object PhantomBuild extends Build {
 
   val UtilVersion = "0.9.6"
-  val PhantomVersion = "1.9.1"
+  val PhantomVersion = "1.9.8"
   val DatastaxDriverVersion = "2.1.5"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.0-RC4"
@@ -38,7 +36,7 @@ object PhantomBuild extends Build {
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.9.1",
+    version := PhantomVersion,
     scalaVersion := "2.11.6",
     crossScalaVersions := Seq("2.10.5", "2.11.6"),
     resolvers ++= Seq(
@@ -82,6 +80,7 @@ object PhantomBuild extends Build {
   ).settings(
     name := "phantom-enterprise"
   ).aggregate(
+    phantomAutoTables,
     phantomDse,
     phantomSpark,
     phantomMigrations
@@ -119,6 +118,20 @@ object PhantomBuild extends Build {
 	).dependsOn(
 		phantomDse
 	)
+
+  lazy val phantomAutoTables = Project(
+    id = "phantom-autotables",
+    base = file("phantom-autotables"),
+    settings = Defaults.coreDefaultSettings ++ sharedSettings
+  ).settings(
+    scalacOptions ++= Seq(
+      "-language:experimental.macros"
+    ),
+    libraryDependencies ++= Seq(
+      "com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
+      "com.websudos" 								 %% "phantom-testkit" 								 % PhantomVersion         % "test, provided"
+    )
+  )
 
 	lazy val phantomSpark = Project(
 		id = "phantom-spark",

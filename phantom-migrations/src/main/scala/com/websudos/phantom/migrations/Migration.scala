@@ -42,6 +42,7 @@ import scala.concurrent.ExecutionContext
 case class ColumnDiff(
   name: String,
   cassandraType: String,
+  isOptional: Boolean,
   isPrimary: Boolean,
   isSecondary: Boolean,
   isStatic: Boolean
@@ -80,7 +81,7 @@ sealed case class Migration(additions: Set[ColumnDiff], deletions: Set[ColumnDif
 
 
 object Migration {
-  def apply(metadata: TableMetadata, table: CassandraTable[_, _]): Migration = {
+  def apply(metadata: TableMetadata, table: CassandraTable[_, _])(implicit diffConfig: DiffConfig): Migration = {
 
     val dbTable = Diff(metadata)
     val phantomTable = Diff(table)
@@ -91,7 +92,7 @@ object Migration {
     )
   }
 
-  def apply(first: CassandraTable[_, _], second: CassandraTable[_, _]): Migration = {
+  def apply(first: CassandraTable[_, _], second: CassandraTable[_, _])(implicit diffConfig: DiffConfig): Migration = {
     val firstDiff = Diff(first)
     val secondDiff = Diff(second)
 

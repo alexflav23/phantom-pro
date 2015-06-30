@@ -5,10 +5,9 @@ import com.websudos.phantom.connectors.KeySpace
 
 import scala.concurrent.ExecutionContext
 
-
 package object migrations {
   implicit class TableMigrations[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) extends AnyVal {
-    def automigrate()(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext) = {
+    def automigrate()(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext, diffConfig: DiffConfig) = {
       Differ.automigrate(table)
     }
   }

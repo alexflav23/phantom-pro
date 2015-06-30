@@ -15,11 +15,11 @@ private[phantom] object Differ {
     }
   }
 
-  def queryList(table: CassandraTable[_, _])(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): Set[CQLQuery] = {
+  def queryList(table: CassandraTable[_, _])(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext, diffConfig: DiffConfig): Set[CQLQuery] = {
     Migration(metadata(table.tableName), table).queryList(table)
   }
 
-  def automigrate(table: CassandraTable[_, _])(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): ExecutableStatementList = {
+  def automigrate(table: CassandraTable[_, _])(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext, diffConfig: DiffConfig): ExecutableStatementList = {
     new ExecutableStatementList(queryList(table))
   }
 }
