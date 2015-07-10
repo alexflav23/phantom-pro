@@ -127,10 +127,12 @@ object PhantomBuild extends Build {
     scalacOptions ++= Seq(
       "-language:experimental.macros"
     ),
-    libraryDependencies ++= Seq(
-      "com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
-      "com.websudos" 								 %% "phantom-testkit" 								 % PhantomVersion         % "test, provided"
-    )
+      libraryDependencies ++= Seq(
+        "org.scala-lang"               %  "scala-reflect"                    % scalaVersion.value,
+        "com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
+        "com.websudos" 								 %% "phantom-testkit" 								 % PhantomVersion         % "test, provided",
+        "com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided"
+      )
   )
 
 	lazy val phantomSpark = Project(
