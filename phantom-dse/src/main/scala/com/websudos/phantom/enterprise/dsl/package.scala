@@ -1,13 +1,12 @@
 package com.websudos.phantom.enterprise
 
 import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.WhereClause
 import com.websudos.phantom.builder.clauses.WhereClause.Condition
 import com.websudos.phantom.builder.query.Query
-import com.websudos.phantom.builder._
 
 package object dsl {
-
 
   object solr_query {
     def eqs(str: String): WhereClause.Condition = {
@@ -22,8 +21,5 @@ package object dsl {
     Order <: OrderBound,
     Status <: ConsistencyBound,
     Chain <: WhereBound
-  ](val query: Query[Table, Record, Limit, Order, Status, Chain]) extends AnyVal {
-
-
-  }
+  ](val query: Query[Table, Record, Limit, Order, Status, Chain]) extends AnyVal
 }

@@ -19,10 +19,10 @@ import com.twitter.sbt.{GitProject, VersionManagement}
 import sbt.Keys._
 import sbt._
 
-object PhantomBuild extends Build {
+object Build extends Build {
 
-  val UtilVersion = "0.9.6"
-  val PhantomVersion = "1.9.8"
+  val UtilVersion = "0.9.8"
+  val PhantomVersion = "1.9.10"
   val DatastaxDriverVersion = "2.1.5"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.0-RC4"
