@@ -35,7 +35,11 @@ abstract class Database(connector: KeySpaceDef) {
 
     columnMembers.foreach {
       symbol =>
-        val table = instanceMirror.reflectModule(symbol.asModule).instance
+        val table =  if (symbol.isModule) {
+          instanceMirror.reflectModule(symbol.asModule).instance
+        } else {
+          instanceMirror.reflectModule(symbol.asModule).symbol
+        }
         _tables += table.asInstanceOf[CassandraTable[_, _]]
     }
   }
