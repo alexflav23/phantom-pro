@@ -4,10 +4,14 @@ import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.builder.syntax.CQLSyntax
 import com.websudos.phantom.connectors.KeySpace
 
+private object Strategies {
+  final val NetworkTopologyStrategy = "NetworkTopologyStrategy"
+  final val SimpleStrategy = "SimpleStrategy"
+}
 
 sealed abstract class ReplicationStrategy(val name: String) {
-  private[this] def rootStrategy(strategy: String) = {
 
+  private[this] def rootStrategy(strategy: String) = {
     CQLQuery(CQLSyntax.Symbols.`{`).forcePad
       .appendSingleQuote(CQLSyntax.CompactionOptions.`class`)
       .forcePad.append(":")
@@ -15,8 +19,8 @@ sealed abstract class ReplicationStrategy(val name: String) {
   }
 }
 
-object NetworkTopologyStrategy extends ReplicationStrategy("NetworkTopologyStrategy")
-object SimpleStrategy extends ReplicationStrategy("SimpleStrategy")
+object NetworkTopologyStrategy extends ReplicationStrategy(Strategies.NetworkTopologyStrategy)
+object SimpleStrategy extends ReplicationStrategy(Strategies.SimpleStrategy)
 
 sealed class KeySpaceSerializer(val keySpace: KeySpace, val qb: CQLQuery = CQLQuery.empty) {
 
@@ -41,9 +45,9 @@ class RootSerializer(val keySpace: KeySpace) {
 
 object KeySpaceSerializer {
 
-  def apply(name: String) = new KeySpaceSerializer(KeySpace(name))
+  def apply(name: String) = new RootSerializer(KeySpace(name))
 
-  def apply(keySpace: KeySpace) = new KeySpaceSerializer(keySpace)
+  def apply(keySpace: KeySpace) = new RootSerializer(keySpace)
 
 }
 

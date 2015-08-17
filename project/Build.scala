@@ -21,11 +21,11 @@ import sbt._
 
 object Build extends Build {
 
-  val UtilVersion = "0.9.8"
-  val PhantomVersion = "1.9.10"
+  val UtilVersion = "0.9.11"
+  val PhantomVersion = "1.11.0"
   val DatastaxDriverVersion = "2.1.5"
   val ScalaTestVersion = "2.2.4"
-  val ShapelessVersion = "2.2.0-RC4"
+  val ShapelessVersion = "2.2.4"
   val Json4SVersion = "3.2.11"
   val ScalaMeterVersion = "0.6"
   val CassandraUnitVersion = "2.1.3.2"
@@ -37,8 +37,8 @@ object Build extends Build {
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
     version := PhantomVersion,
-    scalaVersion := "2.11.6",
-    crossScalaVersions := Seq("2.10.5", "2.11.6"),
+    scalaVersion := "2.11.7",
+    crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
