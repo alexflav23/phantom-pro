@@ -22,8 +22,8 @@ import sbt._
 object Build extends Build {
 
   val UtilVersion = "0.9.11"
-  val PhantomVersion = "1.11.0"
-  val DatastaxDriverVersion = "2.1.5"
+  val PhantomVersion = "1.15.0"
+  val DatastaxDriverVersion = "2.2.0-rc3"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.4"
   val Json4SVersion = "3.2.11"
