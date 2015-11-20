@@ -22,17 +22,12 @@ import sbt._
 object Build extends Build {
 
   val UtilVersion = "0.9.11"
-  val PhantomVersion = "1.15.0"
+  val PhantomVersion = "1.16.0"
   val DatastaxDriverVersion = "2.2.0-rc3"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.4"
-  val Json4SVersion = "3.2.11"
   val ScalaMeterVersion = "0.6"
-  val CassandraUnitVersion = "2.1.3.2"
-  val SparkCassandraVersion = "1.2.0-alpha3"
-
-  val PerformanceTest = config("perf").extend(Test)
-  def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
+  val SparkCassandraVersion = "1.5.0-M2"
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
@@ -64,10 +59,7 @@ object Build extends Build {
      ),
     fork in Test := true,
     javaOptions in Test ++= Seq("-Xmx2G"),
-    testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
-    testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
-    testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
-    fork in PerformanceTest := true
+    testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x)))
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ GitProject.gitSettings ++ VersionManagement.newSettings
 
 
