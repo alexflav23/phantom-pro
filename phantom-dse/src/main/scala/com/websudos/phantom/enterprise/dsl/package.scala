@@ -5,6 +5,7 @@ import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.WhereClause
 import com.websudos.phantom.builder.clauses.WhereClause.Condition
 import com.websudos.phantom.builder.query.Query
+import shapeless.HList
 
 package object dsl {
 
@@ -20,6 +21,7 @@ package object dsl {
     Limit <: LimitBound,
     Order <: OrderBound,
     Status <: ConsistencyBound,
-    Chain <: WhereBound
-  ](val query: Query[Table, Record, Limit, Order, Status, Chain]) extends AnyVal
+    Chain <: WhereBound,
+    PS <: HList
+  ](val query: Query[Table, Record, Limit, Order, Status, Chain, PS]) extends AnyVal
 }

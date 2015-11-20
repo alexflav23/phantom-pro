@@ -58,8 +58,7 @@ object Build extends Build {
       "-unchecked"
      ),
     fork in Test := true,
-    javaOptions in Test ++= Seq("-Xmx2G"),
-    testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x)))
+    javaOptions in Test ++= Seq("-Xmx2G")
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ GitProject.gitSettings ++ VersionManagement.newSettings
 
 
@@ -67,8 +66,6 @@ object Build extends Build {
     id = "phantom-enterprise",
     base = file("."),
     settings = sharedSettings
-  ).configs(
-    PerformanceTest
   ).settings(
     name := "phantom-enterprise"
   ).aggregate(
