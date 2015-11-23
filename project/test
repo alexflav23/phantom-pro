@@ -1,0 +1,18 @@
+              <lift:has_role name="admin">
+                <li>
+                  <div class="btn-group" dropdown="dropdown" dropdown-append-to-body="dropdown-append-to-body">
+                    <button type="button" class="btn btn-primary dropdown-toggle" dropdown-toggle="dropdown-toggle">
+                      Dropdown on Body <span class="caret"></span>
+                    </button>
+
+                    <ul class="dropdown-menu" role="menu">
+                      <li><a href="/app/#/admin/applicants">Applicants</a></li>
+                      <li><a href="/app/#/admin/developers">Developers</a></li>
+                      <li><a href="/app/#/admin/company">Company</a></li>
+                      <li><a href="/app/#/admin/customers">Customers</a></li>
+                      <li><a href="/app/#/admin/orders">Orders</a></li>
+                      <li><a href="/app/#/admin/seed">Data seed</a></li>
+                    </ul>
+                  </div>
+                </li>
+              </lift:has_role>
