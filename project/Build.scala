@@ -15,32 +15,25 @@
  *
  */
 
-import com.twitter.sbt.GitProject
-import com.twitter.sbt.VersionManagement
-import com.twitter.scrooge.ScroogeSBT
+import com.twitter.sbt.{GitProject, VersionManagement}
 import sbt.Keys._
 import sbt._
 
-object PhantomBuild extends Build {
+object Build extends Build {
 
-  val UtilVersion = "0.9.6"
-  val PhantomVersion = "1.9.1"
-  val DatastaxDriverVersion = "2.1.5"
+  val UtilVersion = "0.9.12"
+  val PhantomVersion = "1.16.0"
+  val DatastaxDriverVersion = "2.2.0-rc3"
   val ScalaTestVersion = "2.2.4"
-  val ShapelessVersion = "2.2.0-RC4"
-  val Json4SVersion = "3.2.11"
+  val ShapelessVersion = "2.2.4"
   val ScalaMeterVersion = "0.6"
-  val CassandraUnitVersion = "2.1.3.2"
-  val SparkCassandraVersion = "1.2.0-alpha3"
-
-  val PerformanceTest = config("perf").extend(Test)
-  def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
+  val SparkCassandraVersion = "1.5.0-M2"
 
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
-    version := "1.9.1",
-    scalaVersion := "2.11.6",
-    crossScalaVersions := Seq("2.10.5", "2.11.6"),
+    version := PhantomVersion,
+    scalaVersion := "2.11.7",
+    crossScalaVersions := Seq("2.10.5", "2.11.7"),
     resolvers ++= Seq(
       "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
       "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
@@ -65,27 +58,18 @@ object PhantomBuild extends Build {
       "-unchecked"
      ),
     fork in Test := true,
-    javaOptions in Test ++= Seq("-Xmx2G"),
-    testFrameworks in PerformanceTest := Seq(new TestFramework("org.scalameter.ScalaMeterFramework")),
-    testOptions in Test := Seq(Tests.Filter(x => !performanceFilter(x))),
-    testOptions in PerformanceTest := Seq(Tests.Filter(x => performanceFilter(x))),
-    fork in PerformanceTest := true
-  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ publishSettings ++
-      GitProject.gitSettings ++
-      VersionManagement.newSettings
+    javaOptions in Test ++= Seq("-Xmx2G")
+  ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings ++ GitProject.gitSettings ++ VersionManagement.newSettings
 
 
   lazy val phantomEnterprise = Project(
     id = "phantom-enterprise",
     base = file("."),
     settings = sharedSettings
-  ).configs(
-    PerformanceTest
-  ).settings(
-    inConfig(PerformanceTest)(Defaults.testTasks): _*
   ).settings(
     name := "phantom-enterprise"
   ).aggregate(
+    phantomAutoTables,
     phantomDse,
     phantomSpark,
     phantomMigrations
@@ -93,10 +77,8 @@ object PhantomBuild extends Build {
 
   lazy val phantomDse = Project(
   	id = "phantom-dse",
-  	base = file("phantom-dsl"),
-  	settings = Defaults.coreDefaultSettings ++ sharedSettings ++ publishSettings
-  ).settings(
-      inConfig(PerformanceTest)(Defaults.testTasks): _*
+  	base = file("phantom-dse"),
+  	settings = Defaults.coreDefaultSettings ++ sharedSettings
   ).settings(
    	fork := true,
     testOptions in Test += Tests.Argument("-oF"),
@@ -108,26 +90,45 @@ object PhantomBuild extends Build {
   		"com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
   		"com.datastax.cassandra"       %  "cassandra-driver-dse"             % DatastaxDriverVersion,
   		"com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided"
-  )
+  	)
+	)
 
 	lazy val phantomMigrations = Project(
 		id = "phantom-migrations",
 		base = file("phantom-migrations"),
 		settings = Defaults.coreDefaultSettings ++ sharedSettings
 	).settings(
-		"com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
-  	"com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided"
+		libraryDependencies ++= Seq(
+			"com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
+			"com.websudos" 								 %% "phantom-testkit" 								 % PhantomVersion         % "test, provided",
+  		"com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided"
+		)		
+	
 	).dependsOn(
 		phantomDse
 	)
+
+  lazy val phantomAutoTables = Project(
+    id = "phantom-autotables",
+    base = file("phantom-autotables"),
+    settings = Defaults.coreDefaultSettings ++ sharedSettings
+  ).settings(
+    scalacOptions ++= Seq(
+      "-language:experimental.macros"
+    ),
+      libraryDependencies ++= Seq(
+        "org.scala-lang"               %  "scala-reflect"                    % scalaVersion.value,
+        "com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
+        "com.websudos" 								 %% "phantom-testkit" 								 % PhantomVersion         % "test, provided",
+        "com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided"
+      )
+  )
 
 	lazy val phantomSpark = Project(
 		id = "phantom-spark",
 		base = file("phantom-spark"),
 		settings = Defaults.coreDefaultSettings ++ sharedSettings
 	).settings(
-    inConfig(PerformanceTest)(Defaults.testTasks): _*
-  ).settings(
 		libraryDependencies ++= Seq(
 			"com.datastax.spark"           %% "spark-cassandra-connector"        % SparkCassandraVersion,
 			"com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
