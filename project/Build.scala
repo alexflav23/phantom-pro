@@ -23,7 +23,7 @@ object Build extends Build {
 
   val UtilVersion = "0.10.3"
   val PhantomVersion = "1.18.1"
-  val DatastaxDriverVersion = "2.2.0-rc3"
+  val DatastaxDriverVersion = "3.0.0-alpha4"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.4"
   val ScalaMeterVersion = "0.6"
