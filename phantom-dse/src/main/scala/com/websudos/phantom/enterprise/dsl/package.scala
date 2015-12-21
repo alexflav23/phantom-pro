@@ -23,5 +23,7 @@ package object dsl {
     Status <: ConsistencyBound,
     Chain <: WhereBound,
     PS <: HList
-  ](val query: Query[Table, Record, Limit, Order, Status, Chain, PS]) extends AnyVal
+  ](val query: Query[Table, Record, Limit, Order, Status, Chain, PS]) extends AnyVal {
+
+  }
 }
