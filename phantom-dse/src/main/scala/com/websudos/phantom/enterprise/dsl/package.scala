@@ -5,9 +5,10 @@ import com.websudos.phantom.builder._
 import com.websudos.phantom.builder.clauses.WhereClause
 import com.websudos.phantom.builder.clauses.WhereClause.Condition
 import com.websudos.phantom.builder.query.Query
+import com.websudos.phantom.enterprise.builder.TopologyStrategies
 import shapeless.HList
 
-package object dsl {
+package object dsl extends TopologyStrategies {
 
   object solr_query {
     def eqs(str: String): WhereClause.Condition = {

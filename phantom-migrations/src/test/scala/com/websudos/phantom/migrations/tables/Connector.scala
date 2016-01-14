@@ -1,8 +1,9 @@
 package com.websudos.phantom.migrations.tables
 
-import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.testkit.suites.SimpleCassandraConnector
+import com.websudos.phantom.connectors.ContactPoint
 
-trait Connector extends SimpleCassandraConnector {
-  implicit val keySpace: KeySpace = KeySpace("phantom_migrations_test")
+object Defaults {
+  val connector = ContactPoint.local.keySpace("phantom_migrations_test")
 }
+
+trait Connector extends Defaults.connector.Connector

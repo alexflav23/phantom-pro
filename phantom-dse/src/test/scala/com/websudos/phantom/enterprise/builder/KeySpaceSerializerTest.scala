@@ -1,18 +1,19 @@
 package com.websudos.phantom.enterprise.builder
 
 import org.scalatest.{FlatSpec, Matchers}
+import com.websudos.phantom.enterprise.dsl._
 
 class KeySpaceSerializerTest extends FlatSpec with Matchers {
 
   it should "create a simple keyspace creation query" in {
     val query = KeySpaceSerializer("test").ifNotExists()
-      .strategy(NetworkTopologyStrategy)
-      .durable_writes(flag = false)
+      .`with`(replication eqs NetworkTopologyStrategy)
+      //.and(durable_writes eqs true)
       .qb.queryString
 
-    Console.println(query)
+    val expected = "CREATE KEYSPACE IF NOT EXISTS test WITH REPLICATION = {'class': 'NetworkTopologyStrategy'}"
 
-    query shouldEqual "CREATE KEYSPACE IF NOT EXISTS test WITH REPLICATION = {'class': 'NetworkTopologyStrategy'}"
+    query shouldEqual expected
 
   }
 }
