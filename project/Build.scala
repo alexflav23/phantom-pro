@@ -21,8 +21,8 @@ import sbt._
 
 object Build extends Build {
 
-  val UtilVersion = "0.10.3"
-  val PhantomVersion = "1.18.1"
+  val UtilVersion = "0.10.6"
+  val PhantomVersion = "1.20.1"
   val DatastaxDriverVersion = "3.0.0-alpha4"
   val ScalaTestVersion = "2.2.4"
   val ShapelessVersion = "2.2.4"
@@ -100,7 +100,6 @@ object Build extends Build {
 	).settings(
 		libraryDependencies ++= Seq(
 			"com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
-			"com.websudos" 								 %% "phantom-testkit" 								 % PhantomVersion         % "test, provided",
   		"com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided"
 		)		
 	
@@ -119,7 +118,6 @@ object Build extends Build {
       libraryDependencies ++= Seq(
         "org.scala-lang"               %  "scala-reflect"                    % scalaVersion.value,
         "com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
-        "com.websudos" 								 %% "phantom-testkit" 								 % PhantomVersion         % "test, provided",
         "com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided"
       )
   )
@@ -131,8 +129,7 @@ object Build extends Build {
 	).settings(
 		libraryDependencies ++= Seq(
 			"com.datastax.spark"           %% "spark-cassandra-connector"        % SparkCassandraVersion,
-			"com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
-			"com.websudos" 								 %% "phantom-testkit" 								 % PhantomVersion % "test, provided"
+			"com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion
 		)
 	)
 }

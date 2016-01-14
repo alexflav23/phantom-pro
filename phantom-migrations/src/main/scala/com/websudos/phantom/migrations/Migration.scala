@@ -50,8 +50,10 @@ case class ColumnDiff(
 
 sealed case class Migration(additions: Set[ColumnDiff], deletions: Set[ColumnDiff]) {
 
-  def additiveQueries(table: CassandraTable[_, _])
-      (implicit session: Session, keySpace: KeySpace, executionContext: ExecutionContext): Set[CQLQuery] = {
+  type Table = CassandraTable[_, _]
+
+  def additiveQueries(table: Table)
+      (implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): Set[CQLQuery] = {
     additions map {
       col: ColumnDiff => {
         table.alter.add(col.name, col.cassandraType).qb
@@ -59,8 +61,8 @@ sealed case class Migration(additions: Set[ColumnDiff], deletions: Set[ColumnDif
     }
   }
 
-  def subtractionQueries(table: CassandraTable[_, _])
-      (implicit session: Session, keySpace: KeySpace, executionContext: ExecutionContext): Set[CQLQuery] = {
+  def subtractionQueries(table: Table)
+      (implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): Set[CQLQuery] = {
     deletions map {
       col: ColumnDiff => {
         table.alter.drop(col.name).qb
@@ -68,20 +70,22 @@ sealed case class Migration(additions: Set[ColumnDiff], deletions: Set[ColumnDif
     }
   }
 
-  def queryList(table: CassandraTable[_, _])
-      (implicit session: Session, keySpace: KeySpace, executionContext: ExecutionContext): Set[CQLQuery] = {
+  def queryList(table: Table)
+      (implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): Set[CQLQuery] = {
     additiveQueries(table) ++ subtractionQueries(table)
   }
 
-  def automigrate(table: CassandraTable[_, _])
-      (implicit session: Session, keySpace: KeySpace, executionContext: ExecutionContext): ExecutableStatementList = {
+  def automigrate(table: Table)
+      (implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): ExecutableStatementList = {
     new ExecutableStatementList(queryList(table).toSeq)
   }
 }
 
 
 object Migration {
-  def apply(metadata: TableMetadata, table: CassandraTable[_, _])(implicit diffConfig: DiffConfig): Migration = {
+  type Table = CassandraTable[_, _]
+
+  def apply(metadata: TableMetadata, table: Table)(implicit diffConfig: DiffConfig): Migration = {
 
     val dbTable = Diff(metadata)
     val phantomTable = Diff(table)
@@ -92,7 +96,7 @@ object Migration {
     )
   }
 
-  def apply(first: CassandraTable[_, _], second: CassandraTable[_, _])(implicit diffConfig: DiffConfig): Migration = {
+  def apply(first: Table, second: Table)(implicit diffConfig: DiffConfig): Migration = {
     val firstDiff = Diff(first)
     val secondDiff = Diff(second)
 
