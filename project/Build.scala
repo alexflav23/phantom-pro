@@ -115,11 +115,15 @@ object Build extends Build {
     scalacOptions ++= Seq(
       "-language:experimental.macros"
     ),
-      libraryDependencies ++= Seq(
-        "org.scala-lang"               %  "scala-reflect"                    % scalaVersion.value,
-        "com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
-        "com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided"
-      )
+  libraryDependencies ++= Seq(
+    "org.scala-lang"               %  "scala-reflect"                    % scalaVersion.value,
+    "com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
+    "com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided"
+    ),
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full),
+  unmanagedSourceDirectories in Compile ++= Seq(
+    (sourceDirectory in Compile).value / ("scala_2." + (if(scalaBinaryVersion.value.startsWith("2.10")) "10" else "11")))
+
   )
 
 	lazy val phantomSpark = Project(
