@@ -34,8 +34,10 @@ import com.websudos.phantom.CrossVersionDefs._
 import scala.annotation.StaticAnnotation
 import scala.language.experimental.macros
 
-class Udt(fieldsToObfuscate: String*) extends StaticAnnotation {
+class Udt extends StaticAnnotation {
+
   def macroTransform(annottees: Any*): Any = macro Udt.impl
+
 }
 
 //noinspection ScalaStyle
@@ -57,9 +59,8 @@ object Udt {
       fields.length match {
         case 0 => c.abort(c.enclosingPosition, "Cannot create row parser for case class with no fields")
         case _ => {
-          // use the serializer for the field
           q"""
-            def fromRow(row: Row): $className = ???
+            def fromRow(row: Row): $className = null
           """
         }
       }
@@ -70,8 +71,6 @@ object Udt {
         // Add the formatter to the existing companion object
         val q"object $obj extends ..$bases { ..$body }" = compDecl
         q"""
-          import com.websudos.phantom.dsl._
-
           object $obj extends ..$bases {
             ..$body
             $rowParserFunc
