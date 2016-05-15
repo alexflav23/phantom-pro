@@ -122,7 +122,7 @@ object Build extends Build {
     ),
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full),
   unmanagedSourceDirectories in Compile ++= Seq(
-    (sourceDirectory in Compile).value / ("scala_2." + (if(scalaBinaryVersion.value.startsWith("2.10")) "10" else "11")))
+    (sourceDirectory in Compile).value / ("scala-2." + (if(scalaBinaryVersion.value.startsWith("2.10")) "10" else "11")))
 
   )
 
