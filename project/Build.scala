@@ -118,7 +118,8 @@ object Build extends Build {
   libraryDependencies ++= Seq(
     "org.scala-lang"               %  "scala-reflect"                    % scalaVersion.value,
     "com.websudos" 								 %% "phantom-dsl" 										 % PhantomVersion,
-    "com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided"
+    "com.websudos"                 %% "util-testing"                     % UtilVersion            % "test, provided",
+    "org.scalamock"                %% "scalamock-scalatest-support"      % "3.2.2"                % "test"
     ),
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full),
   unmanagedSourceDirectories in Compile ++= Seq(
