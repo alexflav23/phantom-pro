@@ -22,8 +22,8 @@ object Udt {
       annottees.map(_.tree).toList match {
         case q"$mods class $tpname[..$tparams] $ctorMods(...$paramss) extends ..$parents { $self => ..$stats }" :: Nil => {
           val className = tq"$tpname"
-          val objectClass = TypeName(s"${tpname}").toTermName
-          val wrapperClass = TypeName(s"${tpname}UDT").toTypeName
+          val objectClass: c.universe.TermName = TypeName(s"$tpname").toTermName
+          val wrapperClass: c.universe.TypeName = TypeName(s"${tpname}UDT").toTypeName
 
           val columns = paramss.flatten.map(param => generateTable(c)(param)).toList
 
