@@ -27,7 +27,7 @@ object Test2 {
       s"""{
          |'id': "${Primitive[Int].asCql(udt.id)},
          |'name': ${Primitive[String].asCql(udt.name)},
-         |""".stripMargin
+         |}""".stripMargin
   }
 }
 
