@@ -22,11 +22,16 @@ object Udt {
       annottees.map(_.tree).toList match {
         case q"$mods class $tpname[..$tparams] $ctorMods(...$paramss) extends ..$parents { $self => ..$stats }" :: Nil => {
           val className = tq"$tpname"
-          val objectClass: c.universe.TermName = TypeName(s"$tpname").toTermName
+          val tq"${objectClass: TermName}" = tq"$tpname"
           val obfuscatedObject: c.universe.TermName = TypeName("UDTMacroImplementor" + tpname.toString()).toTermName
           val implicitCompanionName: c.universe.TermName = TypeName("MacroImplicit" + tpname.toString()).toTermName
 
           val wrapperClass: c.universe.TypeName = TypeName(s"${tpname}UDT").toTypeName
+
+          val decoded: List[c.universe.Tree] = paramss.flatten.map {
+            case q"$mods val $name: $tpe" => q"implicitly[Primitive[$tpe]].fromRow(row)"
+            case p => c.abort(c.enclosingPosition, s"Expected case class value, found $p")
+          } toList
 
           q"""
               object $objectClass {
@@ -38,14 +43,7 @@ object Udt {
                   def asCql(udt: $className): String = ${className.toString}
 
                   def fromRow(row: com.datastax.driver.core.Row): $className = {
-                      new $className(
-                      ${
-                        paramss.flatten.map {
-                          case q"$mods val $name: $tpe" => q"implicitly[Primitive[$tpe]].fromRow(row)"
-                          case p => c.abort(c.enclosingPosition, s"Expected case class value, found $p")
-                        } mkString ", "
-                      }
-                      )
+                      new $className(..$decoded)
                   }
                 }
 

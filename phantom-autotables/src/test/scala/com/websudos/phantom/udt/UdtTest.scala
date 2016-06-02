@@ -4,11 +4,8 @@ import com.datastax.driver.core.Row
 import com.websudos.phantom.dsl.{CassandraTable, UUID, UUIDColumn}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Try
-
 
 class UdtTest extends FlatSpec with Matchers {
-
 
   @Udt
   case class Test(id: Int, name: String)
@@ -24,6 +21,7 @@ class UdtTest extends FlatSpec with Matchers {
     override def fromRow(r: Row): TestRecord = {
       TestRecord(uuid(r), udt(r))
     }
+
   }
 
   it should "deserialize row" in {
