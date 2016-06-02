@@ -6,4 +6,8 @@ abstract class UDTType[T] {
 
   def fromRow(row: Row): T
 
+  def name: String
+
+  def asCql(udt: T): String
+
 }

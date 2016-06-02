@@ -23,23 +23,29 @@ object Udt {
         case q"$mods class $tpname[..$tparams] $ctorMods(...$paramss) extends ..$parents { $self => ..$stats }" :: Nil => {
           val className = tq"$tpname"
           val objectClass: c.universe.TermName = TypeName(s"$tpname").toTermName
+          val obfuscatedObject: c.universe.TermName = TypeName("UDTMacroImplementor" + tpname.toString()).toTermName
+          val implicitCompanionName: c.universe.TermName = TypeName("MacroImplicit" + tpname.toString()).toTermName
+
           val wrapperClass: c.universe.TypeName = TypeName(s"${tpname}UDT").toTypeName
 
-          val columns = paramss.flatten.map(param => generateTable(c)(param)).toList
-
           q"""
-              $mods class $tpname[..$tparams] $ctorMods(...$paramss) extends ..$parents { $self => ..$stats
-                def fromRow: $className = {
-                  new $className(666,"abc")
-                }
-              }
-
               object $objectClass {
 
-                implicit class $wrapperClass extends UDTType {
+                implicit object $implicitCompanionName extends UDTType[$className] {
+
+                  def cassandraType: String = ${className.toString()}
+
+                  def asCql(udt: $className): String = ${className.toString}
 
                   def fromRow(row: com.datastax.driver.core.Row): $className = {
-                    new $className(666,"abc")
+                      new $className(
+                      ${
+                        paramss.flatten.map {
+                          case q"$mods val $name: $tpe" => q"implicitly[Primitive[$tpe]].fromRow(row)"
+                          case p => c.abort(c.enclosingPosition, s"Expected case class value, found $p")
+                        } mkString ", "
+                      }
+                      )
                   }
                 }
 
@@ -49,6 +55,8 @@ object Udt {
         case _ => c.abort(c.enclosingPosition, "Annotation @Udt can be used only with case classes")
       }
     }
+
+    println(s"$result")
     c.Expr[Any](result)
   }
 
