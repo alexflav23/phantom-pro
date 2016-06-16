@@ -24,13 +24,6 @@ sealed class ReplicationStrategy(override val qb: CQLQuery) extends BuilderClaus
   def option(key: String, value: Int): CQLQuery = {
     CQLQuery(CQLQuery.escape(key)).forcePad.append(":").pad.append(value.toString)
   }
-
-  def test2(list: List[Int]): Int = {
-    list match {
-      case a :: tail => a + tail.flatten.sum
-      case _ => 0
-    }
-  }
 }
 
 

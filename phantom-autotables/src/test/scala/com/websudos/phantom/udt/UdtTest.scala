@@ -7,7 +7,6 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Try
 
-@Udt
 case class Test(id: Int, name: String)
 
 case class Test2(id: Int, name: String)
@@ -33,13 +32,13 @@ object Test2 {
 
 class UdtTest extends FlatSpec with Matchers {
 
-  case class TestRecord(uuid: UUID, udt: Test, udt2: Test2)
+  case class TestRecord(uuid: UUID, udt: Test2, udt2: Test2)
 
   class TestTable extends CassandraTable[TestTable, TestRecord] {
 
     object uuid extends UUIDColumn(this)
 
-    object udt extends UDTColumn[TestTable, TestRecord, Test](this)
+    object udt extends UDTColumn[TestTable, TestRecord, Test2](this)
 
     object udt2 extends UDTColumn[TestTable, TestRecord, Test2](this)
 
