@@ -6,6 +6,7 @@ lazy val Versions = new {
   val phantom = "1.26.6"
   val util = "0.17.0"
   val datastax = "3.0.2"
+  val dse = "3.0.0-rc1"
   val scalaTest = "2.2.4"
   val shapeless = "2.3.1"
   val scalaMeter = "0.7"
@@ -64,7 +65,11 @@ lazy val phantomPro = (project in file("."))
     moduleName := "phantom-pro"
   )
   .aggregate(
-    phantomDse
+    phantomDse,
+    phantomMigrations,
+    phantomSpark,
+    phantomUdt,
+    phantomAutoTables
   )
 
 lazy val phantomDse = (project in file("phantom-dse"))
@@ -73,7 +78,7 @@ lazy val phantomDse = (project in file("phantom-dse"))
     moduleName := "phantom-dse",
     libraryDependencies ++= Seq(
       "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
-      "com.datastax.cassandra"       %  "cassandra-driver-dse"             % Versions.datastax,
+      "com.datastax.cassandra"       %  "cassandra-driver-dse"             % Versions.dse,
       "com.websudos"                 %% "util-testing"                     % Versions.util % Test
     )
   )
@@ -102,7 +107,7 @@ lazy val phantomAutoTables = (project in file("phantom-autotables"))
   .settings(sharedSettings: _*)
   .settings(
     moduleName := "phantom-autotables",
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full),
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     unmanagedSourceDirectories in Compile ++= Seq(
       (sourceDirectory in Compile).value / ("scala-2." + {
         if(scalaBinaryVersion.value.startsWith("2.10")) "10" else "11"
@@ -119,7 +124,7 @@ lazy val phantomUdt = (project in file("phantom-udt"))
   .settings(sharedSettings: _*)
   .settings(
     moduleName := "phantom-udt",
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full),
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     unmanagedSourceDirectories in Compile ++= Seq(
       (sourceDirectory in Compile).value / ("scala-2." + {
         if(scalaBinaryVersion.value.startsWith("2.10")) "10" else "11"
