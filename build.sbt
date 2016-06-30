@@ -42,6 +42,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "-language:reflectiveCalls",
     "-language:higherKinds",
     "-language:existentials",
+    "-language:experimental.macros",
     "-Yinline-warnings",
     "-Xlint",
     "-deprecation",

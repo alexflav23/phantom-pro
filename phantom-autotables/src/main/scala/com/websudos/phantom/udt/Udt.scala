@@ -15,6 +15,7 @@ class Udt extends StaticAnnotation {
 //noinspection ScalaStyle
 object Udt {
 
+
   def impl(c: CrossVersionContext)(annottees: c.Expr[Any]*): c.Expr[Any] = {
     import c.universe._
 
@@ -40,7 +41,7 @@ object Udt {
 
                   def cassandraType: String = ${className.toString()}
 
-                  def asCql(udt: $className): String = ${className.toString}
+                  def asCql(udt: $className): String = ${asCQL(c)}
 
                   def fromRow(row: com.datastax.driver.core.Row): $className = {
                       new $className(..$decoded)
@@ -57,6 +58,17 @@ object Udt {
     println(s"$result")
     c.Expr[Any](result)
   }
+
+  private def asCQL(c: CrossVersionContext): c.universe.Tree = {
+    import c.universe._
+    q"""
+       "{" +
+       s" 'id'   : $${Primitive[Int].asCql(udt.id)}," +
+       s" 'name' : $${Primitive[String].asCql(udt.name)}" +
+       "}"
+    """
+  }
+
 
   private def generateTable(c: CrossVersionContext)(param: Trees#Tree): c.universe.Tree = {
     import c.universe._
