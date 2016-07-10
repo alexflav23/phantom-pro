@@ -1,6 +1,6 @@
-package com.websudos.phantom.udt
+package com.outworkers.phantom.udt
 
-import com.websudos.phantom.CrossVersionDefs._
+import com.outworkers.phantom.udt.CrossVersionDefs.CrossVersionContext
 
 import scala.annotation.StaticAnnotation
 import scala.language.experimental.macros
@@ -56,16 +56,5 @@ object Udt {
 
     println(s"$result")
     c.Expr[Any](result)
-  }
-
-  private def generateTable(c: CrossVersionContext)(param: Trees#Tree): c.universe.Tree = {
-    import c.universe._
-
-    param match {
-      case q"$mods val $name: $tpe" =>
-        q"object $name"
-      case _ =>
-        c.abort(c.enclosingPosition, "[Phantom-pro]: Invalid val parameter in case class")
-    }
   }
 }

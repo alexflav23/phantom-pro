@@ -3,8 +3,8 @@ import Keys._
 import com.twitter.sbt.{GitProject, VersionManagement}
 
 lazy val Versions = new {
-  val phantom = "1.26.6"
-  val util = "0.17.0"
+  val phantom = "1.27.0"
+  val util = "0.18.2"
   val datastax = "3.0.2"
   val dse = "3.0.0-rc1"
   val scalaTest = "2.2.4"
@@ -79,7 +79,7 @@ lazy val phantomDse = (project in file("phantom-dse"))
     libraryDependencies ++= Seq(
       "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
       "com.datastax.cassandra"       %  "cassandra-driver-dse"             % Versions.dse,
-      "com.websudos"                 %% "util-testing"                     % Versions.util % Test
+      "com.outworkers"               %% "util-testing"                     % Versions.util % Test
     )
   )
 
@@ -89,7 +89,7 @@ lazy val phantomMigrations = (project in file("phantom-migrations"))
     moduleName := "phantom-migrations",
     libraryDependencies ++= Seq(
       "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
-      "com.websudos"                 %% "util-testing"                     % Versions.util % Test
+      "com.outworkers"                 %% "util-testing"                     % Versions.util % Test
     )
   )
 
@@ -115,7 +115,7 @@ lazy val phantomAutoTables = (project in file("phantom-autotables"))
     libraryDependencies ++= Seq(
       "org.scala-lang"               %  "scala-reflect"                    % scalaVersion.value,
       "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
-      "com.websudos"                 %% "util-testing"                     % Versions.util % Test,
+      "com.outworkers"               %% "util-testing"                     % Versions.util % Test,
       "org.scalamock"                %% "scalamock-scalatest-support"      % Versions.scalamock % Test
     )
   )
@@ -131,7 +131,7 @@ lazy val phantomUdt = (project in file("phantom-udt"))
     })),
     libraryDependencies ++= Seq(
       "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
-      "com.websudos"                 %% "util-testing"                     % Versions.util % Test,
+      "com.outworkers"               %% "util-testing"                     % Versions.util % Test,
       "org.scalamock"                %% "scalamock-scalatest-support"      % Versions.scalamock % Test
     )
   )

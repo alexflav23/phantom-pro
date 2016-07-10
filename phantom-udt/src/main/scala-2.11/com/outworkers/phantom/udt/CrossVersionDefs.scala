@@ -1,11 +1,10 @@
-package com.websudos.phantom
+package com.outworkers.phantom.udt
 
 import scala.language.experimental.macros
 import scala.reflect.macros._
 
-
 object CrossVersionDefs {
 
-  type CrossVersionContext = Context
+  type CrossVersionContext = blackbox.Context
 
 }
