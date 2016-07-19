@@ -51,7 +51,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   fork in Test := true,
   javaOptions in Test ++= Seq("-Xmx2G")
-) ++ graphSettings ++ GitProject.gitSettings ++ VersionManagement.newSettings
+) ++ GitProject.gitSettings ++ VersionManagement.newSettings
 
 lazy val noPublishSettings = Seq(
   publish := (),

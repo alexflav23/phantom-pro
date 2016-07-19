@@ -3,9 +3,12 @@ package com.outworkers.phantom.udt
 import com.datastax.driver.core.Row
 import com.websudos.phantom.builder.primitives.Primitive
 
+import scala.concurrent.Future
 import scala.util.Try
 
 abstract class UDTPrimitive[T] {
+
+  def schema: String
 
   def fromRow(row: Row): Try[T]
 

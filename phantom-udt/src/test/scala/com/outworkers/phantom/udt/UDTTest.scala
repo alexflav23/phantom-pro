@@ -14,6 +14,7 @@ case class Test2(id: Int, name: String)
 
 object Test2 {
   implicit object Test2UdtPrimitive extends UDTPrimitive[Test2] {
+
     override def fromRow(row: Row): Try[Test2] = {
       for {
         id <- Primitive[Int].fromRow("id", row)
@@ -28,6 +29,12 @@ object Test2 {
           |'id': "${Primitive[Int].asCql(udt.id)},
           |'name': ${Primitive[String].asCql(udt.name)},
           |}""".stripMargin
+
+    override def schema: String =
+      s"""CREATE TYPE test2 (
+         | id ${Primitive[Int].cassandraType},
+         | name ${Primitive[String].cassandraType}
+       )""".stripMargin
   }
 }
 
