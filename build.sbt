@@ -12,6 +12,7 @@ lazy val Versions = new {
   val scalaMeter = "0.7"
   val spark = "1.5.0-M2"
   val scalamock = "3.2.2"
+  val dseDriver = "1.0.0"
 }
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
@@ -67,6 +68,7 @@ lazy val phantomPro = (project in file("."))
   )
   .aggregate(
     phantomDse,
+    phantomDseGraph,
     phantomMigrations,
     phantomSpark,
     phantomUdt,
@@ -121,6 +123,17 @@ lazy val phantomAutoTables = (project in file("phantom-autotables"))
     )
   )
 
+lazy val phantomDseGraph = (project in file("phantom-graph"))
+  .settings(sharedSettings: _*)
+  .settings(
+    moduleName := "phantom-graph",
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
+    libraryDependencies ++= Seq(
+      "com.datastax.cassandra"       % "dse-driver"                        % Versions.dseDriver,
+      "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
+      "com.outworkers"               %% "util-testing"                     % Versions.util % Test
+    )
+  )
 lazy val phantomUdt = (project in file("phantom-udt"))
   .settings(sharedSettings: _*)
   .settings(
