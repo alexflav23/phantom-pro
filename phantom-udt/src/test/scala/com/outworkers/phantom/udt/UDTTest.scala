@@ -1,62 +1,55 @@
 package com.outworkers.phantom.udt
 
-import com.datastax.driver.core.Row
-import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.primitives.Primitive
+import java.util.UUID
+
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers, OptionValues}
 import com.websudos.phantom.dsl._
-import org.scalatest.{FlatSpec, Matchers}
+import com.outworkers.util.testing._
+import com.websudos.phantom.builder.query.CQLQuery
 
-import scala.util.Try
+import scala.concurrent.duration._
+import shapeless.ops.hlist._
+import shapeless.poly._
 
-case class Test(id: Int, name: String)
+class UdtTest extends FlatSpec with Matchers with ScalaFutures with BeforeAndAfterAll with OptionValues {
 
-case class Test2(id: Int, name: String)
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    TestDatabase.createUdts.block(10.seconds)
+    TestDatabase.create()
 
-object Test2 {
-  implicit object Test2UdtPrimitive extends UDTPrimitive[Test2] {
-
-    override def fromRow(row: Row): Try[Test2] = {
-      for {
-        id <- Primitive[Int].fromRow("id", row)
-        str <- Primitive[String].fromRow("name", row)
-      } yield Test2(id, str)
-    }
-
-    override def name: String = "Test2"
-
-    override def asCql(udt: Test2): String =
-      s"""{
-          |'id': "${Primitive[Int].asCql(udt.id)},
-          |'name': ${Primitive[String].asCql(udt.name)},
-          |}""".stripMargin
-
-    override def schema: String =
-      s"""CREATE TYPE test2 (
-         | id ${Primitive[Int].cassandraType},
-         | name ${Primitive[String].cassandraType}
-       )""".stripMargin
   }
-}
 
-case class TestRecord(uuid: UUID, udt: Test2, udt2: Test2)
+  ignore should "deserialize row" in {
+    val test = Test2(1, "hello")
+    val sample = TestRecord(UUID.randomUUID(), test, test)
 
-class TestTable extends CassandraTable[TestTable, TestRecord] {
 
-  object uuid extends UUIDColumn(this)
+    //val types = SchemaGenerator.inferSchema(sample)
 
-  object udt extends UDTColumn[TestTable, TestRecord, Test2](this)
+    Console.println(SchemaGenerator.fields(test))
 
-  object udt2 extends UDTColumn[TestTable, TestRecord, Test2](this)
+    //val fields = SchemaGenerator.classAccessors[Test2]
 
-  override def fromRow(r: Row): TestRecord = {
-    TestRecord(uuid(r), udt(r), udt2(r))
+    /*
+    val inferred = (fields zip types) map {
+      case (name, tp) => s"${CQLQuery.escape(name)}: $tp"
+    } mkString ","
+
+    info(s"CREATE TYPE bla.test2 $inferred")
+
+    val chain = for {
+      store <-  TestDatabase.udtTable.store(sample)
+      get <- TestDatabase.udtTable.getById(sample.uuid)
+    } yield get*/
+
+    /*whenReady(chain) {
+      res => {
+        res.value shouldEqual sample
+      }
+    }*/
   }
-}
 
-class UdtTest extends FlatSpec with Matchers {
-
-  it should "deserialize row" in {
-    val test = Test(1, "hello")
-  }
 
 }
