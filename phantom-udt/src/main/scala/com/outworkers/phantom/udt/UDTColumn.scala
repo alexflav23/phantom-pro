@@ -5,15 +5,24 @@ import com.outworkers.phantom.udt.query.UDTCreateQuery
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.connectors.SessionAugmenterImplicits
 import com.websudos.phantom.dsl.{KeySpace, Session}
-
 import com.datastax.driver.core.Row
+import com.outworkers.phantom.udt.SchemaGenerator.Schema
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.column.Column
+import shapeless.ops.hlist.{Mapper, ToList}
+import shapeless.{Generic, HList}
 
 import scala.util.Try
 import scala.reflect.runtime.universe._
 
-abstract class UDTPrimitive[T <: Product with Serializable : TypeTag] extends SessionAugmenterImplicits {
+abstract class UDTPrimitive[
+  T <: Product with Serializable : TypeTag,
+  Out <: HList,
+  MapperOut <: HList
+]()(implicit gen: Generic.Aux[T, Out],
+  map: Mapper.Aux[Schema.type, Out, MapperOut],
+  to: ToList[MapperOut, String]
+) extends SessionAugmenterImplicits {
 
   def instance: T
 
@@ -40,7 +49,6 @@ abstract class UDTPrimitive[T <: Product with Serializable : TypeTag] extends Se
 
   def asCql(udt: T): String
 }
-
 
 class UDTColumn[
   T <: CassandraTable[T, R],

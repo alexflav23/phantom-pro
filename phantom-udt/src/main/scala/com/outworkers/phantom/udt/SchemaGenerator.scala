@@ -27,7 +27,7 @@ object SchemaGenerator {
     implicit def dateTimeExtractor = at[Long](_ => Primitive[DateTime].cassandraType)
   }
 
-  object Serializer extends Poly1 {,
+  object Serializer extends Poly1 {
     implicit def genericExtractor[T : Primitive] = at[T](Primitive[T].asCql(_))
     //implicit def intExtractor = at[Int](Primitive[Int].asCql(_))
     //implicit def stringExtractor = at[String](Primitive[String].asCql(_))
