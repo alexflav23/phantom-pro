@@ -28,7 +28,6 @@ object Test2 {
       } yield Test2(id,  str)
     }
 
-
     override def asCql(udt: Test2): String = {
       s"""{
           |'id': "${Primitive[Int].asCql(udt.id)},

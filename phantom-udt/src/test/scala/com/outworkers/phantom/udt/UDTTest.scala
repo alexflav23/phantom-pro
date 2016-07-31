@@ -6,12 +6,8 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers, OptionValues}
 import com.websudos.phantom.dsl._
 import com.outworkers.util.testing._
-import com.websudos.phantom.builder.query.CQLQuery
 
 import scala.concurrent.duration._
-import shapeless.ops.hlist._
-import shapeless.poly._
-
 class UdtTest extends FlatSpec with Matchers with ScalaFutures with BeforeAndAfterAll with OptionValues {
 
   override def beforeAll(): Unit = {

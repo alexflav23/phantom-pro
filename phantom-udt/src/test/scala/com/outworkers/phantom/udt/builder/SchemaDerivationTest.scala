@@ -8,10 +8,9 @@ class SchemaDerivationTest extends FlatSpec with Matchers {
   it should "derive the type of a schema from a class instance" in {
     val test = Test2(1, "hello")
 
-    val types = SchemaGenerator.inferSchema(sample)
-
     val fields = SchemaGenerator.classAccessors[Test2]
     val types = SchemaGenerator.infer(test)
+
     Console.println(fields)
     Console.println(types)
 
