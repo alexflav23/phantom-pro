@@ -79,7 +79,7 @@ abstract class UDTColumn[
     *            hlist so we can zip it together with the fields and types to map over it with a poly.
     * @param zipper A zipper that can zip together the types of the case class encoded as an HList
     *               with the string field name list transformed to an HList[String :: String ... :: HNil].
-    * @param extractor The extractor mapper,
+    * @param ext The extractor mapper, which maps the resulting tuples to actual types.
     * @param reifier
     * @tparam Out
     * @tparam ExOut
@@ -90,21 +90,31 @@ abstract class UDTColumn[
     * @return
     */
   def extractor[
+    V1 <: Product,
     Out <: HList,
     ExOut <: HList,
     Fields <: HList,
     RowList <: HList,
     ZippedPair <: HList,
     Result <: HList
-  ](v1: ValueType, row: Row)(
-    implicit gen: Generic.Aux[ValueType, Out],
+  ](v1: V1, row: Row)(
+    implicit tag: TypeTag[V1],
+    gen: Generic.Aux[V1, Out],
     fl: FromTraversable[Fields],
     fl2: FromTraversable[RowList],
     zipper: Zip.Aux[Out ::  Fields :: HNil, ExOut],
     zipper2: Zip.Aux[ExOut :: RowList :: HNil, ZippedPair],
-    extractor: Mapper.Aux[SchemaGenerator.results.type, ZippedPair, Result],
-    reifier: Generic.Aux[Result, ValueType]
-  ): Option[ValueType] = SchemaGenerator.extractor(instance, row)
+    ext: Mapper.Aux[SchemaGenerator.results.type, ZippedPair, Result],
+    reifier: Generic.Aux[Result, V1]
+  ): Option[V1] = {
+    for {
+      accessors <- Some(SchemaGenerator.classAccessors[V1])
+      rows <- fl2(List.tabulate(accessors.size)(_ => row))
+      fields <- fl(accessors)
+    } yield {
+      reifier to ((((gen to v1) zip fields) zip rows) map SchemaGenerator.results)
+    }
+  }
 
 
   override def asCql(v: ValueType): String = primitive.asCql(v)

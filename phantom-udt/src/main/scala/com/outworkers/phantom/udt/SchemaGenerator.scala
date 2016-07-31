@@ -80,8 +80,8 @@ object SchemaGenerator {
   ): Option[V1] = {
     for {
       accessors <- Some(classAccessors[V1])
-      rows <- List.tabulate(accessors.size)(_ => row).toHList[RowList]
-      fields <- accessors.toHList[Fields]
+      rows <- fl2(List.tabulate(accessors.size)(_ => row))
+      fields <- fl(accessors)
     } yield {
       reifier to ((((gen to v1) zip fields) zip rows) map results)
     }
