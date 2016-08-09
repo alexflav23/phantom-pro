@@ -121,11 +121,9 @@ class RootSerializer(val keySpace: KeySpace) {
 }
 
 object KeySpaceSerializer {
-
   def apply(name: String) = new RootSerializer(KeySpace(name))
 
   def apply(keySpace: KeySpace) = new RootSerializer(keySpace)
-
 }
 
 object Builder {
