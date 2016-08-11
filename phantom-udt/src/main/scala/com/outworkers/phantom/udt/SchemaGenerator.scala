@@ -82,7 +82,7 @@ object SchemaGenerator {
     RowList <: HList,
     ZippedPair <: HList,
     Result <: HList
-  ](v1: V1)(
+  ](v1: V1, row: Row)(
     implicit tag: TypeTag[V1],
       gen: Generic.Aux[V1, Out],
       fl: FromTraversable[Fields],
@@ -91,7 +91,7 @@ object SchemaGenerator {
       zipper2: Zip.Aux[ExOut :: RowList :: HNil, ZippedPair],
       ext: Mapper.Aux[results.type, ZippedPair, Result],
       reifier: Generic.Aux[Result, V1]
-  ): (Row => Option[V1]) = row => {
+  ): Option[V1] = {
     for {
       accessors <- Some(classAccessors[V1])
       rows <- fl2(List.tabulate(accessors.size)(_ => row))

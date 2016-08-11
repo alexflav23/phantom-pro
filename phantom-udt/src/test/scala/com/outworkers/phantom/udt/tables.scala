@@ -8,7 +8,6 @@ import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.dsl._
 
 import scala.concurrent.Future
-import scala.util.Try
 
 case class Test(id: Int, name: String)
 
@@ -19,7 +18,9 @@ object Test2 {
 
     override def name: String = "Test2"
 
-    override def fromRow(row: Row): Option[Test2] = SchemaGenerator.extractor(instance).apply(row)
+    override def fromRow(row: Row): Option[Test2] = {
+      SchemaGenerator.extractor(instance, row)
+    }
 
     override def asCql(udt: Test2): String = {
       s"""{
