@@ -60,21 +60,20 @@ object SchemaGenerator {
       to: ToList[MapperOut, String]
   ): List[String] = to (gen to v1 map Schema)
 
-
-/**
-  * This method will automatically derive an extractor for an UDT value
-  * given a target case class and a physical instance of an UDTValue
-  * returned from the server.
-  * @param v1 A sample instance of the case class to extract, needed to derive an HList of the values.
-  * @param gen The generic used to convert from the input case class to an HList.
-  * @param fl The implicit evidence used to convert the list of fields extracted from the case class
-  *           via the typetag, to an HList with a string LUB.
-  * @param fl2 The implicit evidence used to convert the artificially made up list of udt values to an
-  *            hlist so we can zip it together with the fields and types to map over it with a poly.
-  * @param zipper A zipper that can zip together the types of the case class encoded as an HList
-  *               with the string field name list transformed to an HList[String :: String ... :: HNil].
-  * @param ext The extractor mapper, which maps the resulting tuples to actual types.
-  */
+  /**
+    * This method will automatically derive an extractor for an UDT value
+    * given a target case class and a physical instance of an UDTValue
+    * returned from the server.
+    * @param v1 A sample instance of the case class to extract, needed to derive an HList of the values.
+    * @param gen The generic used to convert from the input case class to an HList.
+    * @param fl The implicit evidence used to convert the list of fields extracted from the case class
+    *           via the typetag, to an HList with a string LUB.
+    * @param fl2 The implicit evidence used to convert the artificially made up list of udt values to an
+    *            hlist so we can zip it together with the fields and types to map over it with a poly.
+    * @param zipper A zipper that can zip together the types of the case class encoded as an HList
+    *               with the string field name list transformed to an HList[String :: String ... :: HNil].
+    * @param ext The extractor mapper, which maps the resulting tuples to actual types.
+    */
   def extractor[
     V1 <: Product,
     Out <: HList,
