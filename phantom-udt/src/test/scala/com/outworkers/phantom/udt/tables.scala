@@ -19,14 +19,7 @@ object Test2 {
 
     override def name: String = "Test2"
 
-    override def fromRow(row: Row): Try[Test2] = {
-      val udt = row.getUDTValue(name)
-
-      for {
-        id <- Extractor[Int].apply("id", udt)
-        str <- Extractor[String].apply("name", udt)
-      } yield Test2(id,  str)
-    }
+    override def fromRow(row: Row): Option[Test2] = SchemaGenerator.extractor(instance).apply(row)
 
     override def asCql(udt: Test2): String = {
       s"""{

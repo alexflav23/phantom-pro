@@ -2,6 +2,7 @@ package com.outworkers.phantom.udt.builder
 
 import com.outworkers.phantom.udt.{SchemaGenerator, Test2}
 import org.scalatest.{FlatSpec, Matchers}
+import shapeless.{::, HNil}
 
 class SchemaDerivationTest extends FlatSpec with Matchers {
 

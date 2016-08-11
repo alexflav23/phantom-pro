@@ -13,7 +13,7 @@ import shapeless.ops.traversable.FromTraversable
 import shapeless.{::, Generic, HList, HNil}
 
 import scala.reflect.runtime.universe._
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 abstract class UDTPrimitive[
   T <: Product with Serializable : TypeTag
@@ -47,7 +47,7 @@ abstract class UDTPrimitive[
     }
   }
 
-  def fromRow(row: Row): Try[T]
+  def fromRow(row: Row): Option[T]
 
   def name: String
 
@@ -64,58 +64,10 @@ abstract class UDTColumn[
 
   def instance: ValueType = primitive.instance
 
-  override def parse(row: Row): Try[ValueType] = primitive.fromRow(row)
-
-  /**
-    * This method will automatically derive an extractor for an UDT value
-    * given a target case class and a physical instance of an UDTValue
-    * returned from the server.
-    * @param v1 A sample instance of the case class to extract, needed to derive an HList of the values.
-    * @param row The UDT Value originating from the server that needs to be extracted.
-    * @param gen The generic used to convert from the input case class to an HList.
-    * @param fl The implicit evidence used to convert the list of fields extracted from the case class
-    *           via the typetag, to an HList with a string LUB.
-    * @param fl2 The implicit evidence used to convert the artificially made up list of udt values to an
-    *            hlist so we can zip it together with the fields and types to map over it with a poly.
-    * @param zipper A zipper that can zip together the types of the case class encoded as an HList
-    *               with the string field name list transformed to an HList[String :: String ... :: HNil].
-    * @param ext The extractor mapper, which maps the resulting tuples to actual types.
-    * @param reifier
-    * @tparam Out
-    * @tparam ExOut
-    * @tparam Fields
-    * @tparam RowList
-    * @tparam ZippedPair
-    * @tparam Result
-    * @return
-    */
-  def extractor[
-    V1 <: Product,
-    Out <: HList,
-    ExOut <: HList,
-    Fields <: HList,
-    RowList <: HList,
-    ZippedPair <: HList,
-    Result <: HList
-  ](v1: V1, row: Row)(
-    implicit tag: TypeTag[V1],
-    gen: Generic.Aux[V1, Out],
-    fl: FromTraversable[Fields],
-    fl2: FromTraversable[RowList],
-    zipper: Zip.Aux[Out ::  Fields :: HNil, ExOut],
-    zipper2: Zip.Aux[ExOut :: RowList :: HNil, ZippedPair],
-    ext: Mapper.Aux[SchemaGenerator.results.type, ZippedPair, Result],
-    reifier: Generic.Aux[Result, V1]
-  ): Option[V1] = {
-    for {
-      accessors <- Some(SchemaGenerator.classAccessors[V1])
-      rows <- fl2(List.tabulate(accessors.size)(_ => row))
-      fields <- fl(accessors)
-    } yield {
-      reifier to ((((gen to v1) zip fields) zip rows) map SchemaGenerator.results)
-    }
+  override def parse(row: Row): Try[ValueType] = primitive.fromRow(row) match {
+    case Some(value) => Success(value)
+    case None => Failure(new Exception("Couldn't parse UDT"))
   }
-
 
   override def asCql(v: ValueType): String = primitive.asCql(v)
 
