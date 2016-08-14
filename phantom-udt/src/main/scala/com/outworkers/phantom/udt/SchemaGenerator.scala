@@ -7,9 +7,8 @@ import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.dsl.DateTime
 import shapeless.ops.hlist.{Mapper, ToList, Zip}
 import shapeless.{Generic, HList, Poly1, Zipper}
-import shapeless._
 import shapeless.ops.traversable.FromTraversable
-import syntax.std.traversable._
+import shapeless._, shapeless.ops.hlist._
 
 object SchemaGenerator {
 
@@ -87,7 +86,7 @@ object SchemaGenerator {
       gen: Generic.Aux[V1, Out],
       fl: FromTraversable[Fields],
       fl2: FromTraversable[RowList],
-      zipper: Zip.Aux[Out ::  Fields :: HNil, ExOut],
+      zipper: Zip.Aux[Out :: Fields :: HNil, ExOut],
       zipper2: Zip.Aux[ExOut :: RowList :: HNil, ZippedPair],
       ext: Mapper.Aux[results.type, ZippedPair, Result],
       reifier: Generic.Aux[Result, V1]
@@ -100,6 +99,4 @@ object SchemaGenerator {
       reifier to ((((gen to v1) zip fields) zip rows) map results)
     }
   }
-
-
 }

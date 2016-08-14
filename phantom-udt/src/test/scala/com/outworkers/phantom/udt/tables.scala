@@ -8,6 +8,7 @@ import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.dsl._
 
 import scala.concurrent.Future
+import shapeless._, shapeless.ops.hlist._
 
 case class Test(id: Int, name: String)
 
@@ -19,7 +20,8 @@ object Test2 {
     override def name: String = "Test2"
 
     override def fromRow(row: Row): Option[Test2] = {
-      SchemaGenerator.extractor(instance, row)
+      //SchemaGenerator.extractor(instance, row)
+      None
     }
 
     override def asCql(udt: Test2): String = {
