@@ -5,23 +5,25 @@ import java.util.UUID
 import com.datastax.driver.core.Row
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.primitives.Primitive
+import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.dsl._
 
 import scala.concurrent.Future
-import shapeless._, shapeless.ops.hlist._
 
 case class Test(id: Int, name: String)
 
-case class Test2(id: Int, name: String)
+case class Test2(id: Int, name: String, dec: BigDecimal, sh: Short)
 
 object Test2 {
+
   implicit object Test2UdtPrimitive extends UDTPrimitive[Test2] {
 
     override def name: String = "Test2"
 
     override def fromRow(row: Row): Option[Test2] = {
-      //SchemaGenerator.extractor(instance, row)
-      None
+      val accessors = Helper.classAccessors[Test2]
+      val input = accessors zip List.tabulate(accessors.size)(_ => row)
+      FromRow.rowParserFor[Test2](input).toOption
     }
 
     override def asCql(udt: Test2): String = {
@@ -31,7 +33,11 @@ object Test2 {
           |}""".stripMargin
     }
 
-    override def instance: Test2 = Test2(5, "")
+    override def instance: Test2 = Test2(5, "", BigDecimal(0), 5)
+
+    override def schemaQuery()(implicit space: KeySpace): CQLQuery = {
+      CQLQuery(SchemaGenerator.schema(instance))
+    }
   }
 }
 

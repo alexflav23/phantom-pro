@@ -11,7 +11,8 @@ class KeySpaceSerializerTest extends FlatSpec with Matchers {
       .and(durable_writes eqs true)
       .qb.queryString
 
-    val expected = "CREATE KEYSPACE IF NOT EXISTS test WITH REPLICATION = {'class': 'NetworkTopologyStrategy'}"
+    val expected = "CREATE KEYSPACE IF NOT EXISTS test WITH REPLICATION = {'class': 'NetworkTopologyStrategy'}" +
+      " AND DURABLE_WRITES = true"
 
     query shouldEqual expected
   }

@@ -8,9 +8,8 @@ import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.column.Column
 import com.websudos.phantom.connectors.SessionAugmenterImplicits
 import com.websudos.phantom.dsl.{KeySpace, Session}
-import shapeless.ops.hlist.{Mapper, ToList, Zip}
-import shapeless.ops.traversable.FromTraversable
-import shapeless.{::, Generic, HList, HNil}
+import shapeless.ops.hlist.{Mapper, ToList}
+import shapeless.{Generic, HList}
 
 import scala.reflect.runtime.universe._
 import scala.util.{Failure, Success, Try}
@@ -21,31 +20,7 @@ abstract class UDTPrimitive[
 
   def instance: T
 
-  def schema[
-    Out <: HList,
-    MapperOut <: HList
-  ]()(
-    implicit keySpace: KeySpace,
-    session: Session,
-    gen: Generic.Aux[T, Out],
-    map: Mapper.Aux[Schema.type, Out, MapperOut],
-    to: ToList[MapperOut, String]
-  ): CQLQuery = {
-    val fields = SchemaGenerator.classAccessors[T]
-    val types = SchemaGenerator.infer(instance)
-
-    val inferred = (fields zip types) map {
-      case (name, tp) => s"$name $tp"
-    } mkString ", "
-
-    if (session.v3orNewer) {
-      CQLQuery(s"CREATE TYPE IF NOT EXISTS ${keySpace.name}.test2 $inferred")
-    } else if (session.v4orNewer) {
-      CQLQuery(s"CREATE TYPE IF NOT EXISTS ${keySpace.name}.test2 $inferred")
-    } else {
-      CQLQuery(s"CREATE TYPE IF NOT EXISTS ${keySpace.name}.test2 $inferred")
-    }
-  }
+  def schemaQuery()(implicit space: KeySpace): CQLQuery
 
   def fromRow(row: Row): Option[T]
 
@@ -76,29 +51,7 @@ abstract class UDTColumn[
   def create[
     Out <: HList,
     MapperOut <: HList
-  ]()(
-    implicit keySpace: KeySpace,
-    session: Session,
-    gen: Generic.Aux[ValueType, Out],
-    map: Mapper.Aux[Schema.type, Out, MapperOut],
-    to: ToList[MapperOut, String]
-  ): UDTCreateQuery.Default[T, R] = {
-
-    val fields = SchemaGenerator.classAccessors[ValueType]
-    val types = SchemaGenerator.infer(instance)
-
-    val inferred = (fields zip types) map {
-      case (name, tp) => s"$name $tp"
-    } mkString ", "
-
-    val qb = if (session.v3orNewer) {
-      CQLQuery(s"CREATE TYPE IF NOT EXISTS ${keySpace.name}.test2 $inferred")
-    } else if (session.v4orNewer) {
-      CQLQuery(s"CREATE TYPE IF NOT EXISTS ${keySpace.name}.test2 $inferred")
-    } else {
-      CQLQuery(s"CREATE TYPE IF NOT EXISTS ${keySpace.name}.test2 $inferred")
-    }
-
-    UDTCreateQuery(table.asInstanceOf[T], qb)
+  ]()(implicit keySpace: KeySpace): UDTCreateQuery.Default[T, R] = {
+    UDTCreateQuery(table.asInstanceOf[T], primitive.schemaQuery)
   }
 }

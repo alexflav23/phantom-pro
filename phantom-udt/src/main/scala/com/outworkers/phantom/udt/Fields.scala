@@ -91,23 +91,25 @@ sealed trait Extractor[T] {
 }
 
 object Extractor {
-  implicit case object BooleanExtractor extends Extractor[Boolean] {
+  def apply[T : Extractor]: Extractor[T] = implicitly[Extractor[T]]
+}
+
+private[udt] trait Extractors {
+  implicit object BooleanExtractor extends Extractor[Boolean] {
     def apply(name: String, udt: UDTValue): Try[Boolean] = Try(udt.getBool(name))
   }
 
-  implicit case object StringExtractor extends Extractor[String] {
+  implicit object StringExtractor extends Extractor[String] {
     def apply(name: String, udt: UDTValue): Try[String] = Try(udt.getString(name))
   }
 
-  implicit case object InetExtractor extends Extractor[InetAddress] {
+  implicit object InetExtractor extends Extractor[InetAddress] {
     def apply(name: String, udt: UDTValue): Try[InetAddress] = Try(udt.getInet(name))
   }
 
-  implicit case object IntExtractor extends Extractor[Int] {
+  implicit object IntExtractor extends Extractor[Int] {
     def apply(name: String, udt: UDTValue): Try[Int] = Try(udt.getInt(name))
   }
-
-  def apply[T : Extractor]: Extractor[T] = implicitly[Extractor[T]]
 }
 
 object Fields {

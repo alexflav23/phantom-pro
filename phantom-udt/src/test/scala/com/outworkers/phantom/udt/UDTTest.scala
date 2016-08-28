@@ -14,11 +14,10 @@ class UdtTest extends FlatSpec with Matchers with ScalaFutures with BeforeAndAft
     super.beforeAll()
     TestDatabase.createUdts.block(10.seconds)
     TestDatabase.create()
-
   }
 
   ignore should "deserialize row" in {
-    val test = Test2(1, "hello")
+    val test = Test2(id = 1, name = "hello", dec = BigDecimal(0), sh = 5)
     val sample = TestRecord(UUID.randomUUID(), test, test)
 
 
