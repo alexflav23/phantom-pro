@@ -2,7 +2,7 @@ package com.outworkers.phantom.udt
 
 import java.util.UUID
 
-import com.datastax.driver.core.Row
+import com.datastax.driver.core.{Row, UDTValue}
 import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
@@ -20,10 +20,10 @@ object Test2 {
 
     override def name: String = "Test2"
 
-    override def fromRow(row: Row): Option[Test2] = {
+    override def fromRow(row: UDTValue): Option[Test2] = {
       val accessors = Helper.classAccessors[Test2]
-      val input = accessors zip List.tabulate(accessors.size)(_ => row)
-      FromRow.rowParserFor[Test2](input).toOption
+      // UdtExtractor.extractor[Test2](accessors).toOption
+      None
     }
 
     override def asCql(udt: Test2): String = {
