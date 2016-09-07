@@ -10,6 +10,7 @@ import com.websudos.phantom.dsl._
 
 import scala.concurrent.Future
 
+@Udt
 case class Test(id: Int, name: String)
 
 case class Test2(id: Int, name: String, dec: BigDecimal, sh: Short)

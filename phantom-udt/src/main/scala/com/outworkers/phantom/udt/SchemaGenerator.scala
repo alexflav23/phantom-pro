@@ -4,6 +4,7 @@ import com.datastax.driver.core.{Row, UDTValue}
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.dsl.KeySpace
 import shapeless.ops.hlist.{Mapper, ToList, Zip, _}
+import shapeless.ops.nat.{LT, Mod}
 import shapeless.ops.record.Keys
 import shapeless.ops.traversable.FromTraversable
 import shapeless.{Generic, HList, Poly1, _}
