@@ -139,6 +139,10 @@ lazy val phantomUdt = (project in file("phantom-udt"))
   .settings(
     moduleName := "phantom-udt",
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
+    scalacOptions ++= Seq(
+      //"-Ymacro-debug-verbose",
+      //"-Yshow-trees-stringified"
+    ),
     unmanagedSourceDirectories in Compile ++= Seq(
       (sourceDirectory in Compile).value / ("scala-2." + {
         if(scalaBinaryVersion.value.startsWith("2.10")) "10" else "11"

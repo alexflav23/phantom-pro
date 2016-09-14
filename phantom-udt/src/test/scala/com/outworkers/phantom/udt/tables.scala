@@ -7,7 +7,6 @@ import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.builder.primitives.Primitive
 import com.websudos.phantom.builder.query.CQLQuery
 import com.websudos.phantom.dsl._
-
 import scala.concurrent.Future
 
 @Udt
@@ -34,21 +33,19 @@ object Test2 {
           |}""".stripMargin
     }
 
-    override def instance: Test2 = Test2(5, "", BigDecimal(0), 5)
-
     override def schemaQuery()(implicit space: KeySpace): CQLQuery = {
-      CQLQuery(SchemaGenerator.schema(instance))
+      CQLQuery(SchemaGenerator.schema(Test2(5, "", 0, 1)))
     }
   }
 }
 
-case class TestRecord(uuid: UUID, udt: Test2, udt2: Test2)
+case class TestRecord(uuid: UUID, udt: Test, udt2: Test2)
 
 class TestTable extends CassandraTable[ConcreteTestTable, TestRecord] {
 
   object uuid extends UUIDColumn(this) with PartitionKey[UUID]
 
-  object udt extends UDTColumn[ConcreteTestTable, TestRecord, Test2](this)
+  object udt extends UDTColumn[ConcreteTestTable, TestRecord, Test](this)
 
   object udt2 extends UDTColumn[ConcreteTestTable, TestRecord, Test2](this)
 

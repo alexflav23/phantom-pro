@@ -16,14 +16,18 @@ class UdtTest extends FlatSpec with Matchers with ScalaFutures with BeforeAndAft
     TestDatabase.create()
   }
 
-  ignore should "deserialize row" in {
-    val test = Test2(id = 1, name = "hello", dec = BigDecimal(0), sh = 5)
-    val sample = TestRecord(UUID.randomUUID(), test, test)
+  it should "deserialize row" in {
+    val test = Test(id = 1, name = "hello")
+    val test2 = Test2(id = 1, name = "hello", dec = BigDecimal(0), sh = 5)
+    val sample = TestRecord(UUID.randomUUID(), test, test2)
 
+
+
+    Console.println(test)
 
     //val types = SchemaGenerator.inferSchema(sample)
 
-    Console.println(SchemaGenerator.fields(test))
+    Console.println(SchemaGenerator.fields(test2))
 
     //val fields = SchemaGenerator.classAccessors[Test2]
 

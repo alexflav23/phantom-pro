@@ -16,8 +16,6 @@ abstract class UDTPrimitive[
   T <: Product with Serializable : TypeTag
 ]() extends SessionAugmenterImplicits {
 
-  def instance: T
-
   def schemaQuery()(implicit space: KeySpace): CQLQuery
 
   def fromRow(row: UDTValue): Option[T]
@@ -34,8 +32,6 @@ abstract class UDTColumn[
 ](table: CassandraTable[T, R]) extends Column[T, R, ValueType](table) with SessionAugmenterImplicits {
 
   val primitive = implicitly[UDTPrimitive[ValueType]]
-
-  def instance: ValueType = primitive.instance
 
   override def parse(row: Row): Try[ValueType] = primitive.fromRow(row.getUDTValue(name)) match {
     case Some(value) => Success(value)
