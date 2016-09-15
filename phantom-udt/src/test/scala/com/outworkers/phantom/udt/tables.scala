@@ -1,43 +1,17 @@
 package com.outworkers.phantom.udt
 
 import java.util.UUID
-
-import com.datastax.driver.core.{Row, UDTValue}
-import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.primitives.Primitive
-import com.websudos.phantom.builder.query.CQLQuery
-import com.websudos.phantom.dsl._
 import scala.concurrent.Future
+
+import com.datastax.driver.core.Row
+import com.websudos.phantom.CassandraTable
+import com.websudos.phantom.dsl._
 
 @Udt
 case class Test(id: Int, name: String)
 
+@Udt
 case class Test2(id: Int, name: String, dec: BigDecimal, sh: Short)
-
-object Test2 {
-
-  implicit object Test2UdtPrimitive extends UDTPrimitive[Test2] {
-
-    override def name: String = "Test2"
-
-    override def fromRow(row: UDTValue): Option[Test2] = {
-      val accessors = Helper.classAccessors[Test2]
-      // UdtExtractor.extractor[Test2](accessors).toOption
-      None
-    }
-
-    override def asCql(udt: Test2): String = {
-      s"""{
-          |'id': "${Primitive[Int].asCql(udt.id)},
-          |'name': ${Primitive[String].asCql(udt.name)}
-          |}""".stripMargin
-    }
-
-    override def schemaQuery()(implicit space: KeySpace): CQLQuery = {
-      CQLQuery(SchemaGenerator.schema(Test2(5, "", 0, 1)))
-    }
-  }
-}
 
 case class TestRecord(uuid: UUID, udt: Test, udt2: Test2)
 
@@ -56,7 +30,8 @@ class TestTable extends CassandraTable[ConcreteTestTable, TestRecord] {
 
 abstract class ConcreteTestTable extends TestTable with RootConnector {
   def store(record: TestRecord): Future[ResultSet] = {
-    insert.value(_.uuid, record.uuid)
+    insert
+      .value(_.uuid, record.uuid)
       .value(_.udt, record.udt)
       .value(_.udt2, record.udt2)
       .future()

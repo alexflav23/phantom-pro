@@ -4,7 +4,6 @@ import com.outworkers.phantom.udt.CrossVersionDefs.CrossVersionContext
 
 import scala.annotation.StaticAnnotation
 import scala.language.experimental.macros
-import scala.reflect.macros.blackbox
 
 class Udt extends StaticAnnotation {
   def macroTransform(annottees: Any*): Any = macro Udt.impl
@@ -13,7 +12,7 @@ class Udt extends StaticAnnotation {
 //noinspection ScalaStyle
 object Udt {
 
-  def accessors(c: blackbox.Context)(
+  def accessors(c: CrossVersionContext)(
     params: Seq[c.universe.ValDef]
   ): Iterable[(c.universe.TermName, c.universe.TypeName)] = {
     import c.universe._
@@ -25,7 +24,28 @@ object Udt {
     }
   }
 
-  def makePrimitive(c: blackbox.Context)(
+  /*
+  def extractorLoop(c: blackbox.Context)(
+    name: c.TermName,
+    params: Seq[c.universe.TermName],
+    terms: Seq[c.universe.TermName]
+  ): c.universe.Tree = {
+    import c.universe._
+
+    if (params.isEmpty) {
+      // If we are out of params to yield for, it's time to return the apply.
+      q"$name.apply(..$terms)"
+    } else {
+      val term = params.head
+      val termOpt = TermName(term.toString + "Opt")
+      val monadicChain = if (terms.nonEmpty) TermName("map") else TermName("flatMap")
+
+      // For subsequent levels of nesting in the flatMap map chain we need to make flatMap into a map.
+      q"""$term $monadicChain ($termOpt => ${extractorLoop(c)(name, params.tail, terms :+ termOpt)})"""
+    }
+  }*/
+
+  def makePrimitive(c: CrossVersionContext)(
     typeName: c.TypeName,
     name: c.TermName,
     params: Seq[c.universe.ValDef]
@@ -40,21 +60,45 @@ object Udt {
     val nameDeclarations = names map (nm => q"$nm")
 
     val declarations = types map {
-      tpe => q"""Primitive[$tpe].cassandraType"""
+      tpe => q"""com.websudos.phantom.builder.primitives.Primitive[$tpe].cassandraType"""
+    }
+
+    val serializers = accessors(c)(params) map {
+      case (nm, tpe) => q"${nm.toString} -> com.websudos.phantom.builder.primitives.Primitive[$tpe].asCql(instance.$nm)"
+    }
+
+    val extractors = accessors(c)(params) map {
+      case (nm, tpe) => {
+        val newTerm = TermName(nm.toString + "Opt")
+        fq"""$newTerm <- Extractor[$tpe].apply(${nm.toString}, udt).toOption"""
+      }
+    }
+
+    val extractorNames = accessors(c)(params) map {
+      case (nm, tpe) => TermName(nm.toString + "Opt")
     }
 
     c.Expr[Any](
       q"""
           implicit object $objName extends UDTPrimitive[$typeName] {
-            def asCql(instance: $typeName): String = ""
 
-            def fromRow(row: com.datastax.driver.core.UDTValue): Option[$typeName] = None
+            def asCql(instance: $typeName): String = {
+              val baseString = List(..$serializers).map {
+                case (name, ext) => name + ": " + ext
+              } mkString(", ")
+
+              "{" + baseString + "}"
+            }
+
+            def fromRow(udt: com.datastax.driver.core.UDTValue): Option[$typeName] = {
+              for (..$extractors) yield $name.apply(..$extractorNames)
+            }
 
             def schemaQuery()(
               implicit space: com.websudos.phantom.dsl.KeySpace
             ): com.websudos.phantom.builder.query.CQLQuery = {
 
-              val membersList = List(..${nameDeclarations.map(_.toString()) zip declarations}).map {
+              val membersList = scala.collection.immutable.List(..${nameDeclarations.map(_.toString()) zip declarations}).map {
                 case (name, casType) => name + " " + casType
               }
 
@@ -69,7 +113,7 @@ object Udt {
     )
   }
 
-  def impl(c: blackbox.Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
+  def impl(c: CrossVersionContext)(annottees: c.Expr[Any]*): c.Expr[Any] = {
     import c.universe._
 
     annottees.map(_.tree) match {

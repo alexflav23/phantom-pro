@@ -1,34 +1,25 @@
 package com.outworkers.phantom.udt.builder
 
-import com.outworkers.phantom.udt.{Test, Test2, UDTPrimitive}
+import com.outworkers.phantom.udt.{Samplers, Test, TestDatabase, UDTPrimitive}
 import com.outworkers.util.testing._
-import com.websudos.phantom.connectors.KeySpace
-import org.scalatest.{FlatSpec, Matchers}
+import com.websudos.phantom.dsl._
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
-class SchemaDerivationTest extends FlatSpec with Matchers {
+class SchemaDerivationTest extends FlatSpec with Matchers with BeforeAndAfterAll with Samplers {
 
-  implicit object TestGenerator extends Sample[Test] {
-    override def sample: Test = Test(
-      gen[Int],
-      gen[String]
-    )
-  }
-
-  implicit object Test2Generator extends Sample[Test2] {
-    override def sample: Test2 = Test2(
-      gen[Int],
-      gen[String],
-      gen[BigDecimal],
-      5
-    )
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    TestDatabase.create()
   }
 
   implicit val keySpace = KeySpace("phantom_udt")
 
   it should "automatically derive the type of a schema from a class instance" in {
-    val schema = implicitly[UDTPrimitive[Test]].schemaQuery()
+    val p = implicitly[UDTPrimitive[Test]]
+    val schema = p.schemaQuery()
 
-    schema.queryString shouldEqual "CREATE TYPE IF NOT EXISTS phantom_udt.test id int, name text"
+    val sample = gen[Test]
+
+    schema.queryString shouldEqual "CREATE TYPE IF NOT EXISTS phantom_udt.test (id int, name text)"
   }
-
 }

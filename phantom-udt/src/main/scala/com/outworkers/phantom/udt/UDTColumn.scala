@@ -35,7 +35,7 @@ abstract class UDTColumn[
 
   override def parse(row: Row): Try[ValueType] = primitive.fromRow(row.getUDTValue(name)) match {
     case Some(value) => Success(value)
-    case None => Failure(new Exception("Couldn't parse UDT"))
+    case None => Failure(new RuntimeException(s"Couldn't parse UDT value from ${row.getUDTValue(name)}"))
   }
 
   override def asCql(v: ValueType): String = primitive.asCql(v)

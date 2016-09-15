@@ -1,25 +1,21 @@
 package com.outworkers.phantom.udt
 
-import com.websudos.phantom.dsl._
+import com.websudos.phantom.builder.query.ExecutableStatementList
+import com.websudos.phantom.dsl.{Database, KeySpaceDef, ResultSet, ContactPoint}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class TestDatabase(override val connector: KeySpaceDef) extends Database(connector) {
 
   object udtTable extends ConcreteTestTable with connector.Connector
 
-  /*
-  def createUdts: Future[Seq[ResultSet]]  = {
+  def createUdts: ExecutableStatementList  = {
     val queries = tables flatMap { _.columns collect { case c: UDTColumn[_, _, _] => c.create.qb } }
-    new ExecutableStatementList(queries.toSeq).future()
-  }*/
+    new ExecutableStatementList(queries.toSeq)
+  }
 
-  def createUdts: Future[List[ResultSet]] = {
-    Future.sequence(
-      List(
-        udtTable.udt.create().future()
-      )
-    )
+  override def createAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
+    createUdts.future() flatMap (_ => super.createAsync())
   }
 }
 
