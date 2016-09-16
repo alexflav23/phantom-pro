@@ -3,7 +3,7 @@ import Keys._
 import com.twitter.sbt.{GitProject, VersionManagement}
 
 lazy val Versions = new {
-  val phantom = "1.27.1"
+  val phantom = "1.28.14"
   val util = "0.18.2"
   val datastax = "3.0.2"
   val dse = "3.0.0-rc1"
@@ -13,6 +13,13 @@ lazy val Versions = new {
   val spark = "1.5.0-M2"
   val scalamock = "3.2.2"
   val dseDriver = "1.0.0"
+}
+
+val scalaMacroDependencies: String => Seq[ModuleID] = {
+  s => CrossVersion.partialVersion(s) match {
+    case Some((major, minor)) if minor >= 11 => Seq.empty
+    case _ => Seq(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full))
+  }
 }
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
@@ -28,10 +35,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),
-    Resolver.sonatypeRepo("snapshots"),
-    Resolver.sonatypeRepo("staging"),
     Resolver.typesafeRepo("releases"),
-    Resolver.typesafeRepo("snapshots"),
     "Sonatype repo" at "https://oss.sonatype.org/content/groups/scala-tools/",
     "Java.net Maven2 Repository" at "http://download.java.net/maven/2/",
     "Twitter Repository" at "http://maven.twttr.com",
@@ -110,46 +114,45 @@ lazy val phantomAutoTables = (project in file("phantom-autotables"))
   .settings(sharedSettings: _*)
   .settings(
     moduleName := "phantom-autotables",
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     unmanagedSourceDirectories in Compile ++= Seq(
       (sourceDirectory in Compile).value / ("scala-2." + {
         if(scalaBinaryVersion.value.startsWith("2.10")) "10" else "11"
     })),
     libraryDependencies ++= Seq(
-      "org.scala-lang"               %  "scala-reflect"                    % scalaVersion.value,
       "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
-      "com.outworkers"               %% "util-testing"                     % Versions.util % Test,
-      "org.scalamock"                %% "scalamock-scalatest-support"      % Versions.scalamock % Test
-    )
+      "com.outworkers"               %% "util-testing"                     % Versions.util % Test
+    ) ++ scalaMacroDependencies(scalaVersion.value)
   )
 
 lazy val phantomDseGraph = (project in file("phantom-graph"))
   .settings(sharedSettings: _*)
   .settings(
     moduleName := "phantom-graph",
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       % "dse-driver"                        % Versions.dseDriver,
       "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
       "com.outworkers"               %% "util-testing"                     % Versions.util % Test
-    )
+    ) ++ scalaMacroDependencies(scalaVersion.value)
   )
+
 lazy val phantomUdt = (project in file("phantom-udt"))
   .settings(sharedSettings: _*)
   .settings(
     moduleName := "phantom-udt",
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     scalacOptions ++= Seq(
       //"-Ymacro-debug-verbose",
       //"-Yshow-trees-stringified"
     ),
     unmanagedSourceDirectories in Compile ++= Seq(
       (sourceDirectory in Compile).value / ("scala-2." + {
-        if(scalaBinaryVersion.value.startsWith("2.10")) "10" else "11"
-    })),
+        CrossVersion.partialVersion(scalaBinaryVersion.value) match {
+          case Some((major, minor)) if minor == 11 => "11"
+          case Some((major, minor)) if minor == 12 => "12"
+          case _ => "10"
+        }
+      })),
     libraryDependencies ++= Seq(
       "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
-      "com.outworkers"               %% "util-testing"                     % Versions.util % Test,
-      "org.scalamock"                %% "scalamock-scalatest-support"      % Versions.scalamock % Test
-    )
+      "com.outworkers"               %% "util-testing"                     % Versions.util % Test
+    ) ++ scalaMacroDependencies(scalaVersion.value)
   )

@@ -12,15 +12,29 @@ class Udt extends StaticAnnotation {
 //noinspection ScalaStyle
 object Udt {
 
+  /**
+    * Retrieves the accessor fields on a case class and returns an iterable of tuples of the form Name -> Type.
+    * For every single field in a case class, a reference to the string name and string type of the field are returned.
+    *
+    * Example:
+    *
+    * {{{
+    *   case class Test(id: UUID, name: String, age: Int)
+    *
+    *   accessors(Test) = Iterable("id" -> "UUID", "name" -> "String", age: "Int")
+    * }}}
+    *
+    * @param c The macro context in which to execute.
+    * @param params The list of params retrieved from the case class.
+    * @return An iterable of tuples where each tuple encodes the string name and string type of a field.
+    */
   def accessors(c: CrossVersionContext)(
     params: Seq[c.universe.ValDef]
   ): Iterable[(c.universe.TermName, c.universe.TypeName)] = {
     import c.universe._
 
     params.map {
-      case ValDef(mods: Modifiers, name: TermName, tpt: Tree, rhs: Tree) => {
-        name -> TypeName(tpt.toString)
-      }
+      case ValDef(_, name: TermName, tpt: Tree, _) => name -> TypeName(tpt.toString)
     }
   }
 
