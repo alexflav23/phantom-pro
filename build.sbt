@@ -143,6 +143,7 @@ lazy val phantomUdt = (project in file("phantom-udt"))
       //"-Ymacro-debug-verbose",
       //"-Yshow-trees-stringified"
     ),
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     unmanagedSourceDirectories in Compile ++= Seq(
       (sourceDirectory in Compile).value / ("scala-2." + {
         CrossVersion.partialVersion(scalaBinaryVersion.value) match {
@@ -154,5 +155,5 @@ lazy val phantomUdt = (project in file("phantom-udt"))
     libraryDependencies ++= Seq(
       "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
       "com.outworkers"               %% "util-testing"                     % Versions.util % Test
-    ) ++ scalaMacroDependencies(scalaVersion.value)
+    )
   )
