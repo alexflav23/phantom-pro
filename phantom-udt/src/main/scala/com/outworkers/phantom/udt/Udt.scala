@@ -24,27 +24,6 @@ object Udt {
     }
   }
 
-  /*
-  def extractorLoop(c: blackbox.Context)(
-    name: c.TermName,
-    params: Seq[c.universe.TermName],
-    terms: Seq[c.universe.TermName]
-  ): c.universe.Tree = {
-    import c.universe._
-
-    if (params.isEmpty) {
-      // If we are out of params to yield for, it's time to return the apply.
-      q"$name.apply(..$terms)"
-    } else {
-      val term = params.head
-      val termOpt = TermName(term.toString + "Opt")
-      val monadicChain = if (terms.nonEmpty) TermName("map") else TermName("flatMap")
-
-      // For subsequent levels of nesting in the flatMap map chain we need to make flatMap into a map.
-      q"""$term $monadicChain ($termOpt => ${extractorLoop(c)(name, params.tail, terms :+ termOpt)})"""
-    }
-  }*/
-
   def makePrimitive(c: CrossVersionContext)(
     typeName: c.TypeName,
     name: c.TermName,
@@ -102,7 +81,7 @@ object Udt {
                 case (name, casType) => name + " " + casType
               }
 
-              val base = "CREATE TYPE IF NOT EXISTS " + space.name + "." + ${stringName.toLowerCase} + " " + membersList.mkString(", ")
+              val base = "CREATE TYPE IF NOT EXISTS " + space.name + "." + ${stringName.toLowerCase} + " (" + membersList.mkString(", ") + ")"
 
               com.websudos.phantom.builder.query.CQLQuery(base)
             }

@@ -1,10 +1,6 @@
 package com.outworkers.phantom.udt
 
-import java.util.UUID
 import scala.concurrent.Future
-
-import com.datastax.driver.core.Row
-import com.websudos.phantom.CassandraTable
 import com.websudos.phantom.dsl._
 
 @Udt

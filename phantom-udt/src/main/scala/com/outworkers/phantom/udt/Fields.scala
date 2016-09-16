@@ -72,6 +72,7 @@ private[udt] trait Extractors {
   implicit object ShortExtractor extends Extractor[Short] {
     def apply(name: String, udt: UDTValue): Try[Short] = Try(udt.getShort(name))
   }
+
 }
 
 

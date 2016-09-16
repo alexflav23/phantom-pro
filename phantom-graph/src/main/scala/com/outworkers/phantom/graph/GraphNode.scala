@@ -71,12 +71,6 @@ abstract class GraphNode[
   lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
   def tableName: String = _name
-
-  def parse[Names <: HList](row: GraphResultSet)(
-    implicit
-      mapper: Mapper.Aux[NameMapper.type , All, Names],
-      reifier: Generic.Aux[All, GraphRecord]
-  ): GraphRecord = ???
 }
 
 

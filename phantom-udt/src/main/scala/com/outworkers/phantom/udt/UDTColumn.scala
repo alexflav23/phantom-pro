@@ -40,7 +40,7 @@ abstract class UDTColumn[
 
   override def asCql(v: ValueType): String = primitive.asCql(v)
 
-  override def cassandraType: String = primitive.name
+  override def cassandraType: String = s"frozen <${primitive.name}>"
 
   def create()(implicit keySpace: KeySpace): UDTCreateQuery.Default[T, R] = {
     UDTCreateQuery(table.asInstanceOf[T], primitive.schemaQuery)

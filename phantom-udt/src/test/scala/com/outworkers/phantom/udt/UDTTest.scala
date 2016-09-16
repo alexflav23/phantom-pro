@@ -12,11 +12,11 @@ class UdtTest extends FlatSpec with Matchers with ScalaFutures with BeforeAndAft
     TestDatabase.create()
   }
 
-  it should "deserialize an UDT row" in {
+  it should "store and retrieve a record that contains UDT columns" in {
     val sample = gen[TestRecord]
 
     val chain = for {
-      store <-  TestDatabase.udtTable.store(sample)
+      store <- TestDatabase.udtTable.store(sample)
       get <- TestDatabase.udtTable.getById(sample.uuid)
     } yield get
 

@@ -18,8 +18,6 @@ class SchemaDerivationTest extends FlatSpec with Matchers with BeforeAndAfterAll
     val p = implicitly[UDTPrimitive[Test]]
     val schema = p.schemaQuery()
 
-    val sample = gen[Test]
-
     schema.queryString shouldEqual "CREATE TYPE IF NOT EXISTS phantom_udt.test (id int, name text)"
   }
 }
