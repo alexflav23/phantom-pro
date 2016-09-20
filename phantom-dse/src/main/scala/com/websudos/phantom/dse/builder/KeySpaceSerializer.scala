@@ -1,4 +1,4 @@
-package com.websudos.phantom.enterprise.builder
+package com.websudos.phantom.dse.builder
 
 import com.websudos.phantom.builder.QueryBuilder
 import com.websudos.phantom.builder.query.CQLQuery
@@ -18,7 +18,9 @@ sealed class BuilderClause(val qb: CQLQuery)
 sealed class ReplicationStrategy(override val qb: CQLQuery) extends BuilderClause(qb) {
 
   def option(key: String, value: String): CQLQuery = {
-    CQLQuery(CQLQuery.escape(key)).forcePad.append(":").pad.append(CQLQuery.escape(value))
+    CQLQuery(CQLQuery.escape(key))
+      .forcePad.append(":")
+      .pad.append(CQLQuery.escape(value))
   }
 
   def option(key: String, value: Int): CQLQuery = {
@@ -119,11 +121,9 @@ class RootSerializer(val keySpace: KeySpace) {
 }
 
 object KeySpaceSerializer {
-
   def apply(name: String) = new RootSerializer(KeySpace(name))
 
   def apply(keySpace: KeySpace) = new RootSerializer(keySpace)
-
 }
 
 object Builder {
