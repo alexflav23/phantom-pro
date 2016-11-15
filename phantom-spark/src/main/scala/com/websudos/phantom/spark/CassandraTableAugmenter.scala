@@ -1,4 +1,4 @@
-package com.websudos.phantom.spark
+package com.outworkers.phantom.spark
 
 class CassandraTableAugmenter {
 

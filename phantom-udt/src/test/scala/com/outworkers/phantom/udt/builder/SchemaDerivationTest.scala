@@ -2,7 +2,7 @@ package com.outworkers.phantom.udt.builder
 
 import com.outworkers.phantom.udt.{Samplers, Test, TestDatabase, UDTPrimitive}
 import com.outworkers.util.testing._
-import com.websudos.phantom.dsl._
+import com.outworkers.phantom.dsl._
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 class SchemaDerivationTest extends FlatSpec with Matchers with BeforeAndAfterAll with Samplers {

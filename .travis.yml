@@ -1,17 +1,14 @@
 env:
-  - CODACY_PROJECT_TOKEN = 8bf59048f5d145d1885c0ab105f11ce3
-
-
+  global:
+  - GH_REF: github.com/outworkers/phantom-pro.git
+  - secure: qUNp6pM5m8HfbiviFDTJ9ZVoudqTjhiVSceaY5b1iQsT8bd6JAZByc8G4culBEVsdXIoozyiHQRlcp42yQKaIdtOmssnXyT+/FZ1FSwGHeFGPQ/aHP2V8hpTtpYVymUYiZepxjNGTvW6HtFeu77te+zMp4KchaPmDgx2jbWk7T3UFktrhm+sCbt+LNdTqZ9jzyTJKxMdypWQd5DX+hy5RGPNzamk6jqEPapWbhKVpZvGgIAJJDJ6uY7CwBEHjtd9Yik8wvKDM/ONKZiHc3/Y/BTFPBotheHHzg0lQ3wOg9VoK697mhbNZ/MT/SBH1rBaLesS453TSf4P3H/oRn5L5l8WV9oFFfdHOpSRBGdYx6rp8mxNVqHA2UJe+QM/GO0NVOxQ0Ih6/xH7SOelCEhjneE5D0Kq/32J9tJXmLcGP8LCr3pOzMvkCc2RkTdZu63JLpRWvuzbgHchNzJc+NIaAFRFb4uSWDfA9iXP93GRDrAkaNY5jWB0WLSkUyogzJEhzjU8Pwu4gt1vrd7l5tRo29pZ3gQJ3jV2iLExN8yRBur2m/ih3T9vWJjBruuv3RueU42ogb0u5Ut4jsc16TTh3Z9fiZuquX79Twa3aY6kDXZ9Mwdjt0MW2RN4o1c821vl+w7kUQNgNLrEriaOmsh7TwbI351jEUKfHjafWaAllPw=
+  - secure: ym/I7XQEc3/g4LHMUnZfSXPhfVq44iBFpWMk9V74yJoUjLuMdOmxYb7Vg0AxGdlnwBRm8hpHYr7ZpN1bEWZWob6wJSE+T4bIh3X3PpjSV79MRTiGPhqioLtVyQRvTpfHPL75PTD+RFYjBKgN7IHS7pIU6ykQsANDCwZuYp1jDZODFm27W+soWlveoGgSRpz0WVE+J8hoeS4PtpwErIMpMGJAliyVZvysUp204cQbHktDxq9Fj15kP7/FObjSyRDiO7w5+i13Pi+0k+P2bJyo6KmQmv5hEtO6zUG33OnWYGhObK4S/Qpc2d0gOxgsPFkdSTZ2mzyNAYTDNZBtUO46xjTCChOeiUlH25OwEiFr0RfGujnqjWG94KvybWLdAl+h4xD7X3vTmQJ3vfhZ7MieivDGoGpiiBQHU3K8Au4PXGbVOEXE+MkmiQCVu9StdvylVesMThqi5SlIqgf5pgWfeVEWayRWmCX8SuniKlXLAfnYOtBmD0wnH0PoH3ZV4z/Z/2p6s9uUZdd9HAZ3A4dfpjjCsu038nn+jaqJWg8USIka+Kp37ao2l4xpz+XzBnBOaKIfxTT5z1AHHjLV+dO3XYfAbhVkhlTBrDiEOm2SxR3+7KLlBAMWAAcbSBBP3eM0lFUdssf2ZnwJeLymWNBRT15/K67UpGHMLgv4VVPMu6I=
 language: scala
 sudo: false
 services:
 - cassandra
 scala:
-- 2.10.6
 - 2.11.8
-env:
-  global:
-  - GH_REF: github.com/outworkers/phantom-pro.git
 notifications:
   slack:
   - websudos:P9QNXx1ZGFnDHp3v3jUqtB8k
@@ -24,7 +21,6 @@ branches:
 jdk:
 - oraclejdk7
 - oraclejdk8
-
 before_script: travis_retry sbt ++$TRAVIS_SCALA_VERSION update
 script: ./build/run_tests.sh
 after_success: ./build/publish.sh

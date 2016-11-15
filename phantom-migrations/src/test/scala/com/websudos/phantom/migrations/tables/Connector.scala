@@ -1,6 +1,6 @@
-package com.websudos.phantom.migrations.tables
+package com.outworkers.phantom.migrations.tables
 
-import com.websudos.phantom.connectors.ContactPoint
+import com.outworkers.phantom.connectors.ContactPoint
 
 object Defaults {
   val connector = ContactPoint.local.keySpace("phantom_migrations_test")

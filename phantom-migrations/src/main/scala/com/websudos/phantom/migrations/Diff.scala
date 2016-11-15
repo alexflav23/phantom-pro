@@ -1,14 +1,14 @@
-package com.websudos.phantom.migrations
+package com.outworkers.phantom.migrations
 
-import com.websudos.phantom.builder.query.CQLQuery
-import com.websudos.phantom.dsl.OptionalColumn
+import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.dsl.OptionalColumn
 
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.{TableMetadata, ColumnMetadata}
-import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.QueryBuilder
-import com.websudos.phantom.column.AbstractColumn
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.column.AbstractColumn
+import com.outworkers.phantom.connectors.KeySpace
 
 sealed case class DiffConfig(
   allowNonOptional: Boolean,

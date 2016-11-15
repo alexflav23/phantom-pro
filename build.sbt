@@ -3,16 +3,14 @@ import Keys._
 import com.twitter.sbt.{GitProject, VersionManagement}
 
 lazy val Versions = new {
-  val phantom = "1.28.14"
-  val util = "0.18.2"
-  val datastax = "3.0.2"
-  val dse = "3.0.0-rc1"
+  val phantom = "2.0.3"
+  val util = "0.23.1"
+  val dse = "1.1.0"
   val scalaTest = "2.2.4"
   val shapeless = "2.3.1"
   val scalaMeter = "0.7"
-  val spark = "1.5.0-M2"
-  val scalamock = "3.2.2"
-  val dseDriver = "1.0.0"
+  val spark = "1.6.0"
+  val dseDriver = "1.1.0"
 }
 
 val scalaMacroDependencies: String => Seq[ModuleID] = {
@@ -24,7 +22,7 @@ val scalaMacroDependencies: String => Seq[ModuleID] = {
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
-  version := Versions.phantom,
+  version := "0.1.0",
   scalaVersion := "2.11.8",
   crossScalaVersions := Seq("2.10.6", "2.11.8"),
   fork in Test := true,
@@ -33,13 +31,18 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, 4)
   ),
+  gitTagName <<= (organization, name, version) map { (o, n, v) =>
+    "version=%s".format(v)
+  },
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),
     Resolver.typesafeRepo("releases"),
     "Sonatype repo" at "https://oss.sonatype.org/content/groups/scala-tools/",
     "Java.net Maven2 Repository" at "http://download.java.net/maven/2/",
     "Twitter Repository" at "http://maven.twttr.com",
-    Resolver.bintrayRepo("websudos", "oss-releases")
+    Resolver.bintrayRepo("outworkers", "oss-releases"),
+    Resolver.bintrayRepo("outworkers", "internal-releases"),
+    Resolver.bintrayRepo("outworkers", "enterprise-releases")
   ),
   scalacOptions in ThisBuild ++= Seq(
     "-language:postfixOps",
@@ -56,7 +59,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   fork in Test := true,
   javaOptions in Test ++= Seq("-Xmx2G")
-) ++ GitProject.gitSettings ++ VersionManagement.newSettings
+) ++ GitProject.gitSettings ++ VersionManagement.newSettings ++ Publishing.effectiveSettings
 
 lazy val noPublishSettings = Seq(
   publish := (),
@@ -84,8 +87,8 @@ lazy val phantomDse = (project in file("phantom-dse"))
   .settings(
     moduleName := "phantom-dse",
     libraryDependencies ++= Seq(
-      "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
-      "com.datastax.cassandra"       %  "cassandra-driver-dse"             % Versions.dse,
+      "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
+      "com.datastax.cassandra"       %  "dse-driver"                       % Versions.dse,
       "com.outworkers"               %% "util-testing"                     % Versions.util % Test
     )
   )
@@ -95,7 +98,7 @@ lazy val phantomMigrations = (project in file("phantom-migrations"))
   .settings(
     moduleName := "phantom-migrations",
     libraryDependencies ++= Seq(
-      "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
+      "com.outworkers" 								 %% "phantom-dsl" 										 % Versions.phantom,
       "com.outworkers"                 %% "util-testing"                     % Versions.util % Test
     )
   )
@@ -106,7 +109,7 @@ lazy val phantomSpark = (project in file("phantom-spark"))
     moduleName := "phantom-spark",
     libraryDependencies ++= Seq(
       "com.datastax.spark"           %% "spark-cassandra-connector"        % Versions.spark,
-      "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom
+      "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom
     )
   )
 
@@ -116,10 +119,10 @@ lazy val phantomAutoTables = (project in file("phantom-autotables"))
     moduleName := "phantom-autotables",
     unmanagedSourceDirectories in Compile ++= Seq(
       (sourceDirectory in Compile).value / ("scala-2." + {
-        if(scalaBinaryVersion.value.startsWith("2.10")) "10" else "11"
+        if (scalaBinaryVersion.value.startsWith("2.10")) "10" else "11"
     })),
     libraryDependencies ++= Seq(
-      "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
+      "com.outworkers" 							%% "phantom-dsl" 										   % Versions.phantom,
       "com.outworkers"               %% "util-testing"                     % Versions.util % Test
     ) ++ scalaMacroDependencies(scalaVersion.value)
   )
@@ -130,7 +133,7 @@ lazy val phantomDseGraph = (project in file("phantom-graph"))
     moduleName := "phantom-graph",
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       % "dse-driver"                        % Versions.dseDriver,
-      "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
+      "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
       "com.outworkers"               %% "util-testing"                     % Versions.util % Test
     ) ++ scalaMacroDependencies(scalaVersion.value)
   )
@@ -143,17 +146,11 @@ lazy val phantomUdt = (project in file("phantom-udt"))
       //"-Ymacro-debug-verbose",
       //"-Yshow-trees-stringified"
     ),
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
-    unmanagedSourceDirectories in Compile ++= Seq(
-      (sourceDirectory in Compile).value / ("scala-2." + {
-        CrossVersion.partialVersion(scalaBinaryVersion.value) match {
-          case Some((major, minor)) if minor == 11 => "11"
-          case Some((major, minor)) if minor == 12 => "12"
-          case _ => "10"
-        }
-      })),
     libraryDependencies ++= Seq(
-      "com.websudos" 								 %% "phantom-dsl" 										 % Versions.phantom,
-      "com.outworkers"               %% "util-testing"                     % Versions.util % Test
+      compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
+      "org.typelevel"  %% "macro-compat" % "1.1.1",
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+      "com.outworkers" %% "phantom-dsl" % Versions.phantom,
+      "com.outworkers" %% "util-testing" % Versions.util % Test
     )
   )

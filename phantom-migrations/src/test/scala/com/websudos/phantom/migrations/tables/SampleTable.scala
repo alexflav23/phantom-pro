@@ -1,8 +1,8 @@
-package com.websudos.phantom.migrations.tables
+package com.outworkers.phantom.migrations.tables
 
-import com.websudos.phantom.dsl._
+import com.outworkers.phantom.dsl._
 
-case class SampleRecord(id: UUID, name: String, date: DateTime)
+
 
 sealed abstract class SampleTable extends CassandraTable[SampleTable, SampleRecord] {
   object id extends UUIDColumn(this) with PartitionKey[UUID]

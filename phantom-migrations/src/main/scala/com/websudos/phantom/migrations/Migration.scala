@@ -28,13 +28,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.websudos.phantom.migrations
+package com.outworkers.phantom.migrations
 
 import com.datastax.driver.core.TableMetadata
-import com.websudos.phantom.CassandraTable
-import com.websudos.phantom.builder.query.{CQLQuery, ExecutableStatementList}
-import com.websudos.phantom.connectors.KeySpace
-import com.websudos.phantom.dsl.Session
+import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.builder.query.{CQLQuery, ExecutableStatementList}
+import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.dsl.Session
 
 import scala.concurrent.ExecutionContext
 

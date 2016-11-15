@@ -3,7 +3,7 @@ package com.outworkers.phantom.graph
 import java.util.Date
 
 import com.datastax.driver.dse.graph.GraphResultSet
-import com.websudos.phantom.builder.syntax.CQLSyntax
+import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.slf4j.LoggerFactory
 import shapeless.ops.hlist.Mapper
 import shapeless.{Generic, HList, Poly1}

@@ -1,7 +1,7 @@
-package com.websudos.phantom
+package com.outworkers.phantom
 
 import com.datastax.driver.core.Session
-import com.websudos.phantom.connectors.KeySpace
+import com.outworkers.phantom.connectors.KeySpace
 
 import scala.concurrent.ExecutionContext
 

@@ -31,25 +31,25 @@ function setup_git_user {
     git config user.name "Travis CI"
 }
 
+function bump_patch_version {
+    sbt version-bump-patch git-tag
+
+    echo "Pushing tag to GitHub."
+    git push ${github_url} --tags
+
+    echo "Pushing"
+    git add .
+    git commit -m "TravisCI: Bumping version [ci skip]"
+
+    git checkout -b version_branch
+    git checkout -B develop version_branch
+
+    git push ${github_url} develop
+}
+
 function publish_to_bintray {
     if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ];
         then
-            setup_git_user
-            create_bintray_file
-            sbt version-bump-patch git-tag
-
-            echo "Pushing tag to GitHub."
-            git push ${github_url} --tags
-
-            echo "Pushing"
-            git add .
-            git commit -m "TravisCI: Bumping version [ci skip]"
-
-            git checkout -b version_branch
-            git checkout -B develop version_branch
-
-            git push ${github_url} develop
-
             echo "Publishing new version to Bintray"
             sbt +bintray:publish
     else
@@ -60,7 +60,12 @@ function publish_to_bintray {
 if [ "$TRAVIS_SCALA_VERSION" == "2.11.8" ];
     then
         echo "Triggering publish script for Scala 2.11.8";
+
+        setup_git_user
+        create_bintray_file
+        bump_patch_version
         publish_to_bintray
+        exit $?
 else
     echo "Scala version is not 2.11.8";
     exit 0
