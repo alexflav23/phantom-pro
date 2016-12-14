@@ -13,6 +13,7 @@ trait PhantomTest extends Suite
   with BeforeAndAfterAll
   with TestDatabase.connector.Connector
   with OptionValues
+  with TestDbProvider
   with Samplers {
 
   override def beforeAll(): Unit = {

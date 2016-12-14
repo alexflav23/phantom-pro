@@ -3,6 +3,7 @@ package com.outworkers.phantom.udt.columns
 import com.datastax.driver.core.Row
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
+import com.outworkers.phantom.builder.query.CQLQuery
 import com.outworkers.phantom.column.AbstractListColumn
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 import com.outworkers.phantom.udt.{Helper, UDTPrimitive}
@@ -24,7 +25,13 @@ class UDTListColumn[
   }
 
   override def cassandraType: String = {
-    QueryBuilder.Collections.listType(primitive.cassandraType).queryString
+    if (shouldFreeze) {
+      QueryBuilder.Collections.frozen(
+        QueryBuilder.Collections.listType(primitive.cassandraType)
+      ).queryString
+    } else {
+      QueryBuilder.Collections.listType(primitive.cassandraType).queryString
+    }
   }
 
   override def valueAsCql(v: ValueType): String = primitive.asCql(v)

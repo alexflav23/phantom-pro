@@ -3,8 +3,8 @@ import Keys._
 import com.twitter.sbt.{GitProject, VersionManagement}
 
 lazy val Versions = new {
-  val phantom = "2.0.3"
-  val util = "0.23.1"
+  val phantom = "2.0.11"
+  val util = "0.25.0"
   val dse = "1.1.0"
   val scalaTest = "2.2.4"
   val shapeless = "2.3.1"
@@ -13,16 +13,9 @@ lazy val Versions = new {
   val dseDriver = "1.1.0"
 }
 
-val scalaMacroDependencies: String => Seq[ModuleID] = {
-  s => CrossVersion.partialVersion(s) match {
-    case Some((major, minor)) if minor >= 11 => Seq.empty
-    case _ => Seq(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full))
-  }
-}
-
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
-  version := "0.1.0",
+  version := "0.2.0",
   scalaVersion := "2.11.8",
   crossScalaVersions := Seq("2.10.6", "2.11.8"),
   fork in Test := true,
@@ -41,8 +34,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "Java.net Maven2 Repository" at "http://download.java.net/maven/2/",
     "Twitter Repository" at "http://maven.twttr.com",
     Resolver.bintrayRepo("outworkers", "oss-releases"),
-    Resolver.bintrayRepo("outworkers", "internal-releases"),
-    Resolver.bintrayRepo("outworkers", "enterprise-releases")
+    Resolver.bintrayRepo("outworkers", "internal-releases")
   ),
   scalacOptions in ThisBuild ++= Seq(
     "-language:postfixOps",
@@ -117,14 +109,10 @@ lazy val phantomAutoTables = (project in file("phantom-autotables"))
   .settings(sharedSettings: _*)
   .settings(
     moduleName := "phantom-autotables",
-    unmanagedSourceDirectories in Compile ++= Seq(
-      (sourceDirectory in Compile).value / ("scala-2." + {
-        if (scalaBinaryVersion.value.startsWith("2.10")) "10" else "11"
-    })),
     libraryDependencies ++= Seq(
       "com.outworkers" 							%% "phantom-dsl" 										   % Versions.phantom,
       "com.outworkers"               %% "util-testing"                     % Versions.util % Test
-    ) ++ scalaMacroDependencies(scalaVersion.value)
+    )
   )
 
 lazy val phantomDseGraph = (project in file("phantom-graph"))
@@ -135,7 +123,7 @@ lazy val phantomDseGraph = (project in file("phantom-graph"))
       "com.datastax.cassandra"       % "dse-driver"                        % Versions.dseDriver,
       "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
       "com.outworkers"               %% "util-testing"                     % Versions.util % Test
-    ) ++ scalaMacroDependencies(scalaVersion.value)
+    )
   )
 
 lazy val phantomUdt = (project in file("phantom-udt"))

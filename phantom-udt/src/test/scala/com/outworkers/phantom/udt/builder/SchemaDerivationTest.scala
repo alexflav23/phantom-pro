@@ -1,15 +1,14 @@
 package com.outworkers.phantom.udt.builder
 
-import com.outworkers.phantom.udt.{Samplers, Test, TestDatabase, UDTPrimitive}
-import com.outworkers.util.testing._
+import com.outworkers.phantom.udt.{Samplers, Test, TestDatabase, TestDbProvider, UDTPrimitive}
 import com.outworkers.phantom.dsl._
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
-class SchemaDerivationTest extends FlatSpec with Matchers with BeforeAndAfterAll with Samplers {
+class SchemaDerivationTest extends FlatSpec with Matchers with BeforeAndAfterAll with Samplers with TestDbProvider {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.create()
+    //TestDatabase.create()
   }
 
   implicit val keySpace = KeySpace("phantom_udt")
@@ -19,5 +18,14 @@ class SchemaDerivationTest extends FlatSpec with Matchers with BeforeAndAfterAll
     val schema = p.schemaQuery()
 
     schema.queryString shouldEqual "CREATE TYPE IF NOT EXISTS phantom_udt.test (id int, name text)"
+  }
+
+  it should "automatically freeze a primary udt collection column" in {
+    val cType = database.primaryCollectionTable.previous_addresses.cassandraType
+
+
+    Console.println(database.primaryCollectionTable.create.ifNotExists().queryString)
+
+    Console.println(cType)
   }
 }

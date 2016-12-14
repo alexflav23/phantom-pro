@@ -17,22 +17,15 @@ case class TestRecord(
   col: ListCollectionUdt
 )
 
-class TestTable extends CassandraTable[ConcreteTestTable, TestRecord] {
+abstract class TestTable extends CassandraTable[TestTable, TestRecord] with RootConnector {
 
-  object uuid extends UUIDColumn(this) with PartitionKey[UUID]
+  object uuid extends UUIDColumn(this) with PartitionKey
 
-  object udt extends UDTColumn[ConcreteTestTable, TestRecord, Test](this)
+  object udt extends UDTColumn[TestTable, TestRecord, Test](this)
 
-  object udt2 extends UDTColumn[ConcreteTestTable, TestRecord, Test2](this)
+  object udt2 extends UDTColumn[TestTable, TestRecord, Test2](this)
 
-  object col extends UDTColumn[ConcreteTestTable, TestRecord, ListCollectionUdt](this)
-
-  override def fromRow(r: Row): TestRecord = {
-    TestRecord(uuid(r), udt(r), udt2(r), col(r))
-  }
-}
-
-abstract class ConcreteTestTable extends TestTable with RootConnector {
+  object col extends UDTColumn[TestTable, TestRecord, ListCollectionUdt](this)
 
   def store(record: TestRecord): Future[ResultSet] = {
     insert

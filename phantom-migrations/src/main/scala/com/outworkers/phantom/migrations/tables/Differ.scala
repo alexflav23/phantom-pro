@@ -1,8 +1,8 @@
-package com.outworkers.phantom.migrations
+package com.outworkers.phantom.migrations.tables
 
 import com.datastax.driver.core.{Session, TableMetadata}
 import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.builder.query.{ExecutableStatementList, CQLQuery}
+import com.outworkers.phantom.builder.query.{CQLQuery, ExecutableStatementList}
 import com.outworkers.phantom.connectors.KeySpace
 
 import scala.concurrent._

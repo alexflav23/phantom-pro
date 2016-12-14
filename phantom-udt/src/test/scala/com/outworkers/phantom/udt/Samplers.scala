@@ -107,8 +107,8 @@ trait Samplers {
   implicit object PersonSampler extends Sample[Person] {
     override def sample: Person = Person(
       gen[UUID],
-      genList[Address]().toSet,
-      genList[Address]()
+      genList[Address](),
+      genList[Address]().toSet
     )
   }
 

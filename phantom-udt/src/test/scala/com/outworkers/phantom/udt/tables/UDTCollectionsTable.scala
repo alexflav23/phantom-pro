@@ -5,25 +5,20 @@ import com.outworkers.phantom.udt._
 
 import scala.concurrent.Future
 
-
 case class Person(
   id: UUID,
-  current_addresses: Set[Address],
-  previous_addresses: List[Address]
+  previous_addresses: List[Address],
+  current_addresses: Set[Address]
 )
 
-class UDTCollectionsTable extends CassandraTable[ConcreteUDTCollectionsTable, Person] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+abstract class UDTCollectionsTable extends CassandraTable[UDTCollectionsTable, Person] with RootConnector {
 
-  object previous_addresses extends UDTListColumn[ConcreteUDTCollectionsTable, Person, Address](this)
+  object id extends UUIDColumn(this) with PartitionKey
 
-  object current_addresses extends UDTSetColumn[ConcreteUDTCollectionsTable, Person, Address](this)
+  object previous_addresses extends UDTListColumn[UDTCollectionsTable, Person, Address](this)
 
-  override def fromRow(r: Row): Person = Person(id(r), current_addresses(r), previous_addresses(r))
-}
+  object current_addresses extends UDTSetColumn[UDTCollectionsTable, Person, Address](this)
 
-
-abstract class ConcreteUDTCollectionsTable extends UDTCollectionsTable with RootConnector {
   def store(person: Person): Future[ResultSet] = {
     insert.value(_.id, person.id)
       .value(_.previous_addresses, person.previous_addresses)
@@ -32,6 +27,27 @@ abstract class ConcreteUDTCollectionsTable extends UDTCollectionsTable with Root
   }
 
   def findById(id: UUID): Future[Option[Person]] = {
+    select.where(_.id eqs id).one()
+  }
+}
+
+
+abstract class PrimaryUDTCollectionsTable extends CassandraTable[PrimaryUDTCollectionsTable, Person] with RootConnector {
+
+  object id extends UUIDColumn(this) with PartitionKey
+
+  object previous_addresses extends UDTListColumn[PrimaryUDTCollectionsTable, Person, Address](this) with PrimaryKey
+
+  object current_addresses extends UDTSetColumn[PrimaryUDTCollectionsTable, Person, Address](this)
+
+  def store(person: Person): Future[ResultSet] = {
+    insert.value(_.id, person.id)
+      .value(_.previous_addresses, person.previous_addresses)
+      .value(_.current_addresses, person.current_addresses)
+      .future()
+  }
+
+  def findByIdAndAddresses(id: UUID, addresses: List[Address]): Future[Option[Person]] = {
     select.where(_.id eqs id).one()
   }
 }

@@ -18,23 +18,11 @@ import scala.concurrent.Future
   col: CollectionSetUdt
 )
 
-class NestedUdtSetsTable extends CassandraTable[ConcreteNestedUdtSetsTable, NestedSetRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+abstract class NestedUdtSetsTable extends CassandraTable[NestedUdtSetsTable, NestedSetRecord] with RootConnector {
+  object id extends UUIDColumn(this) with PartitionKey
   object email extends StringColumn(this)
-  object address extends UDTColumn[ConcreteNestedUdtSetsTable, NestedSetRecord, Address](this)
-  object col extends UDTColumn[ConcreteNestedUdtSetsTable, NestedSetRecord, CollectionSetUdt](this)
-
-  def fromRow(row: Row): NestedSetRecord = {
-    NestedSetRecord(
-      id = id(row),
-      email = email(row),
-      address = address(row),
-      col = col(row)
-    )
-  }
-}
-
-abstract class ConcreteNestedUdtSetsTable extends NestedUdtSetsTable with RootConnector {
+  object address extends UDTColumn[NestedUdtSetsTable, NestedSetRecord, Address](this)
+  object col extends UDTColumn[NestedUdtSetsTable, NestedSetRecord, CollectionSetUdt](this)
 
   def store(rec: NestedSetRecord): Future[ResultSet] = {
     insert

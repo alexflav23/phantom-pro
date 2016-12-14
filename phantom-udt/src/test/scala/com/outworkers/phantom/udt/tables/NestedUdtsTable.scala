@@ -29,23 +29,11 @@ import scala.concurrent.Future
   col: CollectionUdt
 )
 
-class NestedUdtsTable extends CassandraTable[ConcreteNestedUdtsTable, NestedRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+abstract class NestedUdtsTable extends CassandraTable[NestedUdtsTable, NestedRecord] with RootConnector {
+  object id extends UUIDColumn(this) with PartitionKey
   object email extends StringColumn(this)
-  object address extends UDTColumn[ConcreteNestedUdtsTable, NestedRecord, Address](this)
-  object col extends UDTColumn[ConcreteNestedUdtsTable, NestedRecord, CollectionUdt](this)
-
-  def fromRow(row: Row): NestedRecord = {
-    NestedRecord(
-      id = id(row),
-      email = email(row),
-      address = address(row),
-      col = col(row)
-    )
-  }
-}
-
-abstract class ConcreteNestedUdtsTable extends NestedUdtsTable with RootConnector {
+  object address extends UDTColumn[NestedUdtsTable, NestedRecord, Address](this)
+  object col extends UDTColumn[NestedUdtsTable, NestedRecord, CollectionUdt](this)
 
   def store(rec: NestedRecord): Future[ResultSet] = {
     insert
@@ -56,7 +44,5 @@ abstract class ConcreteNestedUdtsTable extends NestedUdtsTable with RootConnecto
       .future()
   }
 
-  def findById(id: UUID): Future[Option[NestedRecord]] = {
-    select.where(_.id eqs id).one()
-  }
+  def findById(id: UUID): Future[Option[NestedRecord]] = select.where(_.id eqs id).one()
 }

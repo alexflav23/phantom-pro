@@ -1,11 +1,12 @@
-package com.outworkers.phantom
+package com.outworkers.phantom.migrations
 
 import com.datastax.driver.core.Session
+import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.connectors.KeySpace
 
 import scala.concurrent.ExecutionContext
 
-package object migrations {
+package object tables {
 
   implicit class TableMigrations[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) extends AnyVal {
 

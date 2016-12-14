@@ -1,10 +1,9 @@
 package com.outworkers.phantom.migrations
 
-import com.outworkers.phantom.migrations.tables.{SampleTablePrimaryDiff, SampleTableOneDiff, SampleTable}
-import org.scalatest.{Matchers, BeforeAndAfterAll, FeatureSpec, GivenWhenThen}
+import com.outworkers.phantom.migrations.tables.{Diff, DiffConfig, MigrationDbProvider}
+import org.scalatest.{BeforeAndAfterAll, FeatureSpec, GivenWhenThen, Matchers}
 
-class DiffTest extends FeatureSpec with GivenWhenThen with BeforeAndAfterAll with Matchers {
-
+class DiffTest extends FeatureSpec with GivenWhenThen with BeforeAndAfterAll with Matchers with MigrationDbProvider {
 
   implicit val diffConfig = {
     DiffConfig(
@@ -23,7 +22,7 @@ class DiffTest extends FeatureSpec with GivenWhenThen with BeforeAndAfterAll wit
       Given("A valid Cassandra table schema is used")
 
       When("A table is diffed against itself")
-      val diff = Diff(SampleTable) diff Diff(SampleTable)
+      val diff = Diff(database.sampleTableOneDiff) diff Diff(database.sampleTableOneDiff)
 
       Then("the number of differences found should be 0")
       diff.columns.size shouldEqual 0
@@ -33,20 +32,20 @@ class DiffTest extends FeatureSpec with GivenWhenThen with BeforeAndAfterAll wit
       Given("A valid Cassandra table schema is used")
 
       When("A table is diffed against a table with one more string column")
-      val diff = Diff(SampleTableOneDiff) diff Diff(SampleTable)
+      val diff = Diff(database.sampleTableOneDiff) diff Diff(database.sampleTableOneDiff)
 
       Then("The total number of differences found should be 1")
       diff.columns.size shouldEqual 1
 
       And("The name of the column found to different should be the right one")
-      diff.columns.head.name shouldEqual SampleTableOneDiff.name2.name
+      diff.columns.head.name shouldEqual database.sampleTableOneDiff.name2.name
     }
 
     scenario("The table on the left hand side of the diff has one more primary key") {
       Given("A valid Cassandra table schema is used")
 
       When("A table is diffed against a table with one more primary uuid column")
-      val diff = Diff(SampleTablePrimaryDiff) diff Diff(SampleTable)
+      val diff = Diff(database.sampleTablePrimaryDiff) diff Diff(database.sampleTableOneDiff)
 
       Then("The total number of differences found should be 1")
       diff.columns.size shouldEqual 1

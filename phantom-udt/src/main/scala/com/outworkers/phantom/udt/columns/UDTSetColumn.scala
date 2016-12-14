@@ -22,7 +22,13 @@ class UDTSetColumn[
   }
 
   override def cassandraType: String = {
-    QueryBuilder.Collections.setType(primitive.cassandraType).queryString
+    if (shouldFreeze) {
+      QueryBuilder.Collections.frozen(
+        QueryBuilder.Collections.setType(primitive.cassandraType)
+      ).queryString
+    } else {
+      QueryBuilder.Collections.setType(primitive.cassandraType).queryString
+    }
   }
 
   override def valueAsCql(v: ValueType): String = primitive.asCql(v)

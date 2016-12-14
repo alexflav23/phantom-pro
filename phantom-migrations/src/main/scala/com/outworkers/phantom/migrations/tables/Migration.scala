@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.outworkers.phantom.migrations
+package com.outworkers.phantom.migrations.tables
 
 import com.datastax.driver.core.TableMetadata
 import com.outworkers.phantom.CassandraTable

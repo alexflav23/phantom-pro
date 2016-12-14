@@ -18,24 +18,13 @@ case class NestedMapRecord(
   addresses: NestedMaps
 )
 
-class NestedMapsTable extends CassandraTable[ConcreteNestedMapsTable, NestedMapRecord] {
-  object id extends UUIDColumn(this) with PartitionKey[UUID]
+abstract class NestedMapsTable extends CassandraTable[NestedMapsTable, NestedMapRecord] with RootConnector {
+
+  object id extends UUIDColumn(this) with PartitionKey
 
   object people extends ListColumn[String](this)
 
-  object addresses extends UDTColumn[ConcreteNestedMapsTable, NestedMapRecord, NestedMaps](this)
-
-  override def fromRow(r: Row): NestedMapRecord = {
-    NestedMapRecord(
-      id = id(r),
-      people = people(r),
-      addresses = addresses(r)
-    )
-  }
-}
-
-
-abstract class ConcreteNestedMapsTable extends NestedMapsTable with RootConnector {
+  object addresses extends UDTColumn[NestedMapsTable, NestedMapRecord, NestedMaps](this)
 
   def store(rec: NestedMapRecord): Future[ResultSet] = {
     insert

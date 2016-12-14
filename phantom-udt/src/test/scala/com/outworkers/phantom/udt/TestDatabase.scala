@@ -9,15 +9,17 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDatabase](connector) {
 
-  object udtTable extends ConcreteTestTable with connector.Connector
+  object udtTable extends TestTable with connector.Connector
 
-  object nestedUdtTable extends ConcreteNestedUdtsTable with connector.Connector
+  object nestedUdtTable extends NestedUdtsTable with connector.Connector
 
-  object nestedSetUdtTable extends ConcreteNestedUdtSetsTable with connector.Connector
+  object nestedSetUdtTable extends NestedUdtSetsTable with connector.Connector
 
-  object nestedMapUdtTable extends ConcreteNestedMapsTable with connector.Connector
+  object nestedMapUdtTable extends NestedMapsTable with connector.Connector
 
-  object collectionTable extends ConcreteUDTCollectionsTable with connector.Connector
+  object collectionTable extends UDTCollectionsTable with connector.Connector
+
+  object primaryCollectionTable extends PrimaryUDTCollectionsTable with connector.Connector
 
   def createUdts: ExecutableStatementList  = {
     val queries = tables.toSeq map { tb =>
@@ -52,4 +54,8 @@ object TestConnector {
 }
 
 object TestDatabase extends TestDatabase(TestConnector.connector)
+
+trait TestDbProvider extends DatabaseProvider[TestDatabase] {
+  override def database: TestDatabase = TestDatabase
+}
 
