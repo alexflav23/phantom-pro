@@ -3,7 +3,7 @@ package com.outworkers.phantom.udt.columns
 import com.datastax.driver.core.Row
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.column.AbstractListColumn
 import com.outworkers.phantom.connectors.SessionAugmenterImplicits
 import com.outworkers.phantom.udt.{Helper, UDTPrimitive}
@@ -15,10 +15,9 @@ class UnsupportedFeatureException(msg: String) extends UnsupportedOperationExcep
 class UDTListColumn[
   T <: CassandraTable[T, R],
   R,
-  ValueType <: Product with Serializable : UDTPrimitive
-](table: CassandraTable[T, R]) extends AbstractListColumn[T, R, ValueType](table) with SessionAugmenterImplicits {
-
-  val primitive = implicitly[UDTPrimitive[ValueType]]
+  ValueType <: Product with Serializable
+](table: CassandraTable[T, R])(implicit primitive: UDTPrimitive[ValueType])
+  extends AbstractListColumn[T, R, ValueType](table) with SessionAugmenterImplicits {
 
   override def parse(row: Row): Try[List[ValueType]] = {
     Try(Helper.getList(row.getList(name, UDTPrimitive.udtClz)).map(primitive.fromRow(_).get))

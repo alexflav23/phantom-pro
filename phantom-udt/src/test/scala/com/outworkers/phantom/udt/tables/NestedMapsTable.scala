@@ -3,7 +3,6 @@ package com.outworkers.phantom.udt.tables
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.udt._
 import com.outworkers.phantom.udt.columns.UDTColumn
-import com.outworkers.util.testing.sample
 
 import scala.concurrent.Future
 
@@ -25,14 +24,6 @@ abstract class NestedMapsTable extends CassandraTable[NestedMapsTable, NestedMap
   object people extends ListColumn[String](this)
 
   object addresses extends UDTColumn[NestedMapsTable, NestedMapRecord, NestedMaps](this)
-
-  def store(rec: NestedMapRecord): Future[ResultSet] = {
-    insert
-      .value(_.id, rec.id)
-      .value(_.people, rec.people)
-      .value(_.addresses, rec.addresses)
-      .future()
-  }
 
   def findById(id: UUID): Future[Option[NestedMapRecord]] = {
     select.where(_.id eqs id).one()

@@ -1,6 +1,7 @@
 package com.outworkers.phantom.udt.query
 
 import com.outworkers.phantom.builder.query._
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 class UDTCreateQuery(
   val qb: CQLQuery

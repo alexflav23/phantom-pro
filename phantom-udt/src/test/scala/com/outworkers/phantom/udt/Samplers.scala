@@ -3,33 +3,9 @@ package com.outworkers.phantom.udt
 import java.util.UUID
 
 import com.outworkers.phantom.udt.tables._
-import com.outworkers.util.testing.{Sample, _}
+import com.outworkers.util.samplers._
 
 trait Samplers {
-
-  implicit object TestGenerator extends Sample[Test] {
-    override def sample: Test = Test(
-      gen[Int],
-      gen[String]
-    )
-  }
-
-  implicit object Test2Generator extends Sample[Test2] {
-    override def sample: Test2 = Test2(
-      gen[Int],
-      gen[String],
-      gen[BigDecimal],
-      5
-    )
-  }
-
-  implicit object CollectionUDTGenerator extends Sample[ListCollectionUdt] {
-    override def sample: ListCollectionUdt = ListCollectionUdt(
-      gen[UUID],
-      gen[String],
-      genList[String]()
-    )
-  }
 
   implicit object TestRecordSampler extends Sample[TestRecord] {
     override def sample: TestRecord = {

@@ -27,17 +27,7 @@ abstract class TestTable extends CassandraTable[TestTable, TestRecord] with Root
 
   object col extends UDTColumn[TestTable, TestRecord, ListCollectionUdt](this)
 
-  def store(record: TestRecord): Future[ResultSet] = {
-    insert
-      .value(_.uuid, record.uuid)
-      .value(_.udt, record.udt)
-      .value(_.udt2, record.udt2)
-      .value(_.col, record.col)
-      .future()
-  }
-
   def getById(id: UUID): Future[Option[TestRecord]] = {
     select.where(_.uuid eqs id).one
   }
 }
-

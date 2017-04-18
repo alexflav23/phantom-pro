@@ -1,10 +1,10 @@
 package com.outworkers.phantom.udt.builder
 
-import com.outworkers.phantom.udt.{Samplers, Test, TestDatabase, TestDbProvider, UDTPrimitive}
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.udt.{Test, TestDbProvider, UDTPrimitive}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
-class SchemaDerivationTest extends FlatSpec with Matchers with BeforeAndAfterAll with Samplers with TestDbProvider {
+class SchemaDerivationTest extends FlatSpec with Matchers with BeforeAndAfterAll with TestDbProvider {
 
   override def beforeAll(): Unit = {
     super.beforeAll()

@@ -3,30 +3,34 @@ import Keys._
 import com.twitter.sbt.{GitProject, VersionManagement}
 
 lazy val Versions = new {
-  val phantom = "2.0.11"
-  val util = "0.25.0"
+  val phantom = "2.7.0"
+  val util = "0.30.1"
+  val logback = "1.2.1"
   val dse = "1.1.0"
-  val scalaTest = "2.2.4"
-  val shapeless = "2.3.1"
-  val scalaMeter = "0.7"
+  val scalaTest = "3.0.1"
+  val shapeless = "2.3.2"
+  val scalaMeter = "0.8.3"
   val spark = "1.6.0"
   val dseDriver = "1.1.0"
+  val macroCompat = "1.1.1"
+  val macroParadise = "2.1.0"
+  val scalaGraph = "1.11.4"
 }
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
   version := "0.2.0",
   scalaVersion := "2.11.8",
-  crossScalaVersions := Seq("2.10.6", "2.11.8"),
   fork in Test := true,
   testOptions in Test += Tests.Argument("-oF"),
   logBuffered in Test := false,
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, 4)
   ),
-  gitTagName <<= (organization, name, version) map { (o, n, v) =>
-    "version=%s".format(v)
-  },
+  gitTagName := "version=%s".format(scalaVersion.value),
+  libraryDependencies ++= Seq(
+     "ch.qos.logback" % "logback-classic" % Versions.logback % Test
+  ),
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),
     Resolver.typesafeRepo("releases"),
@@ -43,7 +47,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "-language:higherKinds",
     "-language:existentials",
     "-language:experimental.macros",
-    "-Yinline-warnings",
     "-Xlint",
     "-deprecation",
     "-feature",
@@ -69,7 +72,7 @@ lazy val phantomPro = (project in file("."))
     phantomDse,
     phantomDseGraph,
     phantomMigrations,
-    phantomSpark,
+    //phantomSpark,
     phantomUdt,
     phantomAutoTables
   )
@@ -77,6 +80,7 @@ lazy val phantomPro = (project in file("."))
 lazy val phantomDse = (project in file("phantom-dse"))
   .settings(sharedSettings: _*)
   .settings(
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
     moduleName := "phantom-dse",
     libraryDependencies ++= Seq(
       "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
@@ -88,6 +92,7 @@ lazy val phantomDse = (project in file("phantom-dse"))
 lazy val phantomMigrations = (project in file("phantom-migrations"))
   .settings(sharedSettings: _* )
   .settings(
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
     moduleName := "phantom-migrations",
     libraryDependencies ++= Seq(
       "com.outworkers" 								 %% "phantom-dsl" 										 % Versions.phantom,
@@ -98,6 +103,7 @@ lazy val phantomMigrations = (project in file("phantom-migrations"))
 lazy val phantomSpark = (project in file("phantom-spark"))
   .settings(sharedSettings: _*)
   .settings(
+    crossScalaVersions := Seq("2.10.6", "2.11.8"),
     moduleName := "phantom-spark",
     libraryDependencies ++= Seq(
       "com.datastax.spark"           %% "spark-cassandra-connector"        % Versions.spark,
@@ -108,6 +114,7 @@ lazy val phantomSpark = (project in file("phantom-spark"))
 lazy val phantomAutoTables = (project in file("phantom-autotables"))
   .settings(sharedSettings: _*)
   .settings(
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
     moduleName := "phantom-autotables",
     libraryDependencies ++= Seq(
       "com.outworkers" 							%% "phantom-dsl" 										   % Versions.phantom,
@@ -119,6 +126,7 @@ lazy val phantomDseGraph = (project in file("phantom-graph"))
   .settings(sharedSettings: _*)
   .settings(
     moduleName := "phantom-graph",
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       % "dse-driver"                        % Versions.dseDriver,
       "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
@@ -130,13 +138,11 @@ lazy val phantomUdt = (project in file("phantom-udt"))
   .settings(sharedSettings: _*)
   .settings(
     moduleName := "phantom-udt",
-    scalacOptions ++= Seq(
-      //"-Ymacro-debug-verbose",
-      //"-Yshow-trees-stringified"
-    ),
+    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
-      "org.typelevel"  %% "macro-compat" % "1.1.1",
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      //"org.scala-graph" %% "graph-core" % Versions.scalaGraph,
+      "org.typelevel"  %% "macro-compat" % Versions.macroCompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "com.outworkers" %% "util-testing" % Versions.util % Test

@@ -1,7 +1,5 @@
 package com.outworkers.phantom.udt
 
-import com.outworkers.phantom.builder.QueryBuilder
-
 import scala.annotation.{StaticAnnotation, compileTimeOnly}
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox
@@ -20,17 +18,17 @@ class UdtMacroImpl(val c: blackbox.Context) {
   def typed[A : c.WeakTypeTag]: Symbol = weakTypeOf[A].typeSymbol
 
   object Symbols {
-    val listSymbol = typed[scala.collection.immutable.List[_]]
-    val setSymbol = typed[scala.collection.immutable.Set[_]]
-    val mapSymbol = typed[scala.collection.immutable.Map[_, _]]
-    val udtSymbol = typed[com.outworkers.phantom.udt.UDTPrimitive[_]]
+    val listSymbol: Symbol = typed[scala.collection.immutable.List[_]]
+    val setSymbol: Symbol = typed[scala.collection.immutable.Set[_]]
+    val mapSymbol: Symbol = typed[scala.collection.immutable.Map[_, _]]
+    val udtSymbol: Symbol = typed[com.outworkers.phantom.udt.UDTPrimitive[_]]
   }
 
   case class Accessor(
     name: TermName,
-    paramType: Type
+    paramType: Type,
+    annotations: List[Tree] = Nil
   ) {
-
     def tpe: TypeName = symbol.name.toTypeName
 
     def symbol = paramType.typeSymbol
@@ -42,7 +40,7 @@ class UdtMacroImpl(val c: blackbox.Context) {
 
   val packagePrefix = q"com.outworkers.phantom.udt"
   val keySpaceTpe = tq"com.outworkers.phantom.dsl.KeySpace"
-  val cqlQueryTpe = tq"com.outworkers.phantom.builder.query.CQLQuery"
+  val cqlQueryTpe = tq"com.outworkers.phantom.builder.query.engine.CQLQuery"
   val udtValueTpe = tq"com.datastax.driver.core.UDTValue"
   val collections = q"scala.collection.immutable"
 
@@ -65,8 +63,9 @@ class UdtMacroImpl(val c: blackbox.Context) {
     params: Seq[ValDef]
   ): Iterable[Accessor] = {
     params.map {
-      case ValDef(_, name: TermName, tpt: Tree, _) => {
-        Accessor(name, c.typecheck(tq"$tpt", c.TYPEmode).tpe)
+      case ValDef(mods, name: TermName, tpt: Tree, _) => {
+        val tpe = c.typecheck(tq"$tpt", c.TYPEmode).tpe
+        Accessor(name, tpe, mods.annotations)
       }
     }
   }
@@ -91,6 +90,21 @@ class UdtMacroImpl(val c: blackbox.Context) {
       * @return A string name for the case filed.
       */
     def field: String = accessor.name.decodedName.toString
+
+    /**
+      * The string name of the case class field.
+      * This is used to determine the name of the columns in Cassandra.
+      * We will use the same name for the UDT columns as the name typed into the case classes
+      * by uers.
+      * @return A string name for the case filed.
+      */
+    def schemaField: Tree = {
+      if (isUdtType) {
+        q"$udtPackage.UDTPrimitive[${accessor.paramType}].name"
+      } else {
+        q"${accessor.name.decodedName.toString}"
+      }
+    }
 
     /**
       * The name of the field extractor used in the generated for yield expression.
@@ -127,7 +141,7 @@ class UdtMacroImpl(val c: blackbox.Context) {
       * @return A boolean value that marks whether or not the current extractor should be
       *         derived for an UDT type.
       */
-    def isUdtType: Boolean = false
+    def isUdtType: Boolean = isCaseClass(accessor.paramType)
 
     def caster: Tree => Tree
 
@@ -144,7 +158,7 @@ class UdtMacroImpl(val c: blackbox.Context) {
 
     def serializer: Tree
 
-    def extractor: Tree = fq"""$extractorName<- $parser"""
+    def extractor: Tree = fq"""$extractorName <- $parser"""
   }
 
   case class RegularExtractor(
@@ -156,7 +170,12 @@ class UdtMacroImpl(val c: blackbox.Context) {
       q"""$tr.fromRow(udt.getUDTValue($field))"""
     }
 
-    def cassandraType: Tree = if (isUdtType) q"""${s"frozen <$field>"}""" else q"$typeQualifier.cassandraType"
+    def cassandraType: Tree = if (isUdtType) {
+      val udtName = q"$packagePrefix.UDTPrimitive[${accessor.paramType}].name"
+      q"$packagePrefix.Helper.frozen($udtName)"
+    } else {
+      q"$typeQualifier.cassandraType"
+    }
 
     def parser: Tree = caster(typeQualifier)
 
@@ -173,7 +192,7 @@ class UdtMacroImpl(val c: blackbox.Context) {
     def cassandraType: Tree = {
       q"""$builder.QueryBuilder.Collections.listType(
         $primitivePkg.Primitive[..${innerTypes.map(_.tpe)}].cassandraType
-      )"""
+      ).queryString"""
     }
 
     def parser: Tree = caster(typeQualifier)
@@ -184,9 +203,9 @@ class UdtMacroImpl(val c: blackbox.Context) {
 
     override def serializer: Tree = {
       q"""
-        $field -> $builder.QueryBuilder.Collections.serialize {
+        $field -> $builder.QueryBuilder.Collections.serialize(
           instance.${accessor.name}.map($primitivePkg.Primitive[..${innerTypes.map(_.tpe)}].asCql(_))
-         }
+         ).queryString
        """
     }
   }
@@ -213,7 +232,7 @@ class UdtMacroImpl(val c: blackbox.Context) {
 
     def inferType(primitive: Tree, udt: Boolean): Tree = {
       if (udt) {
-        q""" $packagePrefix.Helper.frozen($primitive.name) """
+        q"$packagePrefix.Helper.frozen($primitive.name)"
       } else {
         q"$primitive.cassandraType"
       }
@@ -271,11 +290,11 @@ class UdtMacroImpl(val c: blackbox.Context) {
 
     override def serializer: Tree = {
       q"""
-        $field -> { $builder.QueryBuilder.Collections.serialize {
+        $field -> { $builder.QueryBuilder.Collections.serialize(
           instance.${accessor.name}.map {
             case ($keyTerm, $valueTerm) => $keyPrimitive.asCql($keyTerm) -> $valuePrimitive.asCql($valueTerm)
           }
-         }
+         ).queryString
         }
        """
     }
@@ -310,9 +329,9 @@ class UdtMacroImpl(val c: blackbox.Context) {
 
     override def serializer: Tree = {
       q"""
-        $field -> { $builder.QueryBuilder.Collections.serialize {
+        $field -> { $builder.QueryBuilder.Collections.serialize(
           instance.${accessor.name}.map($udtPackage.UDTPrimitive[${innerType.tpe}].asCql(_))
-         }
+         ).queryString
         }
        """
     }
@@ -350,8 +369,8 @@ class UdtMacroImpl(val c: blackbox.Context) {
     * @return
     */
   private[this] def derivePrimitive(accessor: Accessor): Extractor = {
-    val tree = accessor.symbol match {
-      case sym if sym.isClass && sym.asClass.isCaseClass => {
+    accessor.symbol match {
+      case sym if sym.isClass && sym.asClass.isCaseClass =>
         val tpe = sym.asType.name.toTypeName
 
         RegularExtractor(
@@ -359,9 +378,8 @@ class UdtMacroImpl(val c: blackbox.Context) {
           q"$udtPackage.UDTPrimitive[$tpe]",
           isUdtType = true
         )
-      }
 
-      case s @ Symbols.listSymbol => {
+      case s @ Symbols.listSymbol =>
         accessor.paramType.typeArgs match {
           case headType :: Nil => {
             val refined = InnerType(headType)
@@ -385,9 +403,8 @@ class UdtMacroImpl(val c: blackbox.Context) {
 
           case _ => c.abort(c.enclosingPosition, "Expected type argument to be provided for list type")
         }
-      }
 
-      case s @ Symbols.setSymbol => {
+      case s @ Symbols.setSymbol =>
         accessor.paramType.typeArgs match {
           case headType :: Nil => {
             val refined = InnerType(headType)
@@ -410,67 +427,76 @@ class UdtMacroImpl(val c: blackbox.Context) {
           }
           case _ => c.abort(c.enclosingPosition, "Expected type argument to be provided for list type")
         }
-      }
 
       case s @ Symbols.mapSymbol =>
         accessor.paramType.typeArgs match {
-          case keyType :: valueType :: Nil => {
+          case keyType :: valueType :: Nil =>
             MapExtractor(
               accessor = accessor,
               InnerType(keyType),
               InnerType(valueType)
             )
-          }
           case _ => c.abort(c.enclosingPosition, "Expected 2 type arguments to be provided for map type")
         }
 
       case _ => RegularExtractor(accessor, q"$primitivePkg.Primitive[${accessor.tpe}]", isUdtType = false)
     }
-
-    tree
   }
 
   def isCaseClass(sym: Symbol): Boolean = {
     sym.isClass && sym.asClass.isCaseClass
   }
 
-  def typeDependencies(params: Iterable[Accessor]): Seq[Tree] = {
-    params.foldLeft(Seq.empty[Symbol]) {
-      case (acc, accessor) => {
-        if (isCaseClass(accessor.symbol)) {
-          acc :+ accessor.symbol
-        } else {
-          accessor.symbol match {
-            case Symbols.listSymbol | Symbols.setSymbol | Symbols.mapSymbol => {
-              acc ++ accessor.paramType.typeArgs.map(_.typeSymbol).filter(isCaseClass)
-            }
-            case _ => acc
-          }
+  def isCaseClass(tpe: Type): Boolean = isCaseClass(tpe.typeSymbol)
+
+  def udtDeps(params: Iterable[Accessor]): Seq[Type] = {
+    params.foldLeft(Seq.empty[Type]) { case (acc, accessor) =>
+      if (isCaseClass(accessor.paramType)) {
+        acc :+ accessor.paramType
+      } else {
+        accessor.symbol match {
+          case Symbols.listSymbol | Symbols.setSymbol | Symbols.mapSymbol =>
+            acc ++ accessor.paramType.typeArgs.filter(isCaseClass)
+
+          case _ => acc
         }
       }
-    } map (tp =>
+    }
+  }
+
+  def typeDependencies(params: Iterable[Accessor]): Seq[Tree] = {
+    udtDeps(params) map (tp => q"$udtPackage.UDTPrimitive[$tp]")
+  }
+
+  def queryDependencies(params: Iterable[Accessor]): Seq[Tree] = {
+    udtDeps(params) map (tp =>
       q"""new $udtPackage.query.UDTCreateQuery(
-         $udtPackage.UDTPrimitive[${tp.name.toTypeName}].schemaQuery
+         $udtPackage.UDTPrimitive[$tp].schemaQuery
       )"""
     )
   }
+
 
   def makePrimitive(
     typeName: TypeName,
     name: TermName,
     params: Seq[ValDef]
-  ): List[Tree] = {
+  ): Tree = {
     val stringName = name.decodedName.toString
     val objName = TermName(c.freshName(stringName + "_udt_primitive"))
 
     val source = accessors(params)
     val fields = source map derivePrimitive
 
-    val tree = q"""
+    q"""
         implicit val $objName: $packagePrefix.UDTPrimitive[$typeName] = new $packagePrefix.UDTPrimitive[$typeName] {
 
+          def deps()(implicit space: $keySpaceTpe): $collections.Seq[$udtPackage.UDTPrimitive[_]] = {
+            $collections.Seq.apply[$packagePrefix.UDTPrimitive[_]](..${typeDependencies(source)})
+          }
+
           def typeDependencies()(implicit space: $keySpaceTpe): $collections.Seq[$udtPackage.query.UDTCreateQuery] = {
-            $collections.Seq.apply[$udtPackage.query.UDTCreateQuery](..${typeDependencies(source)})
+            $collections.Seq.apply[$udtPackage.query.UDTCreateQuery](..${queryDependencies(source)})
           }
 
           def asCql(instance: $typeName): String = {
@@ -493,7 +519,7 @@ class UdtMacroImpl(val c: blackbox.Context) {
 
             val base = "CREATE TYPE IF NOT EXISTS " + space.name + "." + ${stringName.toLowerCase} + " (" + membersList.mkString(", ") + ")"
 
-            $builder.query.CQLQuery(base)
+            $builder.query.engine.CQLQuery(base)
           }
 
           def name: String = $stringName
@@ -501,9 +527,6 @@ class UdtMacroImpl(val c: blackbox.Context) {
           def clz: Class[$typeName] = classOf[$typeName]
         }
      """
-
-    println(showCode(tree))
-    tree :: Nil
   }
 
   def impl(annottees: c.Expr[Any]*): Tree = {
@@ -516,7 +539,7 @@ class UdtMacroImpl(val c: blackbox.Context) {
         q"""
          $classDef
          object $name {
-           ..$primitive
+           $primitive
          }
          """
 

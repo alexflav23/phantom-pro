@@ -11,15 +11,15 @@ class UdtCollectionsTest extends FlatSpec with PhantomTest {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    Await.result(database.createUdts.future() flatMap(_ => TestDatabase.createAsync()), defaultScalaTimeout)
+    database.create()
   }
 
   it should "create and retrieve a list of UDTs from a Cassandra table" in {
     val sample = gen[Person]
 
     val chain = for {
-      store <- TestDatabase.collectionTable.store(sample)
-      retrieve <- TestDatabase.collectionTable.findById(sample.id)
+      _ <- database.collectionTable.store(sample).future()
+      retrieve <- database.collectionTable.findById(sample.id)
     } yield retrieve
 
     whenReady(chain) { res =>
@@ -34,9 +34,9 @@ class UdtCollectionsTest extends FlatSpec with PhantomTest {
     val address = gen[Address]
 
     val chain = for {
-      store <- database.collectionTable.store(sample)
-      beforeUpdate <- TestDatabase.collectionTable.findById(sample.id)
-      update <- database.collectionTable.update.where(_.id eqs sample.id)
+      _ <- database.collectionTable.store(sample).future()
+      beforeUpdate <- database.collectionTable.findById(sample.id)
+      _ <- database.collectionTable.update.where(_.id eqs sample.id)
         .modify(_.current_addresses add address).future()
       afterUpdate <- database.collectionTable.findById(sample.id)
     } yield (beforeUpdate, afterUpdate)
@@ -54,7 +54,7 @@ class UdtCollectionsTest extends FlatSpec with PhantomTest {
     val sample = gen[Person]
 
     val chain = for {
-      store <- database.primaryCollectionTable.store(sample)
+      _ <- database.primaryCollectionTable.store(sample).future
       retrieve <- database.primaryCollectionTable.findByIdAndAddresses(sample.id, sample.previous_addresses)
     } yield retrieve
 

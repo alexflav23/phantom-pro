@@ -2,23 +2,22 @@ package com.outworkers.phantom.udt
 
 import java.util.concurrent.TimeUnit
 
-import org.scalatest.{BeforeAndAfterAll, Matchers, OptionValues, Suite}
+import com.outworkers.phantom.dsl.context
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
-import com.outworkers.phantom.dsl.context
+import org.scalatest.{BeforeAndAfterAll, Matchers, OptionValues, Suite}
 
 trait PhantomTest extends Suite
   with Matchers
   with ScalaFutures
   with BeforeAndAfterAll
-  with TestDatabase.connector.Connector
   with OptionValues
-  with TestDbProvider
-  with Samplers {
+  with Samplers
+  with TestDbProvider {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    TestDatabase.create()
+    database.create()
   }
 
   protected[this] val defaultScalaTimeoutSeconds = 25

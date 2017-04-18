@@ -5,11 +5,7 @@ import java.util.Date
 import com.datastax.driver.dse.graph.GraphResultSet
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.slf4j.LoggerFactory
-import shapeless.ops.hlist.Mapper
-import shapeless.{Generic, HList, Poly1}
-
-import scala.reflect.runtime.{currentMirror => cm, universe => ru}
-
+import shapeless.{HList, Poly1}
 
 trait AttributeParser[T] {
   def schema: String
@@ -38,11 +34,7 @@ trait AttributeParsers {
 abstract class Attribute[Type : AttributeParser] {
   def queryString: String = implicitly[AttributeParser[Type]].schema
 
-  private[this] lazy val _name: String = {
-    cm.reflect(this).symbol.name.toTypeName.decodedName.toString
-  }
-
-  def name: String = _name
+  def name: String = ""
 }
 
 private object NameMapper extends Poly1 {
@@ -62,15 +54,9 @@ abstract class GraphNode[
 ] {
   def all: HList
 
-  private[this] val instanceMirror = cm.reflect(this)
-
-  protected[phantom] lazy val _name: String = {
-    instanceMirror.symbol.name.toTypeName.decodedName.toString
-  }
-
   lazy val logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
-  def tableName: String = _name
+  def tableName: String = ""
 }
 
 

@@ -35,14 +35,5 @@ abstract class NestedUdtsTable extends CassandraTable[NestedUdtsTable, NestedRec
   object address extends UDTColumn[NestedUdtsTable, NestedRecord, Address](this)
   object col extends UDTColumn[NestedUdtsTable, NestedRecord, CollectionUdt](this)
 
-  def store(rec: NestedRecord): Future[ResultSet] = {
-    insert
-      .value(_.id, rec.id)
-      .value(_.email, rec.email)
-      .value(_.address, rec.address)
-      .value(_.col, rec.col)
-      .future()
-  }
-
   def findById(id: UUID): Future[Option[NestedRecord]] = select.where(_.id eqs id).one()
 }

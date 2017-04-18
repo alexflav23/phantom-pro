@@ -1,21 +1,19 @@
 package com.outworkers.phantom.udt
 
 import com.outworkers.phantom.builder.QueryBuilder
-import com.outworkers.phantom.builder.query.CQLQuery
-
-import scala.collection.JavaConversions
+import scala.collection.JavaConverters._
 
 object Helper {
   def getSet[T](set: java.util.Set[T]): scala.collection.immutable.Set[T] = {
-    JavaConversions.asScalaSet(set).toSet[T]
+    set.asScala.toSet[T]
   }
 
   def getList[T](list: java.util.List[T]): scala.collection.immutable.List[T] = {
-    JavaConversions.asScalaBuffer(list).toList
+    list.asScala.toList
   }
 
   def getMap[K, V](map: java.util.Map[K, V]): scala.collection.immutable.Map[K, V] = {
-    JavaConversions.mapAsScalaMap(map).toMap[K, V]
+    map.asScala.toMap[K, V]
   }
 
   def frozen(str: String): String = {

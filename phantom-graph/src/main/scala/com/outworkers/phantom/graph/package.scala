@@ -11,5 +11,4 @@ package object graph extends AttributeParsers {
   implicit class HListAug[T <: HList](val aug: T) extends AnyVal {
     def *:[A](obj: A): **[A, T] = obj :: aug
   }
-
 }

@@ -1,7 +1,7 @@
 package com.outworkers.phantom.udt
 
 import com.datastax.driver.core.UDTValue
-import com.outworkers.phantom.builder.query.CQLQuery
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.udt.query.UDTCreateQuery
 import scala.util.{Failure, Try}
@@ -9,6 +9,8 @@ import scala.util.{Failure, Try}
 abstract class UDTPrimitive[
   T <: Product with Serializable
 ]() extends SessionAugmenterImplicits {
+
+  def deps()(implicit space: KeySpace): Seq[UDTPrimitive[_]]
 
   def typeDependencies()(implicit space: KeySpace): Seq[UDTCreateQuery]
 
@@ -36,5 +38,5 @@ abstract class UDTPrimitive[
 object UDTPrimitive {
   def apply[T <: Product with Serializable]()(implicit ev: UDTPrimitive[T]): UDTPrimitive[T] = ev
 
-  val udtClz = classOf[UDTValue]
+  val udtClz: Class[UDTValue] = classOf[UDTValue]
 }

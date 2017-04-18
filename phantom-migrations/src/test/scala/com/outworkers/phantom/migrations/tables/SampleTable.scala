@@ -18,9 +18,6 @@ abstract class SampleTablePrimaryDiff extends CassandraTable[SampleTable, Sample
   object date extends DateTimeColumn(this)
 }
 
-
-
-
 class MigrationDatabase(override val connector: CassandraConnection) extends Database[MigrationDatabase](connector) {
   object sampleTableOneDiff extends SampleTableOneDiff with Connector
   object sampleTablePrimaryDiff extends SampleTablePrimaryDiff with Connector

@@ -2,8 +2,9 @@ package com.outworkers.phantom.migrations.tables
 
 import com.datastax.driver.core.{Session, TableMetadata}
 import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.builder.query.{CQLQuery, ExecutableStatementList}
 import com.outworkers.phantom.connectors.KeySpace
+import com.outworkers.phantom.builder.query.ExecutableStatementList
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 import scala.concurrent._
 
@@ -15,11 +16,19 @@ private[phantom] object Differ {
     }
   }
 
-  def queryList(table: CassandraTable[_, _])(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext, diffConfig: DiffConfig): Set[CQLQuery] = {
+  def queryList[T <: CassandraTable[T, R], R](table: T)(
+    implicit session: Session,
+    keySpace: KeySpace, ec: ExecutionContext, diffConfig: DiffConfig
+  ): Set[CQLQuery] = {
     Migration(metadata(table.tableName), table).queryList(table)
   }
 
-  def automigrate(table: CassandraTable[_, _])(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext, diffConfig: DiffConfig): ExecutableStatementList = {
-    new ExecutableStatementList(queryList(table))
+  def automigrate[T <: CassandraTable[T, R], R](table: T)(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContext,
+    diffConfig: DiffConfig
+  ): ExecutableStatementList[Set] = {
+    new ExecutableStatementList(queryList[T, R](table))
   }
 }

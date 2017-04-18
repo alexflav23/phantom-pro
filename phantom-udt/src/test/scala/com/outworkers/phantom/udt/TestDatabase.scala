@@ -1,56 +1,61 @@
 package com.outworkers.phantom.udt
 
-import com.outworkers.phantom.builder.query.{CQLQuery, ExecutableStatementList}
+import com.datastax.driver.core.{HostDistance, PoolingOptions}
+import com.outworkers.phantom.builder.query.{CassandraOperations, ExecutableStatementList}
 import com.outworkers.phantom.builder.serializers.KeySpaceSerializer
 import com.outworkers.phantom.dsl.{context => _, _}
 import com.outworkers.phantom.udt.tables._
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
-class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDatabase](connector) {
+class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDatabase](connector) with CassandraOperations {
 
-  object udtTable extends TestTable with connector.Connector
+  object udtTable extends TestTable with Connector
 
-  object nestedUdtTable extends NestedUdtsTable with connector.Connector
+  object nestedUdtTable extends NestedUdtsTable with Connector
 
-  object nestedSetUdtTable extends NestedUdtSetsTable with connector.Connector
+  object nestedSetUdtTable extends NestedUdtSetsTable with Connector
 
-  object nestedMapUdtTable extends NestedMapsTable with connector.Connector
+  object nestedMapUdtTable extends NestedMapsTable with Connector
 
-  object collectionTable extends UDTCollectionsTable with connector.Connector
+  object collectionTable extends UDTCollectionsTable with Connector
 
-  object primaryCollectionTable extends PrimaryUDTCollectionsTable with connector.Connector
+  object primaryCollectionTable extends PrimaryUDTCollectionsTable with Connector
 
-  def createUdts: ExecutableStatementList  = {
-    val queries = tables.toSeq map { tb =>
-      val cols = tb.columns.map {
-        case u: UDTColumn[_, _, _] => u.primitive.typeDependencies().map(_.qb) :+ u.primitive.schemaQuery()
-        case _ => Seq.empty[CQLQuery]
-      }
-      cols
-    }
-
-    val list = queries.flatten.flatten.distinct
-
-    new ExecutableStatementList(list)
+  def initUds: ExecutableStatementList[Seq] = {
+    new ExecutableStatementList[Seq](
+      Seq(
+        UDTPrimitive[Location].schemaQuery(),
+        UDTPrimitive[Address].schemaQuery(),
+        UDTPrimitive[CollectionUdt].schemaQuery(),
+        UDTPrimitive[NestedRecord].schemaQuery(),
+        UDTPrimitive[NestedMaps].schemaQuery(),
+        UDTPrimitive[CollectionSetUdt].schemaQuery(),
+        UDTPrimitive[NestedSetRecord].schemaQuery(),
+        UDTPrimitive[Test].schemaQuery(),
+        UDTPrimitive[Test2].schemaQuery(),
+        UDTPrimitive[ListCollectionUdt].schemaQuery()
+      )
+    )
   }
 
   override def createAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
-    createUdts.future() flatMap (_ => super.createAsync())
+    initUds.sequentialFuture() flatMap(_ => super.createAsync())
   }
 }
 
 object TestConnector {
 
+  val space = KeySpace("phantom_pro")
+
   val connector = ContactPoint.local
     .noHeartbeat()
     .withClusterBuilder(_.withoutJMXReporting()
-      .withoutMetrics()
-    ).keySpace("phantom_pro", (session, keyspace) => {
-    KeySpaceSerializer(keyspace).ifNotExists()
-      .`with`(replication eqs SimpleStrategy.replication_factor(2))
-      .and(durable_writes eqs true).qb.queryString
-  })
+      .withoutMetrics().withPoolingOptions(new PoolingOptions().setMaxConnectionsPerHost(HostDistance.LOCAL, 5))
+    ).keySpace(space.name, KeySpaceSerializer(space.name).ifNotExists()
+      .`with`(replication eqs SimpleStrategy.replication_factor(1))
+      .and(durable_writes eqs true)
+    )
 }
 
 object TestDatabase extends TestDatabase(TestConnector.connector)
@@ -58,4 +63,3 @@ object TestDatabase extends TestDatabase(TestConnector.connector)
 trait TestDbProvider extends DatabaseProvider[TestDatabase] {
   override def database: TestDatabase = TestDatabase
 }
-

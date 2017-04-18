@@ -11,13 +11,13 @@ class UdtTest extends FlatSpec with PhantomTest {
     val sample = gen[TestRecord]
 
     val chain = for {
-      store <- TestDatabase.udtTable.store(sample)
-      get <- TestDatabase.udtTable.getById(sample.uuid)
+      store <- database.udtTable.store(sample).future
+      get <- database.udtTable.getById(sample.uuid)
     } yield get
 
-    whenReady(chain)(res => {
+    whenReady(chain)(res =>
       res.value shouldEqual sample
-    })
+    )
   }
 
   it should "generate the schema of a nested UDT column" in {
@@ -36,8 +36,8 @@ class UdtTest extends FlatSpec with PhantomTest {
     val sample = gen[NestedRecord]
 
     val chain = for {
-      store <- TestDatabase.nestedUdtTable.store(sample)
-      get <- TestDatabase.nestedUdtTable.findById(sample.id)
+      store <- database.nestedUdtTable.store(sample).future
+      get <- database.nestedUdtTable.findById(sample.id)
     } yield get
 
     whenReady(chain)(_.value shouldEqual sample)
@@ -47,8 +47,8 @@ class UdtTest extends FlatSpec with PhantomTest {
     val sample = gen[NestedSetRecord]
 
     val chain = for {
-      store <- TestDatabase.nestedSetUdtTable.store(sample)
-      get <- TestDatabase.nestedSetUdtTable.findById(sample.id)
+      store <- database.nestedSetUdtTable.store(sample).future
+      get <- database.nestedSetUdtTable.findById(sample.id)
     } yield get
 
     whenReady(chain)(_.value shouldEqual sample)
@@ -57,9 +57,11 @@ class UdtTest extends FlatSpec with PhantomTest {
   it should "retrieve a complex record with a nested map collection" in {
     val sample = gen[NestedMapRecord]
 
+    Console.println(database.nestedMapUdtTable.store(sample).queryString)
+
     val chain = for {
-      store <- TestDatabase.nestedMapUdtTable.store(sample)
-      get <- TestDatabase.nestedMapUdtTable.findById(sample.id)
+      store <- database.nestedMapUdtTable.store(sample).future
+      get <- database.nestedMapUdtTable.findById(sample.id)
     } yield get
 
     whenReady(chain)(_.value shouldEqual sample)

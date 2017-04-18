@@ -16,14 +16,13 @@
 import bintray.BintrayKeys._
 import sbt.Keys._
 import sbt._
-import com.typesafe.sbt.pgp.PgpKeys._
 
 import scala.util.Properties
 
 object Publishing {
 
   val defaultPublishingSettings = Seq(
-    version := "0.2.0"
+    version := "0.3.1"
   )
 
   lazy val noPublishSettings = Seq(
@@ -62,13 +61,11 @@ object Publishing {
     }
   }
 
-  def publishToMaven: Boolean = sys.env.get("MAVEN_PUBLISH").exists("true" ==)
-
   lazy val bintraySettings: Seq[Def.Setting[_]] = Seq(
     publishMavenStyle := true,
     bintrayOrganization := Some("outworkers"),
-    bintrayRepository <<= scalaVersion.apply {
-      v => if (v.trim.endsWith("SNAPSHOT")) "enterprise-snapshots" else "enterprise-releases"
+    bintrayRepository := {
+      if (scalaVersion.value.trim.endsWith("SNAPSHOT")) "enterprise-snapshots" else "enterprise-releases"
     },
     bintrayReleaseOnPublish in ThisBuild := true,
     publishArtifact in Test := false,
@@ -77,8 +74,6 @@ object Publishing {
     pomIncludeRepository := { _ => true},
     licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
   ) ++ defaultPublishingSettings
-
-  lazy val pgpPass = Properties.envOrNone("pgp_passphrase").map(_.toCharArray)
 
   def effectiveSettings: Seq[Def.Setting[_]] = bintraySettings
 

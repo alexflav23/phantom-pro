@@ -8,14 +8,14 @@ import scala.concurrent.ExecutionContext
 
 package object tables {
 
-  implicit class TableMigrations[T <: CassandraTable[T, R], R](val table: CassandraTable[T, R]) extends AnyVal {
+  implicit class TableMigrations[T <: CassandraTable[T, R], R](val table: T) extends AnyVal {
 
     def automigrate()(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext, diffConfig: DiffConfig) = {
-      Differ.automigrate(table)
+      Differ.automigrate[T, R](table)
     }
 
     def automigrate(diffConfig: DiffConfig)(implicit session: Session, keySpace: KeySpace, ec: ExecutionContext) = {
-      Differ.automigrate(table)(session, keySpace, ec, diffConfig)
+      Differ.automigrate[T, R](table)(session, keySpace, ec, diffConfig)
     }
   }
 }

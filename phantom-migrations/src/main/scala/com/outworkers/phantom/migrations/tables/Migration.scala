@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Websudos, Limited.
+ * Copyright 2013-2018 Outworkers, Limited.
  *
  * All rights reserved.
  *
@@ -27,17 +27,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.outworkers.phantom.migrations.tables
 
 import com.datastax.driver.core.TableMetadata
 import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.builder.query.{CQLQuery, ExecutableStatementList}
+import com.outworkers.phantom.builder.query.ExecutableStatementList
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.dsl.Session
+import com.datastax.driver.core.Session
+import com.outworkers.phantom.builder.query.engine.CQLQuery
 
 import scala.concurrent.ExecutionContext
-
 
 case class ColumnDiff(
   name: String,
@@ -48,44 +47,49 @@ case class ColumnDiff(
   isStatic: Boolean
 )
 
-sealed case class Migration(additions: Set[ColumnDiff], deletions: Set[ColumnDiff]) {
+sealed case class Migration[Table <: CassandraTable[Table, _], R](additions: Set[ColumnDiff], deletions: Set[ColumnDiff]) {
 
-  type Table = CassandraTable[_, _]
-
-  def additiveQueries(table: Table)
-      (implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): Set[CQLQuery] = {
+  def additiveQueries(table: Table)(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContext
+  ): Set[CQLQuery] = {
     additions map {
-      col: ColumnDiff => {
-        table.alter.add(col.name, col.cassandraType).qb
-      }
+      col: ColumnDiff => table.alter.add(col.name, col.cassandraType).qb
     }
   }
 
-  def subtractionQueries(table: Table)
-      (implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): Set[CQLQuery] = {
-    deletions map {
-      col: ColumnDiff => {
-        table.alter.drop(col.name).qb
-      }
-    }
+  def subtractionQueries(table: Table)(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContext
+  ): Set[CQLQuery] = {
+    deletions map { col => table.alter.drop(col.name).qb }
   }
 
-  def queryList(table: Table)
-      (implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): Set[CQLQuery] = {
+  def queryList(table: Table)(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContext
+  ): Set[CQLQuery] = {
     additiveQueries(table) ++ subtractionQueries(table)
   }
 
-  def automigrate(table: Table)
-      (implicit session: Session, keySpace: KeySpace, ec: ExecutionContext): ExecutableStatementList = {
+  def automigrate(table: Table)(
+    implicit session: Session,
+    keySpace: KeySpace,
+    ec: ExecutionContext
+  ): ExecutableStatementList[Seq] = {
     new ExecutableStatementList(queryList(table).toSeq)
   }
 }
 
 
 object Migration {
-  type Table = CassandraTable[_, _]
-
-  def apply(metadata: TableMetadata, table: Table)(implicit diffConfig: DiffConfig): Migration = {
+  def apply[
+    Table <: CassandraTable[Table, _],
+    Record
+  ](metadata: TableMetadata, table: Table)(implicit diffConfig: DiffConfig): Migration[Table, Record] = {
 
     val dbTable = Diff(metadata)
     val phantomTable = Diff(table)
@@ -96,7 +100,10 @@ object Migration {
     )
   }
 
-  def apply(first: Table, second: Table)(implicit diffConfig: DiffConfig): Migration = {
+  def apply[
+    Table <: CassandraTable[Table, _],
+    Record
+  ](first: Table, second: Table)(implicit diffConfig: DiffConfig): Migration[Table, Record] = {
     val firstDiff = Diff(first)
     val secondDiff = Diff(second)
 
@@ -106,4 +113,3 @@ object Migration {
     )
   }
 }
-

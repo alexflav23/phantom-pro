@@ -19,13 +19,6 @@ abstract class UDTCollectionsTable extends CassandraTable[UDTCollectionsTable, P
 
   object current_addresses extends UDTSetColumn[UDTCollectionsTable, Person, Address](this)
 
-  def store(person: Person): Future[ResultSet] = {
-    insert.value(_.id, person.id)
-      .value(_.previous_addresses, person.previous_addresses)
-      .value(_.current_addresses, person.current_addresses)
-      .future()
-  }
-
   def findById(id: UUID): Future[Option[Person]] = {
     select.where(_.id eqs id).one()
   }
