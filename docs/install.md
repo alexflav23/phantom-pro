@@ -1,4 +1,4 @@
-Phantom pro [![Build Status](https://travis-ci.com/outworkers/phantom-pro.svg?token=tyRTmBk14WrDycpepg9c&branch=develop)](https://travis-ci.com/outworkers/phantom-pro.svg?token=tyRTmBk14WrDycpepg9c&branch=develop) 
+Phantom pro [![Build Status](https://travis-ci.com/outworkers/phantom-pro.svg?token=tyRTmBk14WrDycpepg9c&branch=develop)](https://travis-ci.com/outworkers/phantom-pro.svg?token=tyRTmBk14WrDycpepg9c&branch=develop)
 ================================================================================================================================================
 
 ![phantom](https://s3-eu-west-1.amazonaws.com/websudos/oss/logos/phantom.png "Outworkers Phantom Pro")
@@ -8,14 +8,17 @@ Available modules
 
 This is a table of the available modules for the various Scala versions. Not all modules are available for all versions just yet, and this is because certain dependencies have yet to be published for Scala 2.12.
 
-| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      |
-| ------------          | ------------------- | ------------------| ----------------- |
-| phantom-autotables    | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
-| phantom-dse           | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
-| phantom-graph         | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
-| phantom-migrations    | <span>yes</span>    | <span>no</span>  | <span>yes</span>   |
-| phantom-spark         | <span>yes</span>    | <span>yes</span> | <span>no</span>    |
-| phantom-udt           | <span>yes</span>    | <span>yes</span> | <span>yes</span>   |
+| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      | Released      |
+| ------------          | ------------------- | ------------------| ----------------- | ------------- |
+| phantom-autotables    | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | June 2017     |
+| phantom-dse           | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | June 2017     |
+| phantom-graph         | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | Sept 2017     |
+| phantom-migrations    | <span>yes</span>    | <span>no</span>  | <span>yes</span>   | June 2017     |
+| phantom-spark         | <span>yes</span>    | <span>yes</span> | <span>no</span>    | December 2017 |
+| phantom-udt           | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | Yes           |
+| phantom-solr          | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | August 2017   |
+| phantom-native        | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | Oct 2017      |
+| phantom-java-dsl      | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | Oct 2017      |
 
 
 This is the installation guideline for the professional edition of phantom. Thank you for purchasing a subscription.
@@ -38,7 +41,7 @@ To sign up to this free and automated service, simply navigate to [https://bintr
 First, let's set up the account credentials on a development machine.
 
 This is to identify the license and grant access to the Outworkers enterprise release repository.
- 
+
 A local file must created. By convention this is located at `~/.bintray/.credentials`, and it contains:
 
 ```text
@@ -64,7 +67,7 @@ Click on the profile icon in the top right corner and then select "Edit profile"
 
 - Next, there will be a new menu on the left hand side, with the last item being the "API Key". Simply navigate to
 this page and enter the account password again when prompted. After inputting the password,
-the "Show API Key" button will be revealed. 
+the "Show API Key" button will be revealed.
 
 ![phantom](https://s3-us-west-2.amazonaws.com/outworkers.images/phantom-pro/step3.png "Step 3")
 
@@ -92,7 +95,7 @@ To do this, add a reference to the credentials file from within `build.sbt`. It 
 ```scala
   credentials += Credentials(Path.userHome / ".bintray" / ".credentials")
   // ...
-  lazy val project = Project(...) 
+  lazy val project = Project(...)
 ```
 
 ##### Adding the Outworkers resolver to `build.sbt`
@@ -117,12 +120,12 @@ This should be included in the sub-module that requires the dependency. If there
 modules in the build, this should only be added to the relevant sub-modules.
 
 ```scala
-    
+
     val phantomPro = "0.3.0"
-    
+
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
       "com.outworkers" %% "phantom-udt" % Versions.phantomPro
-    ) 
-    
+    )
+
 ```
