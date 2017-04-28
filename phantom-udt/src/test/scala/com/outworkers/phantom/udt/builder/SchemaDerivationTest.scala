@@ -8,7 +8,7 @@ class SchemaDerivationTest extends FlatSpec with Matchers with BeforeAndAfterAll
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    //TestDatabase.create()
+    db.create()
   }
 
   implicit val keySpace = KeySpace("phantom_udt")
@@ -24,6 +24,7 @@ class SchemaDerivationTest extends FlatSpec with Matchers with BeforeAndAfterAll
     val cType = database.primaryCollectionTable.previous_addresses.cassandraType
 
 
+    Console.println(database.primaryCollectionTable.create.ifNotExists().queryString)
     Console.println(database.primaryCollectionTable.create.ifNotExists().queryString)
 
     Console.println(cType)

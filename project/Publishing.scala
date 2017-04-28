@@ -22,7 +22,7 @@ import scala.util.Properties
 object Publishing {
 
   val defaultPublishingSettings = Seq(
-    version := "0.3.3"
+    version := "0.3.5"
   )
 
   lazy val noPublishSettings = Seq(
@@ -46,12 +46,6 @@ object Publishing {
           passwd = System.getenv("bintray_password")
         ),
         Credentials(
-          realm = "Sonatype OSS Repository Manager",
-          host = "oss.sonatype.org",
-          userName = System.getenv("maven_user"),
-          passwd = System.getenv("maven_password")
-        ),
-        Credentials(
           realm = "Bintray API Realm",
           host = "api.bintray.com",
           userName = System.getenv("bintray_user"),
@@ -65,14 +59,21 @@ object Publishing {
     publishMavenStyle := true,
     bintrayOrganization := Some("outworkers"),
     bintrayRepository := {
-      if (scalaVersion.value.trim.endsWith("SNAPSHOT")) "enterprise-snapshots" else "enterprise-releases"
+      if (scalaVersion.value.trim.endsWith("SNAPSHOT")) {
+        "enterprise-snapshots"
+      } else {
+        "enterprise-releases"
+      }
     },
     bintrayReleaseOnPublish in ThisBuild := true,
     publishArtifact in Test := false,
     publishArtifact in (Compile, packageSrc) := false,
     publishArtifact in (Test, packageSrc) := false,
     pomIncludeRepository := { _ => true},
-    licenses += ("Apache-2.0", url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt"))
+    licenses += (
+      "Apache-2.0",
+      url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")
+    )
   ) ++ defaultPublishingSettings
 
   def effectiveSettings: Seq[Def.Setting[_]] = bintraySettings

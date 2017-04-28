@@ -3,7 +3,7 @@ import Keys._
 import com.twitter.sbt.{GitProject, VersionManagement}
 
 lazy val Versions = new {
-  val phantom = "2.7.0"
+  val phantom = "2.7.4"
   val util = "0.30.1"
   val logback = "1.2.1"
   val dse = "1.1.0"
@@ -19,7 +19,6 @@ lazy val Versions = new {
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
-  version := "0.2.0",
   scalaVersion := "2.11.8",
   fork in Test := true,
   testOptions in Test += Tests.Argument("-oF"),
@@ -52,9 +51,14 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "-feature",
     "-unchecked"
   ),
-  fork in Test := true,
-  javaOptions in Test ++= Seq("-Xmx2G")
-) ++ GitProject.gitSettings ++ VersionManagement.newSettings ++ Publishing.effectiveSettings
+  javaOptions in Test ++= Seq(
+    "-Xmx2G",
+    "-Djava.net.preferIPv4Stack=true",
+    "-Dio.netty.resourceLeakDetection"
+  )
+) ++ GitProject.gitSettings ++
+  VersionManagement.newSettings ++
+  Publishing.effectiveSettings
 
 lazy val noPublishSettings = Seq(
   publish := (),
@@ -72,7 +76,6 @@ lazy val phantomPro = (project in file("."))
     phantomDse,
     phantomDseGraph,
     phantomMigrations,
-    //phantomSpark,
     phantomUdt,
     phantomAutoTables
   )
@@ -141,7 +144,6 @@ lazy val phantomUdt = (project in file("phantom-udt"))
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
-      //"org.scala-graph" %% "graph-core" % Versions.scalaGraph,
       "org.typelevel"  %% "macro-compat" % Versions.macroCompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
