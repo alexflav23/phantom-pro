@@ -62,7 +62,7 @@ function publish_to_bintray {
   git push ${github_url} develop
 
   echo "Publishing new version to Bintray"
-  sbt +publish
+  sbt "such publish"
 }
 
 
@@ -89,7 +89,7 @@ function run_tests {
       echo "Running tests without attempting to submit coverage reports"
       sbt ++$TRAVIS_SCALA_VERSION test
   fi
-  
+
   local exitCode=$?
 
   if [ $exitCode == 0 ]
