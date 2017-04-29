@@ -67,7 +67,10 @@ function publish_to_bintray {
 
 
 function run_publish {
-  if [ "$TRAVIS_SCALA_VERSION" == "2.11.8" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ];
+  if [ "$TRAVIS_SCALA_VERSION" == "2.11.8" ] &&
+    [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ] &&
+    [ "$TRAVIS_PULL_REQUEST" == "false" ] &&
+    [ "$TRAVIS_BRANCH" == "develop" ];
     then
         echo "Triggering publish script for Scala 2.11.8";
         publish_to_bintray
