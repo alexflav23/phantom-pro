@@ -15,6 +15,11 @@ class UdtMacroImpl(val c: blackbox.Context) {
 
   import c.universe._
 
+  private[this] lazy val showTrees = !c.inferImplicitValue(
+    typeOf[debug.optionTypes.ShowTrees],
+    silent = true
+  ).isEmpty
+
   def typed[A : c.WeakTypeTag]: Symbol = weakTypeOf[A].typeSymbol
 
   object Symbols {
@@ -488,7 +493,7 @@ class UdtMacroImpl(val c: blackbox.Context) {
     val source = accessors(params)
     val fields = source map derivePrimitive
 
-    q"""
+    val tree = q"""
         implicit val $objName: $packagePrefix.UDTPrimitive[$typeName] = new $packagePrefix.UDTPrimitive[$typeName] {
 
           def deps()(implicit space: $keySpaceTpe): $collections.Seq[$udtPackage.UDTPrimitive[_]] = {
@@ -527,6 +532,12 @@ class UdtMacroImpl(val c: blackbox.Context) {
           def clz: Class[$typeName] = classOf[$typeName]
         }
      """
+
+    if (showTrees) {
+      c.echo(c.enclosingPosition, s"Generated tree for ${tq"$typeName"}:\n${showCode(tree)}")
+    }
+
+    tree
   }
 
   def impl(annottees: c.Expr[Any]*): Tree = {

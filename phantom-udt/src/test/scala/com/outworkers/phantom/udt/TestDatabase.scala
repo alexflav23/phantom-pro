@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2012 - 2017 Outworkers, Limited. All rights reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * The contents of this file are proprietary and strictly confidential.
+ * Written by Flavian Alexandru<flavian@outworkers.co.uk>, 6/2017.
+ */
 package com.outworkers.phantom.udt
 
 import com.datastax.driver.core.{HostDistance, PoolingOptions}
@@ -52,7 +58,7 @@ object TestConnector {
     .noHeartbeat()
     .withClusterBuilder(_.withoutJMXReporting()
       .withoutMetrics().withPoolingOptions(new PoolingOptions().setMaxConnectionsPerHost(HostDistance.LOCAL, 5))
-    ).keySpace(space.name, KeySpaceSerializer(space.name).ifNotExists()
+    ).keySpace(KeySpaceSerializer(space).ifNotExists()
       .`with`(replication eqs SimpleStrategy.replication_factor(1))
       .and(durable_writes eqs true)
     )

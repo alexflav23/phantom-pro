@@ -1,13 +1,25 @@
+/*
+ * Copyright (C) 2012 - 2017 Outworkers, Limited. All rights reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * The contents of this file are proprietary and strictly confidential.
+ * Written by Flavian Alexandru<flavian@outworkers.co.uk>, 6/2017.
+ */
 package com.outworkers.phantom.migrations
 
-import com.outworkers.phantom.migrations.tables.{Diff, DiffConfig, MigrationDbProvider}
 import org.scalatest.{BeforeAndAfterAll, FeatureSpec, GivenWhenThen, Matchers}
+import com.outworkers.phantom.dsl.context
+import com.outworkers.phantom.migrations.tables._
 
 class DiffTest extends FeatureSpec with GivenWhenThen with BeforeAndAfterAll with Matchers with MigrationDbProvider {
 
-  implicit val diffConfig = {
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    database.create()
+  }
+
+  implicit val diffConfig: DiffConfig = {
     DiffConfig(
-      allowNonOptional = false,
+      allowNonOptional = true,
       allowSecondaryOverwrites = false
     )
   }
@@ -16,7 +28,7 @@ class DiffTest extends FeatureSpec with GivenWhenThen with BeforeAndAfterAll wit
   info("I want to automatically resolve schema discrepancies")
   info("Between existing nodes")
 
-  ignore("The column differ should compute the differences between two tables") {
+  feature("The column differ should compute the differences between two tables") {
 
     scenario("The table is being diffed against itself") {
       Given("A valid Cassandra table schema is used")
@@ -32,7 +44,7 @@ class DiffTest extends FeatureSpec with GivenWhenThen with BeforeAndAfterAll wit
       Given("A valid Cassandra table schema is used")
 
       When("A table is diffed against a table with one more string column")
-      val diff = Diff(database.sampleTableOneDiff) diff Diff(database.sampleTableOneDiff)
+      val diff = Diff(database.sampleTableOneDiff) diff Diff(database.sampleTable)
 
       Then("The total number of differences found should be 1")
       diff.columns.size shouldEqual 1

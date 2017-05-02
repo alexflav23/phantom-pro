@@ -3,7 +3,7 @@ import Keys._
 import com.twitter.sbt.{GitProject, VersionManagement}
 
 lazy val Versions = new {
-  val phantom = "2.7.4"
+  val phantom = "2.7.5"
   val util = "0.30.1"
   val logback = "1.2.1"
   val dse = "1.1.0"
@@ -26,7 +26,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, 4)
   ),
-  gitTagName := "version=%s".format(scalaVersion.value),
+  gitTagName := s"version=${scalaVersion.value}",
   libraryDependencies ++= Seq(
      "ch.qos.logback" % "logback-classic" % Versions.logback % Test
   ),
@@ -98,8 +98,11 @@ lazy val phantomMigrations = (project in file("phantom-migrations"))
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
     moduleName := "phantom-migrations",
     libraryDependencies ++= Seq(
-      "com.outworkers" 								 %% "phantom-dsl" 										 % Versions.phantom,
-      "com.outworkers"                 %% "util-testing"                     % Versions.util % Test
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      "org.typelevel"  %% "macro-compat" % Versions.macroCompat,
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+      "com.outworkers" %% "phantom-dsl" % Versions.phantom,
+      "com.outworkers"  %% "util-testing" % Versions.util % Test
     )
   )
 
