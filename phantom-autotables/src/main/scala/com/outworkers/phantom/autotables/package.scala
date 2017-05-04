@@ -4,10 +4,13 @@
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.co.uk>, 6/2017.
  */
-package com.outworkers.phantom.migrations.tables
+package com.outworkers.phantom
 
-import com.outworkers.phantom.connectors.ContactPoint
+import com.outworkers.phantom.builder.primitives.Primitive
 
-object Defaults {
-  lazy val connector = ContactPoint.local.keySpace("phantom_pro")
+package object autotables {
+
+  implicit class PrimitiveObjectAug(val p: Primitive.type) extends AnyVal {
+    def tupled[T <: Product] = new Derived[T]
+  }
 }

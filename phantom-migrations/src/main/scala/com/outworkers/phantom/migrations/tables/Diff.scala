@@ -10,7 +10,6 @@ import com.datastax.driver.core.{ColumnMetadata, TableMetadata}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.column.AbstractColumn
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.OptionalColumn
 import com.outworkers.phantom.migrations.DiffConfig

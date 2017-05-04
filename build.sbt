@@ -4,7 +4,7 @@ import com.twitter.sbt.{GitProject, VersionManagement}
 
 lazy val Versions = new {
   val phantom = "2.7.5"
-  val util = "0.30.1"
+  val util = "0.31.3"
   val logback = "1.2.1"
   val dse = "1.1.0"
   val scalaTest = "3.0.1"
@@ -123,8 +123,9 @@ lazy val phantomAutoTables = (project in file("phantom-autotables"))
     crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
     moduleName := "phantom-autotables",
     libraryDependencies ++= Seq(
-      "com.outworkers" 							%% "phantom-dsl" 										   % Versions.phantom,
-      "com.outworkers"               %% "util-testing"                     % Versions.util % Test
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      "com.outworkers" 							%% "phantom-dsl" 										  % Versions.phantom,
+      "com.outworkers"              %% "util-testing"                     % Versions.util % Test
     )
   )
 
