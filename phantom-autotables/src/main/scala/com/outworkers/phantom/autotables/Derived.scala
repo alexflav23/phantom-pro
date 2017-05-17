@@ -9,9 +9,7 @@ package com.outworkers.phantom.autotables
 import com.outworkers.phantom.builder.primitives.Primitive
 
 class Derived[T <: Product] {
-  def derive[
-    TP
-  ](
+  def derive[TP](
     implicit tp: TupleGeneric.Aux[T, TP],
     ev: Primitive[TP]
   ): Primitive[T] = {

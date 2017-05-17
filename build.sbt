@@ -3,8 +3,8 @@ import Keys._
 import com.twitter.sbt.{GitProject, VersionManagement}
 
 lazy val Versions = new {
-  val phantom = "2.7.5"
-  val util = "0.31.3"
+  val phantom = "2.8.0"
+  val util = "0.33.0"
   val logback = "1.2.1"
   val dse = "1.1.0"
   val scalaTest = "3.0.1"

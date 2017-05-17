@@ -7,8 +7,8 @@
 package com.outworkers.phantom.autotables
 
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers, OptionValues}
-import com.outworkers.util.testing._
-import com.outworkers.phantom.dsl.context
+import com.outworkers.util.samplers._
+import com.outworkers.phantom.dsl._
 import org.scalatest.concurrent.ScalaFutures
 
 class PrimitiveDerivationTest extends FlatSpec with Matchers with AutoDBProvider with OptionValues with ScalaFutures with BeforeAndAfterAll {
@@ -27,8 +27,36 @@ class PrimitiveDerivationTest extends FlatSpec with Matchers with AutoDBProvider
     } yield one
 
     whenReady(chain) { res =>
+      Console.println(user.trace())
+
       res shouldBe defined
-      res.value shouldEqual user
+      res.value.id shouldEqual user.id
+      res.value.email shouldEqual user.email
+      res.value.location shouldEqual user.location
+      //res.value.previousLocations should contain theSameElementsAs user.previousLocations
+    }
+  }
+
+  it should "allow appending values to a list collection with derived primitives" in {
+    val user = gen[User]
+    val loc = gen[Location]
+
+    val chain = for {
+      _ <- db.users.store(user).future()
+      one <- db.users.findById(user.id)
+      update <- db.users.update.where(_.id eqs user.id).modify(_.previousLocations add loc).future()
+      one2 <- db.users.findById(user.id)
+    } yield (one, one2)
+
+    whenReady(chain) { case (beforeUpdate, afterUpdate) =>
+      Console.println(user.trace())
+
+      beforeUpdate shouldBe defined
+      beforeUpdate.value shouldEqual user
+
+
+      afterUpdate.value shouldEqual user
+      afterUpdate.value.previousLocations should contain theSameElementsAs (user.previousLocations + loc)
     }
   }
 

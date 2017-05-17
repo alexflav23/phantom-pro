@@ -6,11 +6,8 @@
  */
 package com.outworkers.phantom.udt
 
-import com.outworkers.phantom.udt.debug.options.ShowTrees
-
 import scala.concurrent.Future
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.udt.columns.UDTColumn
 
 @Udt case class Test(id: Int, name: String)
 
@@ -25,15 +22,17 @@ case class TestRecord(
   col: ListCollectionUdt
 )
 
-abstract class TestTable extends CassandraTable[TestTable, TestRecord] with RootConnector {
+abstract class TestTable extends Table[TestTable, TestRecord] {
 
-  object uuid extends UUIDColumn(this) with PartitionKey
+  object uuid extends UUIDColumn with PartitionKey
 
-  object udt extends UDTColumn[TestTable, TestRecord, Test](this)
+  object udt extends Col[Test]
 
-  object udt2 extends UDTColumn[TestTable, TestRecord, Test2](this)
+  object udt2 extends Col[Test2]
 
-  object col extends UDTColumn[TestTable, TestRecord, ListCollectionUdt](this)
+  object col extends Col[ListCollectionUdt] {
+    override def cassandraType: String = UDTPrimitive[ListCollectionUdt].cassandraType
+  }
 
   def getById(id: UUID): Future[Option[TestRecord]] = {
     select.where(_.uuid eqs id).one

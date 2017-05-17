@@ -17,13 +17,16 @@ case class Person(
   current_addresses: Set[Address]
 )
 
-abstract class UDTCollectionsTable extends CassandraTable[UDTCollectionsTable, Person] with RootConnector {
+abstract class UDTCollectionsTable extends Table[
+  UDTCollectionsTable,
+  Person
+] {
 
-  object id extends UUIDColumn(this) with PartitionKey
+  object id extends UUIDColumn with PartitionKey
 
-  object previous_addresses extends UDTListColumn[UDTCollectionsTable, Person, Address](this)
+  object previous_addresses extends ListColumn[Address]
 
-  object current_addresses extends UDTSetColumn[UDTCollectionsTable, Person, Address](this)
+  object current_addresses extends SetColumn[Address]
 
   def findById(id: UUID): Future[Option[Person]] = {
     select.where(_.id eqs id).one()
@@ -31,20 +34,16 @@ abstract class UDTCollectionsTable extends CassandraTable[UDTCollectionsTable, P
 }
 
 
-abstract class PrimaryUDTCollectionsTable extends CassandraTable[PrimaryUDTCollectionsTable, Person] with RootConnector {
+abstract class PrimaryUDTCollectionsTable extends Table[
+  PrimaryUDTCollectionsTable,
+  Person
+] {
 
-  object id extends UUIDColumn(this) with PartitionKey
+  object id extends UUIDColumn with PartitionKey
 
-  object previous_addresses extends UDTListColumn[PrimaryUDTCollectionsTable, Person, Address](this) with PrimaryKey
+  object previous_addresses extends ListColumn[Address] with PrimaryKey
 
-  object current_addresses extends UDTSetColumn[PrimaryUDTCollectionsTable, Person, Address](this)
-
-  def store(person: Person): Future[ResultSet] = {
-    insert.value(_.id, person.id)
-      .value(_.previous_addresses, person.previous_addresses)
-      .value(_.current_addresses, person.current_addresses)
-      .future()
-  }
+  object current_addresses extends SetColumn[Address]
 
   def findByIdAndAddresses(id: UUID, addresses: List[Address]): Future[Option[Person]] = {
     select.where(_.id eqs id).one()

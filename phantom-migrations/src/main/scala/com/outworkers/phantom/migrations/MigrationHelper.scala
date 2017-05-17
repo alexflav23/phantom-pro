@@ -35,7 +35,7 @@ object MigrationHelper {
 }
 
 @macrocompat.bundle
-class MigrationHelperMacro(override val c: whitebox.Context) extends RootMacro(c) {
+class MigrationHelperMacro(override val c: whitebox.Context) extends RootMacro {
 
   import c.universe._
 

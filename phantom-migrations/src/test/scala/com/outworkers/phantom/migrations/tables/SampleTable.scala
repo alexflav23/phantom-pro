@@ -10,26 +10,28 @@ case class SampleRecord(
 )
 
 abstract class SampleTable extends Table[SampleTable, SampleRecord] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object name extends StringColumn(this)
-  object date extends DateTimeColumn(this)
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
+  object date extends DateTimeColumn
 }
 
 abstract class SampleTableOneDiff extends Table[SampleTableOneDiff, SampleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey
-  object name extends StringColumn(this)
-  object name2 extends StringColumn(this)
-  object date extends DateTimeColumn(this)
+  object id extends UUIDColumn with PartitionKey
+  object name extends StringColumn
+  object name2 extends StringColumn
+  object date extends DateTimeColumn
 }
 
 abstract class SampleTablePrimaryDiff extends Table[SampleTablePrimaryDiff, SampleRecord] {
-  object id extends UUIDColumn(this) with PartitionKey
-  object id2 extends UUIDColumn(this) with PrimaryKey
-  object name extends StringColumn(this)
-  object date extends DateTimeColumn(this)
+  object id extends UUIDColumn with PartitionKey
+  object id2 extends UUIDColumn with PrimaryKey
+  object name extends StringColumn
+  object date extends DateTimeColumn
 }
 
-class MigrationDatabase(override val connector: CassandraConnection) extends Database[MigrationDatabase](connector) {
+class MigrationDatabase(
+  override val connector: CassandraConnection
+) extends Database[MigrationDatabase](connector) {
   object sampleTable extends SampleTable with Connector
   object sampleTableOneDiff extends SampleTableOneDiff with Connector
   object sampleTablePrimaryDiff extends SampleTablePrimaryDiff with Connector

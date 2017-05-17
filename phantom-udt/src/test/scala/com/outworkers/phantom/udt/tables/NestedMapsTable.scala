@@ -8,7 +8,7 @@ package com.outworkers.phantom.udt.tables
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.udt._
-import com.outworkers.phantom.udt.columns.UDTColumn
+import com.outworkers.phantom.udt.debug.options.ShowTrees
 
 import scala.concurrent.Future
 
@@ -23,13 +23,18 @@ case class NestedMapRecord(
   addresses: NestedMaps
 )
 
-abstract class NestedMapsTable extends CassandraTable[NestedMapsTable, NestedMapRecord] with RootConnector {
+abstract class NestedMapsTable extends Table[
+  NestedMapsTable,
+  NestedMapRecord
+] {
 
-  object id extends UUIDColumn(this) with PartitionKey
+  object id extends UUIDColumn with PartitionKey
 
-  object people extends ListColumn[String](this)
+  object people extends ListColumn[String]
 
-  object addresses extends UDTColumn[NestedMapsTable, NestedMapRecord, NestedMaps](this)
+  object addresses extends Col[NestedMaps] {
+    override def cassandraType: String = UDTPrimitive[ListCollectionUdt].cassandraType
+  }
 
   def findById(id: UUID): Future[Option[NestedMapRecord]] = {
     select.where(_.id eqs id).one()

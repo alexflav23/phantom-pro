@@ -8,7 +8,6 @@ package com.outworkers.phantom.udt.tables
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.udt._
-import com.outworkers.phantom.udt.columns.UDTColumn
 
 import scala.concurrent.Future
 
@@ -35,11 +34,14 @@ import scala.concurrent.Future
   col: CollectionUdt
 )
 
-abstract class NestedUdtsTable extends CassandraTable[NestedUdtsTable, NestedRecord] with RootConnector {
-  object id extends UUIDColumn(this) with PartitionKey
-  object email extends StringColumn(this)
-  object address extends UDTColumn[NestedUdtsTable, NestedRecord, Address](this)
-  object col extends UDTColumn[NestedUdtsTable, NestedRecord, CollectionUdt](this)
+abstract class NestedUdtsTable extends Table[
+  NestedUdtsTable,
+  NestedRecord
+] {
+  object id extends UUIDColumn with PartitionKey
+  object email extends StringColumn
+  object address extends Col[Address]
+  object col extends Col[CollectionUdt]
 
   def findById(id: UUID): Future[Option[NestedRecord]] = select.where(_.id eqs id).one()
 }

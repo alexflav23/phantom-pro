@@ -23,5 +23,6 @@ object Location {
 case class User(
   id: UUID,
   email: String,
-  location: Location
+  location: Location,
+  previousLocations: Set[Location]
 )

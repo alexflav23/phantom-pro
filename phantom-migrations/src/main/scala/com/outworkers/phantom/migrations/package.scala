@@ -6,20 +6,21 @@
  */
 package com.outworkers.phantom
 
-import com.datastax.driver.core.{ResultSet, Session}
+import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.query.ExecutableStatementList
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.database.Database
+import com.outworkers.phantom.dsl.Table
 import com.outworkers.phantom.migrations.tables.Differ
 
-import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
 package object migrations {
 
   val defaultDuration = 20.seconds
 
-  implicit class TableMigrations[T <: CassandraTable[T, R], R](val table: T) extends AnyVal {
+  implicit class TableMigrations(val table: Table[_, _]) extends AnyVal {
 
     def automigrate()(
       implicit session: Session,
@@ -27,7 +28,7 @@ package object migrations {
       ec: ExecutionContextExecutor,
       diffConfig: DiffConfig
     ): ExecutableStatementList[Seq] = {
-      Differ.automigrate[T, R](table)
+      Differ.automigrate(table)
     }
 
     def automigrate(diffConfig: DiffConfig)(
@@ -35,7 +36,7 @@ package object migrations {
       space: KeySpace,
       ec: ExecutionContextExecutor
     ): ExecutableStatementList[Seq] = {
-      Differ.automigrate[T, R](table)(session, space, ec, diffConfig)
+      Differ.automigrate(table)(session, space, ec, diffConfig)
     }
   }
 
