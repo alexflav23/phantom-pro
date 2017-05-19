@@ -32,9 +32,7 @@ abstract class NestedMapsTable extends Table[
 
   object people extends ListColumn[String]
 
-  object addresses extends Col[NestedMaps] {
-    override def cassandraType: String = UDTPrimitive[ListCollectionUdt].cassandraType
-  }
+  object addresses extends Col[NestedMaps]
 
   def findById(id: UUID): Future[Option[NestedMapRecord]] = {
     select.where(_.id eqs id).one()

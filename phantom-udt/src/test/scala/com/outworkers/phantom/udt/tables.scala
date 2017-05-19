@@ -30,9 +30,7 @@ abstract class TestTable extends Table[TestTable, TestRecord] {
 
   object udt2 extends Col[Test2]
 
-  object col extends Col[ListCollectionUdt] {
-    override def cassandraType: String = UDTPrimitive[ListCollectionUdt].cassandraType
-  }
+  object col extends Col[ListCollectionUdt]
 
   def getById(id: UUID): Future[Option[TestRecord]] = {
     select.where(_.uuid eqs id).one
