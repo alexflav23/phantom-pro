@@ -27,13 +27,11 @@ class PrimitiveDerivationTest extends FlatSpec with Matchers with AutoDBProvider
     } yield one
 
     whenReady(chain) { res =>
-      Console.println(user.trace())
-
       res shouldBe defined
       res.value.id shouldEqual user.id
       res.value.email shouldEqual user.email
       res.value.location shouldEqual user.location
-      //res.value.previousLocations should contain theSameElementsAs user.previousLocations
+      res.value.previousLocations should contain theSameElementsAs user.previousLocations
     }
   }
 
@@ -49,13 +47,12 @@ class PrimitiveDerivationTest extends FlatSpec with Matchers with AutoDBProvider
     } yield (one, one2)
 
     whenReady(chain) { case (beforeUpdate, afterUpdate) =>
-      Console.println(user.trace())
-
       beforeUpdate shouldBe defined
       beforeUpdate.value shouldEqual user
 
-
-      afterUpdate.value shouldEqual user
+      afterUpdate.value.id shouldEqual user.id
+      afterUpdate.value.email shouldEqual user.email
+      afterUpdate.value.location shouldEqual user.location
       afterUpdate.value.previousLocations should contain theSameElementsAs (user.previousLocations + loc)
     }
   }
