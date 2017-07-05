@@ -15,6 +15,7 @@ lazy val Versions = new {
   val macroCompat = "1.1.1"
   val macroParadise = "2.1.0"
   val scalaGraph = "1.11.4"
+  val dockerKit = "0.9.0"
 }
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
@@ -77,7 +78,8 @@ lazy val phantomPro = (project in file("."))
     phantomDseGraph,
     phantomMigrations,
     phantomUdt,
-    phantomAutoTables
+    phantomAutoTables,
+    phantomDocker
   )
 
 lazy val phantomDse = (project in file("phantom-dse"))
@@ -138,6 +140,19 @@ lazy val phantomDseGraph = (project in file("phantom-graph"))
       "com.datastax.cassandra"       % "dse-driver"                        % Versions.dseDriver,
       "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
       "com.outworkers"               %% "util-testing"                     % Versions.util % Test
+    )
+  )
+
+lazy val phantomDocker = (project in file("phantom-docker"))
+  .settings(sharedSettings: _*)
+  .settings(
+    moduleName := "phantom-udt",
+    publishMavenStyle := false,
+    sbtPlugin := true,
+    crossScalaVersions := Seq("2.10.6"),
+    libraryDependencies ++= Seq(
+      "com.whisk" %% "docker-testkit-scalatest" % Versions.dockerKit,
+      "com.whisk" %% "docker-testkit-impl-spotify" % Versions.dockerKit
     )
   )
 

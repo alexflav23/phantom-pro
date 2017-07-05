@@ -63,8 +63,6 @@ class UdtTest extends FlatSpec with PhantomTest {
   it should "retrieve a complex record with a nested map collection" in {
     val sample = gen[NestedMapRecord]
 
-    Console.println(database.nestedMapUdtTable.store(sample).queryString)
-
     val chain = for {
       store <- database.nestedMapUdtTable.store(sample).future
       get <- database.nestedMapUdtTable.findById(sample.id)

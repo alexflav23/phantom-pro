@@ -28,11 +28,6 @@ class SchemaDerivationTest extends FlatSpec with Matchers with BeforeAndAfterAll
 
   it should "automatically freeze a primary udt collection column" in {
     val cType = database.primaryCollectionTable.previous_addresses.cassandraType
-
-
-    Console.println(database.primaryCollectionTable.create.ifNotExists().queryString)
-    Console.println(database.primaryCollectionTable.create.ifNotExists().queryString)
-
-    Console.println(cType)
+    cType.indexOf("frozen") shouldNot equal (-1)
   }
 }
