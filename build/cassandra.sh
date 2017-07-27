@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
 
+function check_java_home {
+    java_home=${JAVA_HOME}
+
+    if [ -z ${java_home} ];
+        then
+            echo "Java home already set to $java_home"
+        else
+            echo "Java home not set"
+        fi
+}
+
 function check_java_version {
     if type -p java; then
         echo found java executable in PATH

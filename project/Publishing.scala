@@ -16,19 +16,32 @@
 import bintray.BintrayKeys._
 import sbt.Keys._
 import sbt._
-
-import scala.util.Properties
+import sbtrelease.ReleasePlugin.autoImport.{ReleaseStep, _}
+import sbtrelease.ReleaseStateTransformations._
 
 object Publishing {
-
-  val defaultPublishingSettings = Seq(
-    version := "0.6.0"
-  )
 
   lazy val noPublishSettings = Seq(
     publish := (),
     publishLocal := (),
     publishArtifact := false
+  )
+
+  val releaseSettings = Seq(
+    releaseVersionBump := sbtrelease.Version.Bump.Bugfix,
+    releaseTagComment := s"Releasing ${(version in ThisBuild).value}",
+    releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value}",
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      releaseStepCommandAndRemaining("+publish"),
+      setNextVersion,
+      commitNextVersion,
+      pushChanges
+    )
   )
 
   lazy val defaultCredentials: Seq[Credentials] = {
@@ -74,9 +87,9 @@ object Publishing {
       "Apache-2.0",
       url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")
     )
-  ) ++ defaultPublishingSettings
+  )
 
-  def effectiveSettings: Seq[Def.Setting[_]] = bintraySettings
+  def effectiveSettings: Seq[Def.Setting[_]] = bintraySettings ++ releaseSettings
 
   def runningUnderCi: Boolean = sys.env.get("CI").isDefined || sys.env.get("TRAVIS").isDefined
   def travisScala211: Boolean = sys.env.get("TRAVIS_SCALA_VERSION").exists(_.contains("2.11"))

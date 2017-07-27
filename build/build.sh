@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 github_url="https://${github_token}@${GH_REF}"
+scala_version="2.12.2"
 
 function create_bintray_file {
     echo "Creating credentials file"
@@ -44,39 +45,28 @@ function publish_to_bintray {
   if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]]
   then
       echo "Skipping version bump and simply tagging"
-      sbt git-tag
   else
-      sbt version-bump-patch git-tag
+      echo "Bumping version bump and simply tagging"
+      #sbt version-bump-patch git-tag
   fi
 
-  echo "Pushing tag to GitHub."
-  git push ${github_url} --tags
-
-  echo "Pushing new version to GitHub and skipping CI."
-  git add .
-  git commit -m "TravisCI: Bumping version [ci skip]"
-
-  git checkout -b version_branch
-  git checkout -B develop version_branch
-
-  git push ${github_url} develop
+  git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
 
   echo "Publishing new version to Bintray"
-  sbt "such publish"
+  sbt "release with-defaults"
 }
 
-
 function run_publish {
-  if [ "$TRAVIS_SCALA_VERSION" == "2.11.8" ] &&
+  if [ "$TRAVIS_SCALA_VERSION" == ${scala_version} ] &&
     [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ] &&
     [ "$TRAVIS_PULL_REQUEST" == "false" ] &&
     [ "$TRAVIS_BRANCH" == "develop" ];
     then
-        echo "Triggering publish script for Scala 2.11.8";
+        echo "Triggering publish script for Scala $scala_version";
         publish_to_bintray
         exit $?
     else
-        echo "Scala version is not 2.11.8";
+        echo "Scala version is not $scala_version";
         echo "This is either a pull request or the branch is not develop, deployment not necessary"
         exit 0
     fi
@@ -84,25 +74,25 @@ function run_publish {
 
 function run_tests {
   #!/usr/bin/env bash
-  if [ "${TRAVIS_SCALA_VERSION}" == "2.11.8" ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
+  if [ "${TRAVIS_SCALA_VERSION}" == ${scala_version} ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
   then
       echo "Running tests with coverage and report submission"
-      sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport coverageAggregate coveralls
+      sbt "+++$TRAVIS_SCALA_VERSION testsWithCoverage"
   else
       echo "Running tests without attempting to submit coverage reports"
-      sbt ++$TRAVIS_SCALA_VERSION test
+      sbt "+++$TRAVIS_SCALA_VERSION test"
   fi
 
   local exitCode=$?
 
-  if [ $exitCode == 0 ]
+  if [ ${exitCode} == 0 ]
     then
       echo "Tests successful, running publish script."
       run_publish
       exit $?
     else
       echo "Non zero exit code $exitCode"
-      exit $?
+      exit ${exitCode}
   fi
 }
 

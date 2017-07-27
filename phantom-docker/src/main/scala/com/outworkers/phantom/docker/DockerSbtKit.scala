@@ -9,13 +9,14 @@ package com.outworkers.phantom.docker
 import java.util.concurrent.Executors
 
 import com.whisk.docker.{DockerContainer, DockerContainerManager, DockerContainerState, DockerFactory}
-import org.slf4j.LoggerFactory
-import scala.concurrent.duration._
+import sbt.Logger
 
+import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 class DockerSbtKit(
   factory: DockerFactory,
+  logger: Logger,
   dockerContainers: List[DockerContainer],
   pullImagesTimeout: Duration,
   startContainerTimeout: Duration,
@@ -23,8 +24,6 @@ class DockerSbtKit(
 ) {
 
   implicit def dockerFactory: DockerFactory = factory
-
-  private lazy val log = LoggerFactory.getLogger(this.getClass)
 
   // we need ExecutionContext in order to run docker.init() / docker.stop() there
   implicit lazy val dockerExecutionContext: ExecutionContext = {
@@ -48,19 +47,47 @@ class DockerSbtKit(
     getContainerState(c)
   }
 
+
+  def timed[T](f: => T): T = {
+    val start = System.nanoTime()
+    val x = f
+    val end = System.nanoTime()
+    val time = (end - start).nanos
+    logger.info(s"Callback completed in ${time.toMillis} milliseconds")
+    x
+  }
+
+  def waitForReadyChecks(duration: Duration): Unit = {
+    logger.info("Waiting for all ready states to be complete")
+
+    val futures = dockerContainers.map(container => container.readyChecker(getContainerState(container)))
+
+    timed {
+      Await.result(Future.sequence(futures), duration)
+    }
+  }
+
   def startAllOrFail(): Unit = {
     Await.result(containerManager.pullImages(), pullImagesTimeout)
 
     val allRunning: Boolean = try {
       val future: Future[Boolean] =
-        containerManager.initReadyAll(startContainerTimeout).map(_.map(_._2).forall(identity))
+        containerManager.initReadyAll(startContainerTimeout).map(x => {
+          logger.info("Finished initialising containers using containerManager.")
+          logger.info(s"Container states: ${x.mkString(", ")}")
+          x.map(_._2).forall(identity)
+        })
+
       sys.addShutdownHook(
         containerManager.stopRmAll()
       )
+
       Await.result(future, startContainerTimeout)
+
     } catch {
       case e: Exception =>
-        log.error("Exception during container initialization", e)
+        logger.error("Exception during container initialization")
+        logger.trace(e)
         false
     }
     if (!allRunning) {
@@ -69,12 +96,14 @@ class DockerSbtKit(
     }
   }
 
-  def stopAllQuietly(): Unit = {
+  def stopAllQuietly[T](f: => T): Unit = {
     try {
-      Await.result(containerManager.stopRmAll(), stopContainer)
+      Await.result(containerManager.stopRmAll() map ( _ => { val x = f }), stopContainer)
     } catch {
-      case e: Throwable =>
-        log.error(e.getMessage, e)
+      case e: Throwable => {
+        logger.error(e.getMessage)
+        logger.trace(e)
+      }
     }
   }
 

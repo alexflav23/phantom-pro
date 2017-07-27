@@ -1,6 +1,6 @@
 import sbt._
 import Keys._
-import com.twitter.sbt.{GitProject, VersionManagement}
+import ReleaseTransformations._
 
 lazy val Versions = new {
   val phantom = "2.13.1"
@@ -16,18 +16,21 @@ lazy val Versions = new {
   val macroParadise = "2.1.0"
   val scalaGraph = "1.11.4"
   val dockerKit = "0.9.0"
+  val scala210 = "2.10.6"
+  val scala211 = "2.11.11"
+  val scala212 = "2.12.2"
+  val scalaAll = Seq(scala210, scala211, scala212)
 }
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
-  scalaVersion := "2.11.8",
+  scalaVersion := Versions.scala212,
   fork in Test := true,
   testOptions in Test += Tests.Argument("-oF"),
   logBuffered in Test := false,
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, 4)
   ),
-  gitTagName := s"version=${scalaVersion.value}",
   libraryDependencies ++= Seq(
      "ch.qos.logback" % "logback-classic" % Versions.logback % Test
   ),
@@ -40,6 +43,14 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Resolver.bintrayRepo("outworkers", "oss-releases"),
     Resolver.bintrayRepo("outworkers", "internal-releases")
   ),
+  commands in ThisBuild += Command.command("testsWithCoverage") { state =>
+    "coverage" ::
+    "test" ::
+    "coverageReport" ::
+    "coverageAggregate" ::
+    "coveralls" ::
+    state
+  },
   scalacOptions in ThisBuild ++= Seq(
     "-language:postfixOps",
     "-language:implicitConversions",
@@ -57,9 +68,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "-Djava.net.preferIPv4Stack=true",
     "-Dio.netty.resourceLeakDetection"
   )
-) ++ GitProject.gitSettings ++
-  VersionManagement.newSettings ++
-  Publishing.effectiveSettings
+) ++ Publishing.effectiveSettings
 
 lazy val noPublishSettings = Seq(
   publish := (),
@@ -80,24 +89,24 @@ lazy val phantomPro = (project in file("."))
     phantomUdt,
     phantomAutoTables,
     phantomDocker
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomDse = (project in file("phantom-dse"))
   .settings(sharedSettings: _*)
   .settings(
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+    crossScalaVersions := Versions.scalaAll,
     moduleName := "phantom-dse",
     libraryDependencies ++= Seq(
       "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
       "com.datastax.cassandra"       %  "dse-driver"                       % Versions.dse,
       "com.outworkers"               %% "util-testing"                     % Versions.util % Test
     )
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomMigrations = (project in file("phantom-migrations"))
   .settings(sharedSettings: _* )
   .settings(
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+    crossScalaVersions := Versions.scalaAll,
     moduleName := "phantom-migrations",
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
@@ -106,61 +115,63 @@ lazy val phantomMigrations = (project in file("phantom-migrations"))
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "com.outworkers"  %% "util-testing" % Versions.util % Test
     )
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomSpark = (project in file("phantom-spark"))
   .settings(sharedSettings: _*)
   .settings(
-    crossScalaVersions := Seq("2.10.6", "2.11.8"),
+    crossScalaVersions := Seq(Versions.scala210, Versions.scala211),
     moduleName := "phantom-spark",
     libraryDependencies ++= Seq(
       "com.datastax.spark"           %% "spark-cassandra-connector"        % Versions.spark,
       "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom
     )
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomAutoTables = (project in file("phantom-autotables"))
   .settings(sharedSettings: _*)
   .settings(
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+    crossScalaVersions := Versions.scalaAll,
     moduleName := "phantom-autotables",
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "com.outworkers" 							%% "phantom-dsl" 										  % Versions.phantom,
       "com.outworkers"              %% "util-testing"                     % Versions.util % Test
     )
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomDseGraph = (project in file("phantom-graph"))
   .settings(sharedSettings: _*)
   .settings(
     moduleName := "phantom-graph",
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+    crossScalaVersions := Versions.scalaAll,
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       % "dse-driver"                        % Versions.dseDriver,
       "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
       "com.outworkers"               %% "util-testing"                     % Versions.util % Test
     )
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomDocker = (project in file("phantom-docker"))
   .settings(sharedSettings: _*)
   .settings(
-    moduleName := "phantom-udt",
+    moduleName := "phantom-docker",
     publishMavenStyle := false,
     sbtPlugin := true,
-    crossScalaVersions := Seq("2.10.6"),
+    publishArtifact in Test := false,
+    pomIncludeRepository := { _ => false },
+    crossScalaVersions := Seq(Versions.scala210),
     libraryDependencies ++= Seq(
       "com.whisk" %% "docker-testkit-scalatest" % Versions.dockerKit,
       "com.whisk" %% "docker-testkit-impl-spotify" % Versions.dockerKit
     )
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomUdt = (project in file("phantom-udt"))
   .settings(sharedSettings: _*)
   .settings(
     moduleName := "phantom-udt",
-    crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0"),
+    crossScalaVersions := Versions.scalaAll,
     libraryDependencies ++= Seq(
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "org.typelevel"  %% "macro-compat" % Versions.macroCompat,
@@ -168,4 +179,4 @@ lazy val phantomUdt = (project in file("phantom-udt"))
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "com.outworkers" %% "util-testing" % Versions.util % Test
     )
-  )
+  ).enablePlugins(CrossPerProjectPlugin)
