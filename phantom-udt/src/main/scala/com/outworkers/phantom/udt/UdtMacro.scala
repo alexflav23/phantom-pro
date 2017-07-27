@@ -21,11 +21,6 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
 
   import c.universe._
 
-  private[this] lazy val showTrees = !c.inferImplicitValue(
-    typeOf[debug.optionTypes.ShowTrees],
-    silent = true
-  ).isEmpty
-
   def typed[A : c.WeakTypeTag]: Symbol = weakTypeOf[A].typeSymbol
 
   object Symbols {
