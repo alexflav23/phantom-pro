@@ -50,7 +50,10 @@ function publish_to_bintray {
       #sbt version-bump-patch git-tag
   fi
 
-  git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
+  git branch --set-upstream ${TRAVIS_BRANCH} origin/${TRAVIS_BRANCH}
+
+  git config branch.${TRAVIS_BRANCH}.remote origin
+  git config branch.${TRAVIS_BRANCH}.merge refs/heads/${TRAVIS_BRANCH}
 
   echo "Publishing new version to Bintray"
   sbt "release with-defaults"
