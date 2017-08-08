@@ -4,12 +4,15 @@
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.co.uk>, 6/2017.
  */
-package com.outworkers.phantom.udt
+package com.outworkers.phantom.udt.suites
 
+import java.net.InetAddress
+import java.nio.ByteBuffer
 import java.util.UUID
 
 import com.outworkers.phantom.udt.tables._
 import com.outworkers.util.samplers._
+import org.scalacheck.Gen
 
 trait Samplers {
 
@@ -94,5 +97,16 @@ trait Samplers {
     )
   }
 
+  implicit object InetAddressSampler extends Sample[InetAddress] {
+    override def sample: InetAddress = {
+      InetAddress.getByName(
+        s"${Gen.choose(0, 255).sample.get}.${Gen.choose(0, 255).sample.get}.${Gen.choose(0, 255).sample.get}.${Gen.choose(0, 255).sample.get}"
+      )
+    }
+  }
+
+  implicit object ByteBufferSampler extends Sample[ByteBuffer] {
+    override def sample: ByteBuffer = ByteBuffer.wrap(gen[ShortString].value.getBytes("UTF-8"))
+  }
 
 }

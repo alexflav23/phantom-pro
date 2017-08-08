@@ -6,7 +6,7 @@ import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
 import com.outworkers.phantom.udt.query.UDTCreateQuery
 
 abstract class UDTPrimitive[
-  T <: Product with Serializable
+  T
 ]() extends Primitive[T] with SessionAugmenterImplicits {
 
   def deps()(implicit space: KeySpace): Seq[UDTPrimitive[_]]
@@ -21,5 +21,5 @@ abstract class UDTPrimitive[
 }
 
 object UDTPrimitive {
-  def apply[T <: Product with Serializable]()(implicit ev: UDTPrimitive[T]): UDTPrimitive[T] = ev
+  def apply[T]()(implicit ev: UDTPrimitive[T]): UDTPrimitive[T] = ev
 }

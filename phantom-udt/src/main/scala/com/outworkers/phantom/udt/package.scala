@@ -11,6 +11,7 @@ import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import shapeless._
 import shapeless.ops.hlist._
+import com.outworkers.phantom.udt.macros.DefMacro
 
 package object udt {
 
@@ -28,4 +29,6 @@ package object udt {
       toList: ToList[Out, CQLQuery]
     ): ExecutableStatementList[Seq] = new ExecutableStatementList[Seq](toList(rev(hl).map(ExtractSchema)))
   }
+
+  def deriveUDT[T]: UDTPrimitive[T] = macro DefMacro.materialize[T]
 }

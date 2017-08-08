@@ -8,8 +8,6 @@ package com.outworkers.phantom.udt.tables
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.udt._
-import com.outworkers.phantom.udt.debug.options.ShowTrees
-
 import scala.concurrent.Future
 
 @Udt case class NestedMaps(

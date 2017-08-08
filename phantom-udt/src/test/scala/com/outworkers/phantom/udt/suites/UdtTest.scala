@@ -4,11 +4,12 @@
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.co.uk>, 6/2017.
  */
-package com.outworkers.phantom.udt
+package com.outworkers.phantom.udt.suites
 
-import com.outworkers.util.testing._
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.udt.UDTPrimitive
 import com.outworkers.phantom.udt.tables._
+import com.outworkers.util.testing._
 import org.scalatest._
 
 class UdtTest extends FlatSpec with PhantomTest {

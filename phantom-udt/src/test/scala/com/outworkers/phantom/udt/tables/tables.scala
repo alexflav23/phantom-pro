@@ -4,10 +4,12 @@
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.co.uk>, 6/2017.
  */
-package com.outworkers.phantom.udt
+package com.outworkers.phantom.udt.tables
+
+import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.udt.Udt
 
 import scala.concurrent.Future
-import com.outworkers.phantom.dsl._
 
 @Udt case class Test(id: Int, name: String)
 

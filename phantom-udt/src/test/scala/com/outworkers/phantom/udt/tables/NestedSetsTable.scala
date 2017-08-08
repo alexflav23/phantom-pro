@@ -8,6 +8,7 @@ package com.outworkers.phantom.udt.tables
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.udt._
+
 import scala.concurrent.Future
 
 @Udt case class CollectionSetUdt(

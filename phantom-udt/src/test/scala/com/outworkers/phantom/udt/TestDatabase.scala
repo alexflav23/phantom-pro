@@ -10,6 +10,7 @@ import com.datastax.driver.core.{HostDistance, PoolingOptions}
 import com.outworkers.phantom.builder.query.{CassandraOperations, ExecutableStatementList}
 import com.outworkers.phantom.builder.serializers.KeySpaceSerializer
 import com.outworkers.phantom.dsl.{context => _, _}
+import com.outworkers.phantom.udt.domain.OptionalUdt
 import com.outworkers.phantom.udt.tables._
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
@@ -28,6 +29,12 @@ class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDat
 
   object primaryCollectionTable extends PrimaryUDTCollectionsTable with Connector
 
+  object optionalUdts extends OptionalUDTsTable with Connector
+
+  object policies extends AuthorizerPolicy with Connector
+
+  object derivedUdts extends DerivedEncoderUdtTable with Connector
+
   def initUds: ExecutableStatementList[Seq] = {
     new ExecutableStatementList[Seq](
       Seq(
@@ -40,7 +47,12 @@ class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDat
         UDTPrimitive[NestedSetRecord].schemaQuery(),
         UDTPrimitive[Test].schemaQuery(),
         UDTPrimitive[Test2].schemaQuery(),
-        UDTPrimitive[ListCollectionUdt].schemaQuery()
+        UDTPrimitive[ListCollectionUdt].schemaQuery(),
+        UDTPrimitive[OptionalUdt].schemaQuery(),
+        UDTPrimitive[ChargeDuration].schemaQuery(),
+        UDTPrimitive[MaxDuration].schemaQuery(),
+        UDTPrimitive[ParkingCharge].schemaQuery(),
+        UDTPrimitive[DerivedAddress].schemaQuery()
       )
     )
   }

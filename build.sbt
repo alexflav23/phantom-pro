@@ -3,11 +3,12 @@ import Keys._
 import ReleaseTransformations._
 
 lazy val Versions = new {
-  val phantom = "2.13.1"
-  val util = "0.36.0"
+  val phantom = "2.13.4"
+  val util = "0.37.0"
   val logback = "1.2.1"
   val dse = "1.1.0"
   val scalaTest = "3.0.1"
+  val scalactic = "3.0.3"
   val shapeless = "2.3.2"
   val scalaMeter = "0.8.3"
   val spark = "1.6.0"
@@ -18,7 +19,7 @@ lazy val Versions = new {
   val dockerKit = "0.9.0"
   val scala210 = "2.10.6"
   val scala211 = "2.11.11"
-  val scala212 = "2.12.2"
+  val scala212 = "2.12.3"
   val scalaAll = Seq(scala210, scala211, scala212)
 }
 
@@ -32,7 +33,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     Tags.limit(Tags.ForkedTestGroup, 4)
   ),
   libraryDependencies ++= Seq(
-     "ch.qos.logback" % "logback-classic" % Versions.logback % Test
+     "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
+      "org.scalactic" %% "scalactic" % Versions.scalactic % Test
   ),
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),
@@ -114,17 +116,6 @@ lazy val phantomMigrations = (project in file("phantom-migrations"))
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "com.outworkers"  %% "util-testing" % Versions.util % Test
-    )
-  ).enablePlugins(CrossPerProjectPlugin)
-
-lazy val phantomSpark = (project in file("phantom-spark"))
-  .settings(sharedSettings: _*)
-  .settings(
-    crossScalaVersions := Seq(Versions.scala210, Versions.scala211),
-    moduleName := "phantom-spark",
-    libraryDependencies ++= Seq(
-      "com.datastax.spark"           %% "spark-cassandra-connector"        % Versions.spark,
-      "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom
     )
   ).enablePlugins(CrossPerProjectPlugin)
 

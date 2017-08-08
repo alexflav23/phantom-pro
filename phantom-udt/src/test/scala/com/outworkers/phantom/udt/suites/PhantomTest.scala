@@ -4,11 +4,12 @@
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.co.uk>, 6/2017.
  */
-package com.outworkers.phantom.udt
+package com.outworkers.phantom.udt.suites
 
 import java.util.concurrent.TimeUnit
 
 import com.outworkers.phantom.dsl.context
+import com.outworkers.phantom.udt.TestDbProvider
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, OptionValues, Suite}

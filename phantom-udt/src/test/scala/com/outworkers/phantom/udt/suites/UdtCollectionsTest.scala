@@ -4,14 +4,12 @@
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.co.uk>, 6/2017.
  */
-package com.outworkers.phantom.udt
+package com.outworkers.phantom.udt.suites
 
-import com.outworkers.phantom.udt.tables.{Address, Person}
-import org.scalatest.FlatSpec
-import com.outworkers.util.testing._
 import com.outworkers.phantom.dsl._
-
-import scala.concurrent.Await
+import com.outworkers.phantom.udt.tables.{Address, Person}
+import com.outworkers.util.testing._
+import org.scalatest.FlatSpec
 
 class UdtCollectionsTest extends FlatSpec with PhantomTest {
 

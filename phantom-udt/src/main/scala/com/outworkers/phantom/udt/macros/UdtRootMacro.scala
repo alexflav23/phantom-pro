@@ -1,23 +1,18 @@
-package com.outworkers.phantom.udt
+package com.outworkers.phantom.udt.macros
 
 import java.nio.BufferUnderflowException
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.macros.RootMacro
+import com.outworkers.phantom.udt.Udt
 
-import scala.annotation.{StaticAnnotation, compileTimeOnly}
-import scala.language.experimental.macros
+import scala.collection.generic.CanBuildFrom
 import scala.reflect.macros.whitebox
 
-@compileTimeOnly("enable macro paradise to expand macro annotations")
-class Udt extends StaticAnnotation {
-  def macroTransform(annottees: Any*): Any = macro UdtMacroImpl.impl
-}
-
-//noinspection ScalaStyle
 @macrocompat.bundle
-class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
+trait UdtRootMacro extends RootMacro {
+  val c: whitebox.Context
 
   import c.universe._
 
@@ -30,6 +25,38 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
     val udtSymbol: Symbol = typed[com.outworkers.phantom.udt.UDTPrimitive[_]]
   }
 
+  /**
+    * Checks if the field type on a case class is an UDT type.
+    * This logic requires deep checking to deal with the fact that we provide DSL level [[scala.Option]]
+    * support for all Cassandra types.
+    *
+    * Nested UDT types require freezing on Cassandra and if the type is wrapped inside an [[Option]] it is not enough
+    * to check if the type is a case class. Simply checking if the type is a case class can also mislead the
+    * macro generation and prevent it from using auto-tupled case class primitives with support available via
+    * phantom auto-tables.
+    * @param tpe The type of the field to check for annotations.
+    * @return True if the type contains a UDT annotation or if the type is an Option wrapping an UDT annotated type.
+    */
+  def deepCaseClass(tpe: Type): Boolean = {
+    if (tpe <:< typeOf[scala.Option[_]]) {
+      isCaseClass(tpe.typeArgs.head)
+    } else {
+      isCaseClass(tpe)
+    }
+  }
+
+  def hasAnnotation(tpe: Type): Boolean = {
+    tpe.typeSymbol.typeSignature
+
+    val annotations = tpe.typeSymbol.annotations
+
+    val out = annotations.collect {
+      case annot if annot.tree.tpe <:< weakTypeOf[Udt] => annot
+    }
+
+    out.nonEmpty
+  }
+
   case class Accessor(
     name: TermName,
     paramType: Type,
@@ -38,6 +65,16 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
     def tpe: TypeName = symbol.name.toTypeName
 
     def symbol = paramType.typeSymbol
+  }
+
+  object Accessors {
+    def apply[M[X] <: TraversableOnce[X]](source: M[(Name, Type)])(
+      implicit cbf: CanBuildFrom[Nothing, Accessor, M[Accessor]]
+    ): M[Accessor] = {
+      val builder = cbf()
+      for ((nm, tp) <- source) builder += Accessor(nm.toTermName, tp, Nil)
+      builder.result()
+    }
   }
 
   val primitivePkg = q"com.outworkers.phantom.builder.primitives"
@@ -67,7 +104,7 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
     params: Seq[ValDef]
   ): Iterable[Accessor] = {
     params.map {
-      case ValDef(mods, name: TermName, tpt: Tree, _) => {
+      case ValDef(mods, name: TermName, tpt: Tree, tree: Tree) => {
         val tpe = c.typecheck(tq"$tpt", c.TYPEmode).tpe
         Accessor(name, tpe, mods.annotations)
       }
@@ -103,7 +140,7 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
       * @return A string name for the case filed.
       */
     def schemaField: Tree = {
-      if (isUdtType) {
+      if (hasAnnotation(accessor.paramType)) {
         q"$udtPackage.UDTPrimitive[${accessor.paramType}].name"
       } else {
         q"${accessor.name.decodedName.toString}"
@@ -135,7 +172,7 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
       */
     def extractorName = TermName(field + "Opt")
 
-    def typeQualifier: Tree = q""
+    def typeQualifier: Tree
 
     /**
       * Whether or not this extractor is derived for an underlying UDT type.
@@ -145,7 +182,7 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
       * @return A boolean value that marks whether or not the current extractor should be
       *         derived for an UDT type.
       */
-    def isUdtType: Boolean = isCaseClass(accessor.paramType)
+    def isUdtType: Boolean = deepCaseClass(accessor.paramType)
 
     /**
       * The tree enclosing the definition of the Cassandra type information of the extractor.
@@ -161,8 +198,7 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
 
   case class RegularExtractor(
     accessor: Accessor,
-    override val typeQualifier: Tree,
-    override val isUdtType: Boolean
+    override val typeQualifier: Tree
   ) extends Extractor {
     def cassandraType: Tree = if (isUdtType) {
       val udtName = q"$prefix.UDTPrimitive[${accessor.paramType}].name"
@@ -174,6 +210,20 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
     override def serializer: Tree = q"""$field -> $typeQualifier.asCql(instance.${accessor.name})"""
   }
 
+  case class NestedExtractor(
+    accessor: Accessor,
+    override val typeQualifier: Tree
+  ) extends Extractor {
+    def cassandraType: Tree = if (isUdtType) {
+      val udtName = q"$prefix.UDTPrimitive[${accessor.paramType}].name"
+      q"$prefix.Helper.frozen($udtName)"
+    } else {
+      q"$typeQualifier.cassandraType"
+    }
+
+    override def serializer: Tree = q"""$field -> instance.${accessor.name}.fold("null")(item => $typeQualifier.asCql(item))"""
+  }
+
 
   /**
     * Derives the full primitive type for a given root type.
@@ -183,11 +233,18 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
     * @return
     */
   private[this] def derivePrimitive(accessor: Accessor): Extractor = {
-    RegularExtractor(
-      accessor,
-      q"$primitivePkg.Primitive[${accessor.paramType}]",
-      isUdtType = false
-    )
+    if (accessor.paramType <:< typeOf[scala.Option[_]] && deepCaseClass(accessor.paramType)) {
+      val nestedType = accessor.paramType.typeArgs.head
+      NestedExtractor(
+        accessor.copy(paramType = nestedType),
+        q"$primitivePkg.Primitive[$nestedType]"
+      )
+    } else {
+      RegularExtractor(
+        accessor,
+        q"$primitivePkg.Primitive[${accessor.paramType}]"
+      )
+    }
   }
 
   def isCaseClass(sym: Symbol): Boolean = {
@@ -220,7 +277,7 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
       q"""new $udtPackage.query.UDTCreateQuery(
          $udtPackage.UDTPrimitive[$tp].schemaQuery
       )"""
-    )
+      )
   }
 
   def elTerm(i: Int): TermName = TermName(s"el$i")
@@ -237,12 +294,12 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
   private[this] val bufferException = typeOf[BufferUnderflowException]
   private[this] val invalidTypeException = typeOf[InvalidTypeException]
 
-  def udtPrimitive(tpe: TypeName, stringName: String, params: List[ValDef]): Tree = {
+  def udtPrimitive(tpe: TypeName, stringName: String, params: Iterable[Accessor]): Tree = {
 
     val sourceTerm = TermName("source")
     val versionTerm = TermName("version")
 
-    val source = accessors(params)
+    val source = params
 
     val indexedFields = source.zipWithIndex
     val udtFields = source map derivePrimitive
@@ -379,7 +436,7 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
   ): Tree = {
     val stringName = name.decodedName.toString
     val objName = TermName(c.freshName(stringName + "_udt_primitive"))
-    val primitive = udtPrimitive(tpe, stringName, params)
+    val primitive = udtPrimitive(tpe, stringName, accessors(params))
 
     val tree = q"""
         implicit val $objName: $prefix.UDTPrimitive[$tpe] = $primitive
@@ -392,34 +449,5 @@ class UdtMacroImpl(val c: whitebox.Context) extends RootMacro {
     tree
   }
 
-  def impl(annottees: c.Expr[Any]*): Tree = {
-    annottees.map(_.tree) match {
-      case (classDef @ q"$mods class $tpname[..$tparams] $ctorMods(...$params) extends { ..$earlydefns } with ..$parents { $self => ..$stats }")
-        :: Nil if mods.hasFlag(Flag.CASE) =>
 
-        val name = tpname.toTermName
-        val primitive = makePrimitive(tpname.toTypeName, name, params.head)
-
-        q"""
-         $classDef
-         object $name {
-           $primitive
-         }
-         """
-
-      case (classDef @ q"$mods class $tpname[..$tparams] $ctorMods(...$params) extends { ..$earlydefns } with ..$parents { $self => ..$stats }")
-        :: q"object $objName extends { ..$objEarlyDefs } with ..$objParents { $objSelf => ..$objDefs }"
-        :: Nil if mods.hasFlag(Flag.CASE) =>
-
-        q"""
-         $classDef
-         object $objName extends { ..$objEarlyDefs} with ..$objParents { $objSelf =>
-           ..${makePrimitive(tpname.toTypeName, tpname.toTermName, params.head)}
-           ..$objDefs
-         }
-         """
-
-      case _ => c.abort(c.enclosingPosition, "Invalid annotation target, UDTs must be a case classes")
-    }
-  }
 }
