@@ -55,7 +55,7 @@ function publish_to_bintray {
   git config branch.${TRAVIS_BRANCH}.remote origin
   git config branch.${TRAVIS_BRANCH}.merge refs/heads/${TRAVIS_BRANCH}
 
-  git fetch --unshallow
+  git fetch --unshallow origin/${TRAVIS_BRANCH}
 
   echo "Publishing new version to Bintray"
   sbt "release with-defaults"
