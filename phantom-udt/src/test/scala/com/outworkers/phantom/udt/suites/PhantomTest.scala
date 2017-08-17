@@ -7,8 +7,7 @@
 package com.outworkers.phantom.udt.suites
 
 import java.util.concurrent.TimeUnit
-
-import com.outworkers.phantom.dsl.context
+import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.udt.TestDbProvider
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}

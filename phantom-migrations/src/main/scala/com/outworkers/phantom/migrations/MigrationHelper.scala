@@ -8,7 +8,7 @@ package com.outworkers.phantom.migrations
 
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.CassandraTable
-import com.outworkers.phantom.builder.query.ExecutableStatementList
+import com.outworkers.phantom.builder.query.execution.QueryCollection
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.macros.RootMacro
@@ -22,7 +22,7 @@ trait MigrationHelper[DB <: Database[DB]] {
     space: KeySpace,
     ec: ExecutionContextExecutor,
     diffConfig: DiffConfig
-  ): ExecutableStatementList[Seq]
+  ): QueryCollection[Seq]
 }
 
 

@@ -1,6 +1,5 @@
 package com.outworkers.phantom.udt.macros
 
-import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
 
 //noinspection ScalaStyle

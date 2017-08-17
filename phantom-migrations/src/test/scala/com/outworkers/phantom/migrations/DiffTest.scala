@@ -7,7 +7,7 @@
 package com.outworkers.phantom.migrations
 
 import org.scalatest.{BeforeAndAfterAll, FeatureSpec, GivenWhenThen, Matchers}
-import com.outworkers.phantom.dsl.context
+import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.migrations.tables._
 
 class DiffTest extends FeatureSpec with GivenWhenThen with BeforeAndAfterAll with Matchers with MigrationDbProvider {

@@ -6,19 +6,20 @@
  */
 package com.outworkers.phantom
 
-import com.outworkers.phantom.builder.query.ExecutableStatementList
-import com.outworkers.phantom.database.Database
+import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
+import com.outworkers.phantom.database.Database
+import com.outworkers.phantom.udt.macros.DefMacro
 import shapeless._
 import shapeless.ops.hlist._
-import com.outworkers.phantom.udt.macros.DefMacro
 
 package object udt {
 
   implicit class DatabaseAugmenter[DB <: Database[DB]](val db: DB) {
 
     object ExtractSchema extends Poly1 {
-      implicit def caseGeneric[T <: Product with Serializable : UDTPrimitive]: Case.Aux[T, CQLQuery] = {
+      implicit def caseGeneric[T <: Product with Serializable : UDTPrimitive]: Case.Aux[T, ExecutableCqlQuery] = {
         at(el => implicitly[UDTPrimitive[T]].schemaQuery()(db.space))
       }
     }
@@ -27,7 +28,11 @@ package object udt {
       implicit rev: Reverse.Aux[HL, Rev],
       mapped: Mapper.Aux[ExtractSchema.type, Rev, Out],
       toList: ToList[Out, CQLQuery]
-    ): ExecutableStatementList[Seq] = new ExecutableStatementList[Seq](toList(rev(hl).map(ExtractSchema)))
+    ): QueryCollection[Seq] = new QueryCollection[Seq](
+      toList(rev(hl).map(ExtractSchema)).map(
+        qb => ExecutableCqlQuery(qb, QueryOptions.empty)
+      )
+    )
   }
 
   def deriveUDT[T]: UDTPrimitive[T] = macro DefMacro.materialize[T]

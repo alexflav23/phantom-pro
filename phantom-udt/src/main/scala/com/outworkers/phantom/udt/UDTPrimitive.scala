@@ -1,9 +1,8 @@
 package com.outworkers.phantom.udt
 
 import com.outworkers.phantom.builder.primitives.Primitive
-import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution.ExecutableCqlQuery
 import com.outworkers.phantom.connectors.{KeySpace, SessionAugmenterImplicits}
-import com.outworkers.phantom.udt.query.UDTCreateQuery
 
 abstract class UDTPrimitive[
   T
@@ -11,9 +10,9 @@ abstract class UDTPrimitive[
 
   def deps()(implicit space: KeySpace): Seq[UDTPrimitive[_]]
 
-  def typeDependencies()(implicit space: KeySpace): Seq[UDTCreateQuery]
+  def typeDependencies()(implicit space: KeySpace): Seq[ExecutableCqlQuery]
 
-  def schemaQuery()(implicit space: KeySpace): CQLQuery
+  def schemaQuery()(implicit space: KeySpace): ExecutableCqlQuery
 
   def name: String
 

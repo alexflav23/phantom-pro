@@ -7,15 +7,17 @@
 package com.outworkers.phantom.udt
 
 import com.datastax.driver.core.{HostDistance, PoolingOptions}
-import com.outworkers.phantom.builder.query.{CassandraOperations, ExecutableStatementList}
+import com.outworkers.phantom.builder.query.execution.QueryCollection
 import com.outworkers.phantom.builder.serializers.KeySpaceSerializer
 import com.outworkers.phantom.dsl.{context => _, _}
 import com.outworkers.phantom.udt.domain.OptionalUdt
 import com.outworkers.phantom.udt.tables._
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.collection.immutable.Seq
+import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContextExecutor}
 
-class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDatabase](connector) with CassandraOperations {
+class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDatabase](connector) { outer =>
 
   object udtTable extends TestTable with Connector
 
@@ -35,8 +37,8 @@ class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDat
 
   object derivedUdts extends DerivedEncoderUdtTable with Connector
 
-  def initUds: ExecutableStatementList[Seq] = {
-    new ExecutableStatementList[Seq](
+  def initUds: QueryCollection[Seq] = {
+    new QueryCollection[Seq](
       Seq(
         UDTPrimitive[Location].schemaQuery(),
         UDTPrimitive[Address].schemaQuery(),
@@ -57,8 +59,13 @@ class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDat
     )
   }
 
-  override def createAsync()(implicit ex: ExecutionContextExecutor): Future[Seq[ResultSet]] = {
-    initUds.sequentialFuture() flatMap(_ => super.createAsync())
+  def create()(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
+    val chain = for {
+      udts <- executeStatements(initUds).sequence()
+      db <- outer.createAsync()
+    } yield db
+
+    Await.result(chain, 20.seconds)
   }
 }
 

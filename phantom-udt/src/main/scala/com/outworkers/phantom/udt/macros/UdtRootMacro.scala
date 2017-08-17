@@ -3,10 +3,8 @@ package com.outworkers.phantom.udt.macros
 import java.nio.BufferUnderflowException
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
-import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.macros.RootMacro
 import com.outworkers.phantom.udt.Udt
-
 import scala.collection.generic.CanBuildFrom
 import scala.reflect.macros.whitebox
 
@@ -17,6 +15,9 @@ trait UdtRootMacro extends RootMacro {
   import c.universe._
 
   def typed[A : c.WeakTypeTag]: Symbol = weakTypeOf[A].typeSymbol
+
+  val executableQuery: Type = typeOf[com.outworkers.phantom.builder.query.execution.ExecutableCqlQuery]
+  val emptyOptions = q"com.outworkers.phantom.builder.query.QueryOptions.empty"
 
   object Symbols {
     val listSymbol: Symbol = typed[scala.collection.immutable.List[_]]
@@ -82,7 +83,6 @@ trait UdtRootMacro extends RootMacro {
 
   val prefix = q"com.outworkers.phantom.udt"
   val keySpaceTpe = tq"com.outworkers.phantom.dsl.KeySpace"
-  val cqlQueryTpe = typeOf[CQLQuery]
   val udtValueTpe = tq"com.datastax.driver.core.UDTValue"
 
   /**
@@ -273,11 +273,7 @@ trait UdtRootMacro extends RootMacro {
   }
 
   def queryDependencies(params: Iterable[Accessor]): Seq[Tree] = {
-    udtDeps(params) map (tp =>
-      q"""new $udtPackage.query.UDTCreateQuery(
-         $udtPackage.UDTPrimitive[$tp].schemaQuery
-      )"""
-      )
+    udtDeps(params) map (tp => q"""$udtPackage.UDTPrimitive[$tp].schemaQuery""")
   }
 
   def elTerm(i: Int): TermName = TermName(s"el$i")
@@ -362,8 +358,8 @@ trait UdtRootMacro extends RootMacro {
         $collections.Seq.apply[$prefix.UDTPrimitive[_]](..${typeDependencies(source)})
       }
 
-      def typeDependencies()(implicit space: $keySpaceTpe): $collections.Seq[$udtPackage.query.UDTCreateQuery] = {
-        $collections.Seq.apply[$udtPackage.query.UDTCreateQuery](..${queryDependencies(source)})
+      def typeDependencies()(implicit space: $keySpaceTpe): $collections.Seq[$executableQuery] = {
+        $collections.Seq.apply[$executableQuery](..${queryDependencies(source)})
       }
 
       override def asCql(instance: $tpe): String = {
@@ -374,14 +370,14 @@ trait UdtRootMacro extends RootMacro {
         "{" + baseString + "}"
       }
 
-      def schemaQuery()(implicit space: $keySpaceTpe): $cqlQueryTpe = {
+      def schemaQuery()(implicit space: $keySpaceTpe): $executableQuery = {
         val membersList = $collections.List(..${udtFields.map(_.schema)}).map {
           case (name, casType) => name + " " + casType
         }
 
         val base = "CREATE TYPE IF NOT EXISTS " + space.name + "." + ${stringName.toLowerCase} + " (" + membersList.mkString(", ") + ")"
 
-        $enginePkg.CQLQuery(base)
+        new $executableQuery(new $enginePkg.CQLQuery(base), $emptyOptions)
       }
 
 
@@ -441,6 +437,8 @@ trait UdtRootMacro extends RootMacro {
     val tree = q"""
         implicit val $objName: $prefix.UDTPrimitive[$tpe] = $primitive
      """
+
+    Console.println(showCode(tree))
 
     if (showTrees) {
       c.echo(c.enclosingPosition, s"Generated tree for $tpe:\n${showCode(tree)}")

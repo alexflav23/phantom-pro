@@ -7,10 +7,10 @@
 package com.outworkers.phantom.migrations.tables
 
 import com.datastax.driver.core.TableMetadata
-import com.outworkers.phantom.builder.query.ExecutableStatementList
 import com.outworkers.phantom.connectors.KeySpace
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
 import com.outworkers.phantom.dsl.Table
 import com.outworkers.phantom.migrations.DiffConfig
 
@@ -41,8 +41,7 @@ sealed case class Migration(
   }
 
   def subtractionQueries(table: Table[_, _])(
-    implicit session: Session,
-    keySpace: KeySpace,
+    implicit keySpace: KeySpace,
     ec: ExecutionContext
   ): Seq[CQLQuery] = {
     deletions map { col => table.alter.drop(col.name).qb }
@@ -60,11 +59,10 @@ sealed case class Migration(
     implicit session: Session,
     keySpace: KeySpace,
     ec: ExecutionContext
-  ): ExecutableStatementList[Seq] = {
-    new ExecutableStatementList(queryList(table))
+  ): QueryCollection[Seq] = {
+    new QueryCollection(queryList(table).map(ExecutableCqlQuery(_)))
   }
 }
-
 
 object Migration {
   def apply(metadata: TableMetadata, table: Table[_, _])(implicit diffConfig: DiffConfig): Migration = {

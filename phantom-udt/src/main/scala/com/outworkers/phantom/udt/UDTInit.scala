@@ -1,6 +1,5 @@
 package com.outworkers.phantom.udt
 
-import com.outworkers.phantom.builder.query.ExecutableStatementList
 import com.outworkers.phantom.dsl.KeySpace
 import shapeless.{::, Generic, HList, HNil, Lazy}
 

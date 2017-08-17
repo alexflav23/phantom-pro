@@ -1,10 +1,9 @@
 package com.outworkers.phantom.udt.suites
 
-import com.outworkers.phantom.dsl.context
+import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.udt.tables.{ParkingCharge, Policy}
 import org.scalatest.FlatSpec
 import com.outworkers.util.samplers._
-import org.scalatest.prop.Configuration.PropertyCheckConfiguration
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 class AuthorizerPolicyTests extends FlatSpec with PhantomTest with GeneratorDrivenPropertyChecks {

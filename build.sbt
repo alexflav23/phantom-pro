@@ -3,7 +3,7 @@ import Keys._
 import ReleaseTransformations._
 
 lazy val Versions = new {
-  val phantom = "2.13.4"
+  val phantom = "2.14.0"
   val util = "0.37.0"
   val logback = "1.2.1"
   val dse = "1.1.0"
@@ -20,6 +20,7 @@ lazy val Versions = new {
   val scala210 = "2.10.6"
   val scala211 = "2.11.11"
   val scala212 = "2.12.3"
+  val monix = "2.3.0"
   val scalaAll = Seq(scala210, scala211, scala212)
 }
 
@@ -171,3 +172,18 @@ lazy val phantomUdt = (project in file("phantom-udt"))
       "com.outworkers" %% "util-testing" % Versions.util % Test
     )
   ).enablePlugins(CrossPerProjectPlugin)
+
+
+lazy val phantomMonix = (project in file("phantom-monix"))
+  .settings(
+    name := "phantom-monix",
+    crossScalaVersions := Versions.scalaAll,
+    moduleName := "phantom-monix",
+    libraryDependencies ++= Seq(
+      "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      "io.monix" %% "monix" % Versions.monix
+    )
+  ).settings(
+    sharedSettings: _*
+  )

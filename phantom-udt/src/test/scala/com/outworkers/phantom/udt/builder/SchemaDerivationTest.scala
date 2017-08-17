@@ -24,7 +24,7 @@ class SchemaDerivationTest extends FlatSpec with Matchers with BeforeAndAfterAll
     val p = implicitly[UDTPrimitive[Test]]
     val schema = p.schemaQuery()
 
-    schema.queryString shouldEqual "CREATE TYPE IF NOT EXISTS phantom_udt.test (id int, name text)"
+    schema.qb.queryString shouldEqual "CREATE TYPE IF NOT EXISTS phantom_udt.test (id int, name text)"
   }
 
   it should "automatically freeze a primary udt collection column" in {
