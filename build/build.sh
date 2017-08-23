@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 github_url="https://${github_token}@${GH_REF}"
-scala_version="2.12.2"
+scala_version="2.12.3"
 
 function create_bintray_file {
     echo "Creating credentials file"

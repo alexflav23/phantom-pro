@@ -13,7 +13,6 @@ import com.outworkers.phantom.dsl.{context => _, _}
 import com.outworkers.phantom.udt.domain.OptionalUdt
 import com.outworkers.phantom.udt.tables._
 
-import scala.collection.immutable.Seq
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
 
