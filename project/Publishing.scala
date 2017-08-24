@@ -28,7 +28,7 @@ object Publishing {
   )
 
   val releaseSettings = Seq(
-    releaseVersionBump := sbtrelease.Version.Bump.Bugfix,
+    releaseVersionBump := sbtrelease.Version.Bump.Minor,
     releaseTagComment := s"Releasing ${(version in ThisBuild).value}",
     releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value}",
     releaseProcess := Seq[ReleaseStep](
