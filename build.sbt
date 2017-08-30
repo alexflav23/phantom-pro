@@ -3,7 +3,7 @@ import Keys._
 import ReleaseTransformations._
 
 lazy val Versions = new {
-  val phantom = "2.14.3"
+  val phantom = "2.14.5"
   val util = "0.38.0"
   val logback = "1.2.1"
   val dse = "1.1.0"
