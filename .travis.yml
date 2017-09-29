@@ -1,6 +1,10 @@
 language: scala
 sudo: required
 dist: trusty
+
+services:
+- cassandra
+
 scala:
 - 2.10.6
 - 2.11.11
@@ -24,7 +28,6 @@ jdk:
 
 install:
   - git fetch --unshallow --tags
-  - ./build/cassandra.sh
 
 matrix:
   include:

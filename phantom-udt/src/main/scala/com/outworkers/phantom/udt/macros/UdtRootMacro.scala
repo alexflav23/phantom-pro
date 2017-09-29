@@ -438,8 +438,6 @@ trait UdtRootMacro extends RootMacro {
         implicit val $objName: $prefix.UDTPrimitive[$tpe] = $primitive
      """
 
-    Console.println(showCode(tree))
-
     if (showTrees) {
       c.echo(c.enclosingPosition, s"Generated tree for $tpe:\n${showCode(tree)}")
     }
