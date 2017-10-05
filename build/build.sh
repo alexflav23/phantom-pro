@@ -2,6 +2,14 @@
 github_url="https://${github_token}@${GH_REF}"
 scala_version="2.12.3"
 
+function fix_git {
+    echo "Fixing git setup for $TRAVIS_BRANCH"
+    git checkout ${TRAVIS_BRANCH}
+    git branch -u origin/${TRAVIS_BRANCH}
+    git config branch.${TRAVIS_BRANCH}.remote origin
+    git config branch.${TRAVIS_BRANCH}.merge refs/heads/${TRAVIS_BRANCH}
+}
+
 function create_bintray_file {
     echo "Creating credentials file"
     if [ -e "$HOME/.bintray/.credentials" ];
@@ -50,8 +58,6 @@ function publish_to_bintray {
       #sbt version-bump-patch git-tag
   fi
 
-  git branch --set-upstream ${TRAVIS_BRANCH} origin/${TRAVIS_BRANCH}
-
   echo "Publishing new version to Bintray"
   sbt "release with-defaults"
 }
@@ -73,7 +79,7 @@ function run_publish {
 }
 
 function run_tests {
-  #!/usr/bin/env bash
+
   if [ "${TRAVIS_SCALA_VERSION}" == ${scala_version} ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
   then
       echo "Running tests with coverage and report submission"
@@ -96,4 +102,5 @@ function run_tests {
   fi
 }
 
+fix_git
 run_tests
