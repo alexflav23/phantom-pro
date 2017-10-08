@@ -187,3 +187,25 @@ lazy val phantomMonix = (project in file("phantom-monix"))
   ).settings(
     sharedSettings: _*
   )
+
+lazy val readme = (project in file("readme"))
+  .settings(sharedSettings)
+  .settings(
+    crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
+    tutSourceDirectory := sourceDirectory.value / "main" / "tut",
+    tutTargetDirectory := phantomPro.base / "docs",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "macro-compat" % Versions.macroCompat % "tut",
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "tut",
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      "com.outworkers" %% "util-samplers" % Versions.util % "tut",
+      "org.scalatest" %% "scalatest" % Versions.scalaTest % "tut"
+    )
+  ).dependsOn(
+    phantomDse,
+    phantomDseGraph,
+    phantomMigrations,
+    phantomUdt,
+    phantomAutoTables
+  ).enablePlugins(TutPlugin, CrossPerProjectPlugin)
+

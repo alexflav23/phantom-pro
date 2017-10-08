@@ -2,8 +2,6 @@ language: scala
 sudo: required
 dist: trusty
 
-services:
-- cassandra
 
 scala:
 - 2.10.6
@@ -27,7 +25,7 @@ jdk:
 - oraclejdk8
 
 install:
-  - git fetch --unshallow --tags
+  - ./build/cassandra.sh
 
 matrix:
   include:

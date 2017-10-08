@@ -46,6 +46,6 @@ if [ "$jdk_version_8_or_more" = true ];
         cassandra_version="2.2.9"
     fi
 
-pip install 'requests[security]'
-pip install ccm
+pip install --user 'requests[security]'
+pip install --user ccm
 ccm create test -v ${cassandra_version} -n 1 -s

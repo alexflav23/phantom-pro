@@ -22,3 +22,5 @@ addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 addSbtPlugin("org.wartremover" % "sbt-wartremover" % "1.3.0")
 
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.5")
+
+addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.5.2")
