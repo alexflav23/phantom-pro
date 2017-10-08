@@ -45,12 +45,13 @@ function publish_to_bintray {
   create_bintray_file
 
   COMMIT_MSG=$(git log -1 --pretty=%B 2>&1)
-  COMMIT_SKIP_MESSAGE="[version skip]"
+  COMMIT_SKIP_VERSION="[version skip]"
+  COMMIT_SKIP_PUBLISH="[publish skip]"
 
   echo "Last commit message $COMMIT_MSG"
-  echo "Commit skip message $COMMIT_SKIP_MESSAGE"
+  echo "Commit skip message $COMMIT_SKIP_VERSION"
 
-  if [[ $COMMIT_MSG == *"$COMMIT_SKIP_MESSAGE"* ]]
+  if [[ $COMMIT_MSG == *"$COMMIT_SKIP_VERSION"* ]]
   then
       echo "Skipping version bump and simply tagging"
   else
@@ -58,8 +59,13 @@ function publish_to_bintray {
       #sbt version-bump-patch git-tag
   fi
 
-  echo "Publishing new version to Bintray"
-  sbt "release with-defaults"
+  if [[ $COMMIT_MSG == *"$COMMIT_SKIP_PUBLISH"* ]]
+  then
+      echo "Skipping publishing"
+  else
+      echo "Publishing new version to Bintray"
+      sbt "release with-defaults"
+  fi
 }
 
 function run_publish {
