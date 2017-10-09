@@ -90,6 +90,7 @@ lazy val phantomPro = (project in file("."))
     phantomDseGraph,
     phantomMigrations,
     phantomUdt,
+    phantomMonix,
     phantomAutoTables,
     phantomDocker
   ).enablePlugins(CrossPerProjectPlugin)
@@ -208,4 +209,3 @@ lazy val readme = (project in file("readme"))
     phantomUdt,
     phantomAutoTables
   ).enablePlugins(TutPlugin, CrossPerProjectPlugin)
-
