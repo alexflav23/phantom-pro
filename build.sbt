@@ -1,6 +1,5 @@
 import sbt._
 import Keys._
-import ReleaseTransformations._
 
 lazy val Versions = new {
   val phantom = "2.15.5"
@@ -84,8 +83,7 @@ lazy val phantomPro = (project in file("."))
   .settings(noPublishSettings: _*)
   .settings(
     moduleName := "phantom-pro"
-  )
-  .aggregate(
+  ).aggregate(
     phantomDse,
     phantomDseGraph,
     phantomMigrations,
