@@ -6,6 +6,13 @@ dist: trusty
 scala:
 - 2.10.6
 - 2.11.11
+
+cache:
+  directories:
+   - $HOME/.m2
+   - $HOME/.ivy2
+   - $HOME/.sbt/boot/scala-$TRAVIS_SCALA_VERSION
+
 env:
   global:
   - GH_REF: github.com/outworkers/phantom-pro.git

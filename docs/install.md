@@ -8,14 +8,14 @@ Available modules
 
 This is a table of the available modules for the various Scala versions. Not all modules are available for all versions just yet, and this is because certain dependencies have yet to be published for Scala 2.12.
 
-| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.0      | Released      |
+| Module name           | Scala 2.10.x        | Scala 2.11.x      | Scala 2.12.4      | Released      |
 | ------------          | ------------------- | ------------------| ----------------- | ------------- |
+| phantom-udt           | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | October 2016  |
 | phantom-autotables    | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | June 2017     |
-| phantom-dse           | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | June 2017     |
+| phantom-dse           | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | Dec 2016      |
+| phantom-migrations    | <span>yes</span>    | <span>yes</span>  | <span>yes</span>   | June 2017     |
 | phantom-graph         | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | Sept 2017     |
-| phantom-migrations    | <span>yes</span>    | <span>no</span>  | <span>yes</span>   | June 2017     |
-| phantom-spark         | <span>yes</span>    | <span>yes</span> | <span>no</span>    | December 2017 |
-| phantom-udt           | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | Yes           |
+| phantom-spark         | <span>yes</span>    | <span>yes</span> | <span>no</span>    | Dec 2017      |
 | phantom-solr          | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | August 2017   |
 | phantom-native        | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | Oct 2017      |
 | phantom-java-dsl      | <span>yes</span>    | <span>yes</span> | <span>yes</span>   | Oct 2017      |

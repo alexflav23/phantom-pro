@@ -92,7 +92,8 @@ lazy val phantomPro = (project in file("."))
     phantomUdt,
     phantomMonix,
     phantomAutoTables,
-    phantomDocker
+    phantomDocker,
+    phantomMonix
   ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomDse = (project in file("phantom-dse"))
@@ -181,12 +182,15 @@ lazy val phantomMonix = (project in file("phantom-monix"))
     crossScalaVersions := Versions.scalaAll,
     moduleName := "phantom-monix",
     libraryDependencies ++= Seq(
-      "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
+      "com.outworkers" %% "phantom-dsl" % Versions.phantom,
+      "com.outworkers" %% "util-testing" % Versions.util % Test,
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "io.monix" %% "monix" % Versions.monix
     )
   ).settings(
     sharedSettings: _*
+  ).dependsOn(
+    phantomDse % "test->test"
   )
 
 lazy val readme = (project in file("readme"))
