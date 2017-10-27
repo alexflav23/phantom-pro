@@ -3,7 +3,7 @@ import Keys._
 import ReleaseTransformations._
 
 lazy val Versions = new {
-  val phantom = "2.15.0"
+  val phantom = "2.15.5"
   val util = "0.38.0"
   val logback = "1.2.1"
   val dse = "1.1.0"
@@ -19,7 +19,7 @@ lazy val Versions = new {
   val dockerKit = "0.9.0"
   val scala210 = "2.10.6"
   val scala211 = "2.11.11"
-  val scala212 = "2.12.3"
+  val scala212 = "2.12.4"
   val monix = "2.3.0"
   val scalaAll = Seq(scala210, scala211, scala212)
 }
