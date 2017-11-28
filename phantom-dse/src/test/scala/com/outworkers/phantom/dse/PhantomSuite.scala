@@ -1,32 +1,20 @@
-package com.outworkers.phantom.dse
-
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
+ * Copyright (C) 2012 - 2018 Outworkers, Limited. All rights reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * The contents of this file are proprietary and strictly confidential.
+ * Written by Flavian Alexandru<flavian@outworkers.com>, 10/2017.
+ */
+package com.outworkers.phantom.dse
 
 import java.util.concurrent.TimeUnit
 
-import com.datastax.driver.core.VersionNumber
-import com.outworkers.phantom.database.DatabaseProvider
 import com.outworkers.util.samplers._
 import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration => ScalaDuration, FiniteDuration}
 import scala.concurrent.{Await, Future}
 
 trait PhantomBaseSuite extends Suite with Matchers
@@ -38,7 +26,7 @@ trait PhantomBaseSuite extends Suite with Matchers
 
   private[this] val defaultScalaInterval = 50L
 
-  implicit val defaultScalaTimeout = scala.concurrent.duration.Duration(defaultScalaTimeoutSeconds, TimeUnit.SECONDS)
+  implicit val defaultScalaTimeout: FiniteDuration = ScalaDuration(defaultScalaTimeoutSeconds, TimeUnit.SECONDS)
 
   private[this] val defaultTimeoutSpan = Span(defaultScalaTimeoutSeconds, Seconds)
 
@@ -52,7 +40,7 @@ trait PhantomBaseSuite extends Suite with Matchers
     override def sample: LocalDate = LocalDate.now(DateTimeZone.UTC)
   }
 
-  override implicit val patienceConfig = PatienceConfig(
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(
     timeout = defaultTimeoutSpan,
     interval = Span(defaultScalaInterval, Millis)
   )
@@ -64,7 +52,7 @@ trait PhantomBaseSuite extends Suite with Matchers
   }
 
   implicit class BlockHelper[T](val f: Future[T]) {
-    def block(timeout: Duration): T = Await.result(f, timeout)
+    def block(timeout: ScalaDuration): T = Await.result(f, timeout)
   }
 }
 

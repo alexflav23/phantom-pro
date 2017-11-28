@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2012 - 2018 Outworkers, Limited. All rights reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * The contents of this file are proprietary and strictly confidential.
+ * Written by Flavian Alexandru<flavian@outworkers.com>, 10/2017.
+ */
 package com.outworkers.phantom.monix.execution
 
 import com.outworkers.phantom.ops.QueryContext
@@ -11,7 +17,7 @@ class MonixQueryContext()(implicit scheduler: Scheduler) extends QueryContext[Ta
   MonixImplicits.taskMonad,
   MonixImplicits.taskInterface
 ) {
-  override def await[T](f: Task[T], timeout: Duration): T = {
+  override def blockAwait[T](f: Task[T], timeout: Duration): T = {
     Await.result(f.runAsync, timeout)
   }
 }

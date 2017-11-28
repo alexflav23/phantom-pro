@@ -1,9 +1,13 @@
-
+/*
+ * Copyright (C) 2012 - 2018 Outworkers, Limited. All rights reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * The contents of this file are proprietary and strictly confidential.
+ * Written by Flavian Alexandru<flavian@outworkers.com>, 10/2017.
+ */
 package com.outworkers.phantom.monix.execution
 
-import com.outworkers.phantom.builder.query.execution.{FutureMonad, GuavaAdapter, PromiseInterface}
+import com.outworkers.phantom.builder.query.execution.{FutureMonad, PromiseInterface}
 import monix.eval.Task
-import com.outworkers.phantom.dsl.{ promiseInterface, futureMonad }
 
 import scala.concurrent.ExecutionContextExecutor
 

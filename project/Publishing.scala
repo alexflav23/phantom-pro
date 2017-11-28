@@ -1,19 +1,11 @@
 /*
- * Copyright 2013 - 2017 Outworkers Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (C) 2012 - 2018 Outworkers, Limited. All rights reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * The contents of this file are proprietary and strictly confidential.
+ * Written by Flavian Alexandru<flavian@outworkers.com>, 10/2017.
  */
 import bintray.BintrayKeys._
+import com.typesafe.sbt.SbtGit.git
 import sbt.Keys._
 import sbt._
 import sbtrelease.ReleasePlugin.autoImport.{ReleaseStep, _}
@@ -27,20 +19,48 @@ object Publishing {
     publishArtifact := false
   )
 
+  val versionSkipSequence = "[version skip]"
+  val ciSkipSequence = "[ci skip]"
+
+  def skipStepConditionally(
+    state: State,
+    step: ReleaseStep,
+    condition: State => Boolean,
+    message: String = "Skipping current step"
+  ): State = {
+    if (condition(state)) {
+      state.log.info(message)
+      state
+    } else {
+      step(state)
+    }
+  }
+
+  def shouldSkipVersionCondition(state: State): Boolean = {
+    val settings = Project.extract(state)
+    val commitString = settings.get(git.gitHeadCommit)
+    commitString.exists(_.contains(versionSkipSequence))
+  }
+
+  def onlyIfVersionNotSkipped(step: ReleaseStep): ReleaseStep = { s: State =>
+    skipStepConditionally(s, step, shouldSkipVersionCondition)
+  }
+
   val releaseSettings = Seq(
+    releaseIgnoreUntrackedFiles := true,
     releaseVersionBump := sbtrelease.Version.Bump.Minor,
     releaseTagComment := s"Releasing ${(version in ThisBuild).value}",
-    releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value}",
+    releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} $ciSkipSequence",
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
-      setReleaseVersion,
-      commitReleaseVersion,
-      tagRelease,
-      releaseStepCommandAndRemaining("+publish"),
-      setNextVersion,
-      commitNextVersion,
-      pushChanges
+      onlyIfVersionNotSkipped(setReleaseVersion),
+      onlyIfVersionNotSkipped(commitReleaseVersion),
+      onlyIfVersionNotSkipped(tagRelease),
+      onlyIfVersionNotSkipped(releaseStepCommandAndRemaining("+publish")),
+      onlyIfVersionNotSkipped(setNextVersion),
+      onlyIfVersionNotSkipped(commitNextVersion),
+      onlyIfVersionNotSkipped(pushChanges)
     )
   )
 

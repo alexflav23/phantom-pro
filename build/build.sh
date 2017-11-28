@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 github_url="https://${github_token}@${GH_REF}"
-scala_version="2.12.3"
 
 function fix_git {
     echo "Fixing git setup for $TRAVIS_BRANCH"
@@ -69,16 +68,16 @@ function publish_to_bintray {
 }
 
 function run_publish {
-  if [ "$TRAVIS_SCALA_VERSION" == ${scala_version} ] &&
+  if [ "$TRAVIS_SCALA_VERSION" == ${TARGET_SCALA_VERISON} ] &&
     [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ] &&
     [ "$TRAVIS_PULL_REQUEST" == "false" ] &&
     [ "$TRAVIS_BRANCH" == "develop" ];
     then
-        echo "Triggering publish script for Scala $scala_version";
+        echo "Triggering publish script for Scala $TARGET_SCALA_VERISON";
         publish_to_bintray
         exit $?
     else
-        echo "Scala version is not $scala_version";
+        echo "Scala version is not $TARGET_SCALA_VERISON";
         echo "This is either a pull request or the branch is not develop, deployment not necessary"
         exit 0
     fi
@@ -86,7 +85,7 @@ function run_publish {
 
 function run_tests {
 
-  if [ "${TRAVIS_SCALA_VERSION}" == ${scala_version} ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
+  if [ "${TRAVIS_SCALA_VERSION}" == ${TARGET_SCALA_VERISON} ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
   then
       echo "Running tests with coverage and report submission"
       sbt "+++$TRAVIS_SCALA_VERSION test"

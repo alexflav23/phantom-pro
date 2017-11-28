@@ -1,16 +1,20 @@
+/*
+ * Copyright (C) 2012 - 2018 Outworkers, Limited. All rights reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * The contents of this file are proprietary and strictly confidential.
+ * Written by Flavian Alexandru<flavian@outworkers.com>, 10/2017.
+ */
 package com.outworkers.phantom
 
+import _root_.monix.eval.Task
+import _root_.monix.execution.Scheduler.Implicits.global
 import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.engine.CQLQuery
-import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, FutureMonad, QueryCollection, QueryInterface}
-
-import scala.collection.generic.CanBuildFrom
-import _root_.monix.eval.Task
+import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, ExecutableStatements, QueryCollection, QueryInterface}
+import com.outworkers.phantom.monix.execution.MonixImplicits.taskMonad
 import com.outworkers.phantom.monix.execution.MonixQueryContext
 
-import scala.concurrent.ExecutionContextExecutor
-import _root_.monix.execution.Scheduler.Implicits.global
-import com.outworkers.phantom.monix.execution.MonixImplicits.taskMonad
+import scala.collection.generic.CanBuildFrom
 
 package object monix extends MonixQueryContext with DefaultImports {
 
