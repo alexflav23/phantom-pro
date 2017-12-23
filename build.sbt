@@ -2,11 +2,11 @@ import sbt._
 import Keys._
 
 lazy val Versions = new {
-  val phantom = "2.16.3"
+  val phantom = "2.17.0"
   val util = "0.38.0"
   val logback = "1.2.1"
   val dse = "1.1.0"
-  val scalaTest = "3.0.1"
+  val scalaTest = "3.0.4"
   val scalactic = "3.0.3"
   val shapeless = "2.3.2"
   val scalaMeter = "0.8.3"

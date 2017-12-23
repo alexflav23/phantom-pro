@@ -102,11 +102,7 @@ object Publishing {
     publishArtifact in Test := false,
     publishArtifact in (Compile, packageSrc) := false,
     publishArtifact in (Test, packageSrc) := false,
-    pomIncludeRepository := { _ => true},
-    licenses += (
-      "Apache-2.0",
-      url("https://github.com/outworkers/phantom/blob/develop/LICENSE.txt")
-    )
+    pomIncludeRepository := { _ => true}
   )
 
   def effectiveSettings: Seq[Def.Setting[_]] = bintraySettings ++ releaseSettings

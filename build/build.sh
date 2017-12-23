@@ -73,11 +73,11 @@ function run_publish {
     [ "$TRAVIS_PULL_REQUEST" == "false" ] &&
     [ "$TRAVIS_BRANCH" == "develop" ];
     then
-        echo "Triggering publish script for Scala $TARGET_SCALA_VERISON";
+        echo "Triggering publish script for Scala $TARGET_SCALA_VERSION";
         publish_to_bintray
         exit $?
     else
-        echo "Scala version is not $TARGET_SCALA_VERISON";
+        echo "Scala version is not $TARGET_SCALA_VERSION";
         echo "This is either a pull request or the branch is not develop, deployment not necessary"
         exit 0
     fi
@@ -85,7 +85,7 @@ function run_publish {
 
 function run_tests {
 
-  if [ "${TRAVIS_SCALA_VERSION}" == ${TARGET_SCALA_VERISON} ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
+  if [ "${TRAVIS_SCALA_VERSION}" == ${TARGET_SCALA_VERSION} ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
   then
       echo "Running tests with coverage and report submission"
       sbt "+++$TRAVIS_SCALA_VERSION test"
