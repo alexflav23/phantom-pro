@@ -68,7 +68,7 @@ function publish_to_bintray {
 }
 
 function run_publish {
-  if [ "$TRAVIS_SCALA_VERSION" == ${TARGET_SCALA_VERISON} ] &&
+  if [ "$TRAVIS_SCALA_VERSION" == ${TARGET_SCALA_VERSION} ] &&
     [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ] &&
     [ "$TRAVIS_PULL_REQUEST" == "false" ] &&
     [ "$TRAVIS_BRANCH" == "develop" ];
@@ -88,10 +88,10 @@ function run_tests {
   if [ "${TRAVIS_SCALA_VERSION}" == ${TARGET_SCALA_VERSION} ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
   then
       echo "Running tests with coverage and report submission"
-      sbt "+++$TRAVIS_SCALA_VERSION test"
+      sbt "plz $TRAVIS_SCALA_VERSION test"
   else
       echo "Running tests without attempting to submit coverage reports"
-      sbt "+++$TRAVIS_SCALA_VERSION test"
+      sbt "plz $TRAVIS_SCALA_VERSION test"
   fi
 
   local exitCode=$?
