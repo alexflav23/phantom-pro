@@ -388,8 +388,6 @@ trait UdtRootMacro extends RootMacro {
            null
         } else {
           val size = {for (..$sizeComp) yield ($sumTerm) } get
-
-          val length = ${udtFields.size}
           val res = $bufferCompanion.allocate(size)
           val buf = for (..$serializedComponents) yield ()
           buf.get

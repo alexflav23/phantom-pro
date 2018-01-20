@@ -58,7 +58,7 @@ class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDat
     )
   }
 
-  def create()(implicit ex: ExecutionContextExecutor): Seq[ResultSet] = {
+  def create()(implicit ex: ExecutionContextExecutor): Seq[Seq[ResultSet]] = {
     val chain = for {
       udts <- executeStatements(initUds).sequence()
       db <- outer.createAsync()
