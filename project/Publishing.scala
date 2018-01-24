@@ -66,6 +66,7 @@ object Publishing {
 
   lazy val bintraySettings: Seq[Def.Setting[_]] = Seq(
     publishMavenStyle := true,
+    bintrayOmitLicense := true,
     bintrayOrganization := Some("outworkers"),
     bintrayRepository := {
       if (scalaVersion.value.trim.endsWith("SNAPSHOT")) {
