@@ -19,32 +19,8 @@ object Publishing {
     publishArtifact := false
   )
 
-  val versionSkipSequence = "[version skip]"
+
   val ciSkipSequence = "[ci skip]"
-
-  def skipStepConditionally(
-    state: State,
-    step: ReleaseStep,
-    condition: State => Boolean,
-    message: String = "Skipping current step"
-  ): State = {
-    if (condition(state)) {
-      state.log.info(message)
-      state
-    } else {
-      step(state)
-    }
-  }
-
-  def shouldSkipVersionCondition(state: State): Boolean = {
-    val settings = Project.extract(state)
-    val commitString = settings.get(git.gitHeadCommit)
-    commitString.exists(_.contains(versionSkipSequence))
-  }
-
-  def onlyIfVersionNotSkipped(step: ReleaseStep): ReleaseStep = { s: State =>
-    skipStepConditionally(s, step, shouldSkipVersionCondition)
-  }
 
   val releaseSettings = Seq(
     releaseIgnoreUntrackedFiles := true,
@@ -54,13 +30,13 @@ object Publishing {
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
-      onlyIfVersionNotSkipped(setReleaseVersion),
-      onlyIfVersionNotSkipped(commitReleaseVersion),
-      onlyIfVersionNotSkipped(tagRelease),
-      onlyIfVersionNotSkipped(releaseStepCommandAndRemaining("+publish")),
-      onlyIfVersionNotSkipped(setNextVersion),
-      onlyIfVersionNotSkipped(commitNextVersion),
-      onlyIfVersionNotSkipped(pushChanges)
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      releaseStepCommandAndRemaining("such publish"),
+      setNextVersion,
+      commitNextVersion,
+      pushChanges
     )
   )
 
