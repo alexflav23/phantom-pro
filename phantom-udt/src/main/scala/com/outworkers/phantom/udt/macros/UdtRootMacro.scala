@@ -14,6 +14,12 @@ trait UdtRootMacro extends RootMacro {
 
   import c.universe._
 
+
+  val udtPackage = q"com.outworkers.phantom.udt"
+  val prefix = q"com.outworkers.phantom.udt"
+  val keySpaceTpe = tq"com.outworkers.phantom.dsl.KeySpace"
+  val udtValueTpe = tq"com.datastax.driver.core.UDTValue"
+
   def typed[A : c.WeakTypeTag]: Symbol = weakTypeOf[A].typeSymbol
 
   val executableQuery: Type = typeOf[com.outworkers.phantom.builder.query.execution.ExecutableCqlQuery]
@@ -78,12 +84,6 @@ trait UdtRootMacro extends RootMacro {
     }
   }
 
-  val primitivePkg = q"com.outworkers.phantom.builder.primitives"
-  val udtPackage = q"com.outworkers.phantom.udt"
-
-  val prefix = q"com.outworkers.phantom.udt"
-  val keySpaceTpe = tq"com.outworkers.phantom.dsl.KeySpace"
-  val udtValueTpe = tq"com.datastax.driver.core.UDTValue"
 
   /**
     * Retrieves the accessor fields on a case class and returns an iterable of tuples of the form Name -> Type.
