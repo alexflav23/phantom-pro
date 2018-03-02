@@ -4,7 +4,7 @@
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.com>, 6/2017.
  */
-package com.outworkers.phantom.migrations.tables
+package com.outworkers.phantom.migrations.diffs
 
 import com.datastax.driver.core.{ColumnMetadata, TableMetadata}
 import com.outworkers.phantom.CassandraTable
@@ -12,17 +12,16 @@ import com.outworkers.phantom.builder.QueryBuilder
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.column.OptionalColumn
 import com.outworkers.phantom.connectors.KeySpace
-import com.outworkers.phantom.migrations.DiffConfig
 
 import scala.collection.JavaConverters._
-
 
 sealed case class Diff(columns: Seq[ColumnDiff], table: String, config: DiffConfig) {
 
   final def diff(other: Diff): Diff = {
     Diff(
-      columns.filterNot(item => other.columns.exists(_.name == item.name)),
-      s"$table - ${other.table}", config
+      columns.filterNot(item => other.columns.exists(c => Comparison.NameComparison(c, item))),
+      s"$table - ${other.table}",
+      config
     )
   }
 
@@ -32,7 +31,7 @@ sealed case class Diff(columns: Seq[ColumnDiff], table: String, config: DiffConf
 
   def indexes()(implicit keySpace: KeySpace): Seq[CQLQuery] = {
     columns.filter(_.isSecondary).map { origin =>
-      CQLQuery(s"CREATE INDEX IF NOT EXISTS ${origin.name} on ${QueryBuilder.keyspace(keySpace.name, table).queryString}")
+      QueryBuilder.Create.index(keySpace.name, table, origin.name)
     }
   }
 
@@ -61,7 +60,20 @@ sealed case class Diff(columns: Seq[ColumnDiff], table: String, config: DiffConf
   }
 }
 
+
+trait Comparison extends ((ColumnDiff, ColumnDiff) => Boolean)
+
+object Comparison {
+  object NameComparison extends Comparison {
+    override def apply(v1: ColumnDiff, v2: ColumnDiff): Boolean = {
+      v1.name.replaceAll("'", "").toLowerCase == v2.name.replaceAll("'", "").toLowerCase
+    }
+  }
+}
+
 object Diff {
+
+
 
   private[this] def contains(column: ColumnMetadata, clustering: List[String]): Boolean = {
     clustering.exists(column.getName ==)

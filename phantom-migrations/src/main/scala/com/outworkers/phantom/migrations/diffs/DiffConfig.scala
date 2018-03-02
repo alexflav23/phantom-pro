@@ -4,7 +4,7 @@
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.com>, 06/2017.
  */
-package com.outworkers.phantom.migrations
+package com.outworkers.phantom.migrations.diffs
 
 sealed case class DiffConfig(
   allowNonOptional: Boolean,

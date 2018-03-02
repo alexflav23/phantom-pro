@@ -4,10 +4,11 @@
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.com>, 6/2017.
  */
-package com.outworkers.phantom.migrations
+package com.outworkers.phantom.migrations.plans
 
 import com.outworkers.phantom.database.Database
 import com.outworkers.phantom.dsl.KeySpace
+import com.outworkers.phantom.migrations.diffs.DiffConfig
 
 trait Spec
 trait Specified extends Spec

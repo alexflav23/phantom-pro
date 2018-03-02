@@ -6,16 +6,20 @@
  */
 package com.outworkers.phantom.migrations
 
-import org.scalatest.{BeforeAndAfterAll, FeatureSpec, GivenWhenThen, Matchers}
 import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.migrations.diffs.{Diff, DiffConfig}
 import com.outworkers.phantom.migrations.tables._
+import org.scalatest.{BeforeAndAfterAll, FeatureSpec, GivenWhenThen, Matchers}
 
 class DiffTest extends FeatureSpec with GivenWhenThen with BeforeAndAfterAll with Matchers with MigrationDbProvider {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.create()
+
+    database.automigrate()
   }
+
 
   implicit val diffConfig: DiffConfig = {
     DiffConfig(
@@ -23,6 +27,7 @@ class DiffTest extends FeatureSpec with GivenWhenThen with BeforeAndAfterAll wit
       allowSecondaryOverwrites = false
     )
   }
+
 
   info("As a developer")
   info("I want to automatically resolve schema discrepancies")

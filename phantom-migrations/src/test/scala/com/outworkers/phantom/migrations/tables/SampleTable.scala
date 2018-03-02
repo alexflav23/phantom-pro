@@ -1,7 +1,7 @@
 package com.outworkers.phantom.migrations.tables
 
 import com.outworkers.phantom.connectors.CassandraConnection
-import com.outworkers.phantom.dsl._
+import com.outworkers.phantom.dsl.{context => _, _}
 
 case class SampleRecord(
   id: UUID,
@@ -36,7 +36,6 @@ class MigrationDatabase(
   object sampleTableOneDiff extends SampleTableOneDiff with Connector
   object sampleTablePrimaryDiff extends SampleTablePrimaryDiff with Connector
 }
-
 
 object MigrationDatabase extends MigrationDatabase(Defaults.connector)
 
