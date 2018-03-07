@@ -43,12 +43,10 @@ sealed case class Diff(columns: Seq[ColumnDiff], table: String, config: DiffConf
     }
   }
 
-  protected[phantom] def enforceNoPrimaryOverrides() = {
+  protected[phantom] def enforceNoPrimaryOverrides(): Unit = {
     columns.foreach { col =>
       if (col.isPrimary) {
         throw new Exception(s"Cannot automatically migrate PRIMARY_KEY part ${col.name}. You cannot add a primary key to an existing table.")
-      } else {
-        true
       }
     }
   }
@@ -65,8 +63,12 @@ trait Comparison extends ((ColumnDiff, ColumnDiff) => Boolean)
 
 object Comparison {
   object NameComparison extends Comparison {
+    val regex = "['\"]"
+
+    val normalize: String => String = s => s.trim.replaceAll(regex, "").toLowerCase
+
     override def apply(v1: ColumnDiff, v2: ColumnDiff): Boolean = {
-      v1.name.replaceAll("'", "").toLowerCase == v2.name.replaceAll("'", "").toLowerCase
+      normalize(v1.name) == normalize(v2.name)
     }
   }
 }

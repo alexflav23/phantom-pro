@@ -85,4 +85,26 @@ class NameComparisonTests extends FlatSpec with Matchers {
 
     Comparison.NameComparison(c1, c2) shouldEqual true
   }
+
+  it should "correctly compare column diffs with reverse different name case sensitivity and double quotes" in {
+    val c1 = ColumnDiff(
+      "'columnName'",
+      CQLSyntax.Types.TimeUUID,
+      isOptional = false,
+      isPrimary = false,
+      isSecondary = false,
+      isStatic = false
+    )
+
+    val c2 = ColumnDiff(
+      "\"'COLuMNName'\""  ,
+      CQLSyntax.Types.TimeUUID,
+      isOptional = false,
+      isPrimary = false,
+      isSecondary = false,
+      isStatic = false
+    )
+
+    Comparison.NameComparison(c1, c2) shouldEqual true
+  }
 }
