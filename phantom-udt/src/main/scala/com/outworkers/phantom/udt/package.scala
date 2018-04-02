@@ -6,13 +6,10 @@
  */
 package com.outworkers.phantom
 
-import com.outworkers.phantom.builder.query.QueryOptions
-import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
+import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.database.Database
-import com.outworkers.phantom.udt.macros.DefMacro
 import shapeless._
-import shapeless.ops.hlist._
 
 package object udt {
 
@@ -23,17 +20,12 @@ package object udt {
         at(el => implicitly[UDTPrimitive[T]].schemaQuery()(db.space))
       }
     }
-
-    def initUdts[HL <: HList, Rev <: HList, Out <: HList](hl: HL)(
-      implicit rev: Reverse.Aux[HL, Rev],
-      mapped: Mapper.Aux[ExtractSchema.type, Rev, Out],
-      toList: ToList[Out, CQLQuery]
-    ): QueryCollection[Seq] = new QueryCollection[Seq](
-      toList(rev(hl).map(ExtractSchema)).map(
-        qb => ExecutableCqlQuery(qb, QueryOptions.empty)
-      )
-    )
   }
 
-  def deriveUDT[T]: UDTPrimitive[T] = macro DefMacro.materialize[T]
+  def udts[HL <: HList](udts: HL)(
+    implicit ev: UDTInit[HL],
+    space: KeySpace
+  ): QueryCollection[Seq] = ev.statements
+
+  def deriveUDT[T]: UDTPrimitive[T] = macro macros.DefMacro.materialize[T]
 }

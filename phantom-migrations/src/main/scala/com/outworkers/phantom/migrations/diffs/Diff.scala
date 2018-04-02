@@ -6,6 +6,9 @@
  */
 package com.outworkers.phantom.migrations.diffs
 
+import cats.Traverse
+import cats.data.Validated.Valid
+import cats.data.{NonEmptyList, ValidatedNel}
 import com.datastax.driver.core.{ColumnMetadata, TableMetadata}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
@@ -15,7 +18,7 @@ import com.outworkers.phantom.connectors.KeySpace
 
 import scala.collection.JavaConverters._
 
-sealed case class Diff(columns: Seq[ColumnDiff], table: String, config: DiffConfig) {
+sealed case class Diff(columns: List[ColumnDiff], table: String, config: DiffConfig) {
 
   final def diff(other: Diff): Diff = {
     Diff(
@@ -36,11 +39,23 @@ sealed case class Diff(columns: Seq[ColumnDiff], table: String, config: DiffConf
   }
 
   protected[phantom] def enforceOptionality() = {
-    columns.foreach { col =>
+    //import cats.instances.all._
+    import cats.implicits._
+
+    val res = columns.map { col =>
       if (!col.isOptional && !config.allowNonOptional) {
-        throw new Exception(s"You are trying to add a non-optional column to an existing schema. This means querying will now fail because previously inserted rows will not have ${col.name} as a property. ")
+        InvalidAddition(
+          col.name,
+          col.cassandraType,
+          s"You are trying to add a non-optional column to an existing schema. This means querying will now fail because previously inserted rows will not have ${col.name} as a property."
+        ).invalidNel
+      } else {
+        col.validNel
       }
     }
+
+
+    res.sequence_
   }
 
   protected[phantom] def enforceNoPrimaryOverrides(): Unit = {
@@ -75,8 +90,6 @@ object Comparison {
 
 object Diff {
 
-
-
   private[this] def contains(column: ColumnMetadata, clustering: List[String]): Boolean = {
     clustering.exists(column.getName ==)
   }
@@ -85,7 +98,7 @@ object Diff {
 
     val primary = metadata.getPrimaryKey.asScala.map(_.getName).toList
 
-    val columns = metadata.getColumns.asScala.toSet.foldLeft(Seq.empty[ColumnDiff])((acc, item) => {
+    val columns = metadata.getColumns.asScala.toSet.foldLeft(List.empty[ColumnDiff])((acc, item) => {
       acc :+ ColumnDiff(
         item.getName,
         cassandraType = item.getType.getName.toString,
@@ -100,7 +113,7 @@ object Diff {
   }
 
   def apply(table: CassandraTable[_, _])(implicit config: DiffConfig): Diff = {
-    val cols = table.columns.map { column =>
+    val cols = table.columns.toList.map { column =>
       ColumnDiff(
         column.name,
         column.cassandraType,

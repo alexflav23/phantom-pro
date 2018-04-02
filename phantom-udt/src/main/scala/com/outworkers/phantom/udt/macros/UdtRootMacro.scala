@@ -377,7 +377,7 @@ trait UdtRootMacro extends RootMacro {
 
         val base = "CREATE TYPE IF NOT EXISTS " + space.name + "." + ${stringName.toLowerCase} + " (" + membersList.mkString(", ") + ")"
 
-        new $executableQuery(new $enginePkg.CQLQuery(base), $emptyOptions)
+        new $executableQuery(new $enginePkg.CQLQuery(base), $emptyOptions, Nil)
       }
 
 

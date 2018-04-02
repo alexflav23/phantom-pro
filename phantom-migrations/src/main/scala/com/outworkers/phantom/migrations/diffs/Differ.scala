@@ -8,6 +8,7 @@ package com.outworkers.phantom.migrations.diffs
 
 import com.datastax.driver.core.{Session, TableMetadata}
 import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.migrations.tables.Migration
@@ -26,7 +27,7 @@ private[phantom] object Differ {
     implicit session: Session,
     keySpace: KeySpace, ec: ExecutionContext, diffConfig: DiffConfig
   ): Seq[ExecutableCqlQuery] = {
-    Migration(metadata(table.tableName), table).queryList(table).map(ExecutableCqlQuery(_))
+    Migration(metadata(table.tableName), table).queryList(table).map(ExecutableCqlQuery(_, QueryOptions.empty, Nil))
   }
 
   def automigrate(table: CassandraTable[_, _])(

@@ -2,14 +2,13 @@ import sbt._
 import Keys._
 
 lazy val Versions = new {
-  val phantom = "2.20.2"
-  val util = "0.38.0"
+  val phantom = "2.22.0"
+  val util = "0.40.0"
   val logback = "1.2.1"
   val dse = "1.1.0"
-  val scalaTest = "3.0.4"
+  val scalaTest = "3.0.5"
   val scalactic = "3.0.3"
-  val shapeless = "2.3.2"
-  val scalaMeter = "0.8.3"
+  val shapeless = "2.3.3"
   val spark = "1.6.0"
   val dseDriver = "1.1.0"
   val macroCompat = "1.1.1"
@@ -18,10 +17,82 @@ lazy val Versions = new {
   val dockerKit = "0.9.0"
   val scala210 = "2.10.6"
   val scala211 = "2.11.11"
-  val scala212 = "2.12.4"
+  val scala212 = "2.12.5"
   val monix = "2.3.0"
+  val cats = "1.0.1"
   val scalaAll = Seq(scala210, scala211, scala212)
 }
+
+lazy val ScalacOptions = Seq(
+  "-deprecation", // Emit warning and location for usages of deprecated APIs.
+  "-encoding",
+  "utf-8", // Specify character encoding used by source files.
+  "-feature",
+  "-explaintypes", // Explain type errors in more detail.
+  "-feature", // Emit warning and location for usages of features that should be imported explicitly.
+  "-language:reflectiveCalls",
+  "-language:postfixOps",
+  "-language:existentials", // Existential types (besides wildcard types) can be written and inferred
+  "-language:experimental.macros", // Allow macro definition (besides implementation and application)
+  "-language:higherKinds", // Allow higher-kinded types
+  "-language:implicitConversions", // Allow definition of implicit functions called views
+  "-unchecked", // Enable additional warnings where generated code depends on assumptions.
+  "-Xcheckinit", // Wrap field accessors to throw an exception on uninitialized access.
+  //"-Xfatal-warnings", // Fail the compilation if there are any warnings.
+  "-Xfuture" // Turn on future language features.
+  //"-Yno-adapted-args" // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
+)
+
+val XLintOptions = Seq(
+  "-Xlint:adapted-args", // Warn if an argument list is modified to match the receiver.
+  "-Xlint:by-name-right-associative", // By-name parameter of right associative operator.
+  "-Xlint:constant", // Evaluation of a constant arithmetic expression results in an error.
+  "-Xlint:delayedinit-select", // Selecting member of DelayedInit.
+  "-Xlint:doc-detached", // A Scaladoc comment appears to be detached from its element.
+  "-Xlint:inaccessible", // Warn about inaccessible types in method signatures.
+  "-Xlint:missing-interpolator", // A string literal appears to be missing an interpolator id.
+  "-Xlint:nullary-override", // Warn when non-nullary `def f()' overrides nullary `def f'.
+  "-Xlint:nullary-unit", // Warn when nullary methods return Unit.
+  "-Xlint:option-implicit", // Option.apply used implicit view.
+  "-Xlint:package-object-classes", // Class or object defined in package object.
+  "-Xlint:poly-implicit-overload", // Parameterized overloaded implicit methods are not visible as view bounds.
+  "-Xlint:private-shadow", // A private field (or class parameter) shadows a superclass field.
+  "-Xlint:stars-align", // Pattern sequence wildcard must align with sequence component.
+  "-Xlint:type-parameter-shadow", // A local type parameter shadows a type already in scope.
+  "-Xlint:unsound-match" // Pattern match may not be typesafe.
+)
+
+val Scala212Options = Seq(
+  "-Xlint:infer-any", // Warn when a type argument is inferred to be `Any`.
+  "-Ywarn-extra-implicit", // Warn when more than one implicit parameter section is defined.
+  "-Ywarn-unused:implicits", // Warn if an implicit parameter is unused.
+  "-Ywarn-unused:imports", // Warn if an import selector is not referenced.
+  "-Ywarn-unused:locals", // Warn if a local definition is unused.
+  "-Ywarn-unused:params", // Warn if a value parameter is unused.
+  "-Ywarn-unused:patvars", // Warn if a variable bound in a pattern is unused.
+  "-Ywarn-unused:privates" // Warn if a private member is unused.
+) ++ XLintOptions
+
+val YWarnOptions = Seq(
+  "-Ypartial-unification", // Enable partial unification in type constructor inference,
+  "-Ywarn-dead-code", // Warn when dead code is identified.
+  "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures.
+  "-Ywarn-nullary-override", // Warn when non-nullary `def f()' overrides nullary `def f'.
+  "-Ywarn-nullary-unit", // Warn when nullary methods return Unit.
+  "-Ywarn-numeric-widen", // Warn when numerics are widened.
+  "-Ywarn-value-discard" // Warn when non-Unit expression results are unused.
+)
+
+val scalacOptionsFn: String => Seq[String] = { s =>
+  CrossVersion.partialVersion(s) match {
+    case Some((_, minor)) if minor >= 12 => ScalacOptions ++ YWarnOptions ++ Scala212Options
+    case Some((_, minor)) if minor >= 11 => ScalacOptions ++ YWarnOptions
+    case _ => ScalacOptions ++ YWarnOptions
+  }
+}
+
+scalacOptions in ThisBuild ++= ScalacOptions ++ YWarnOptions
+
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
@@ -53,18 +124,6 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "coveralls" ::
     state
   },
-  scalacOptions in ThisBuild ++= Seq(
-    "-language:postfixOps",
-    "-language:implicitConversions",
-    "-language:reflectiveCalls",
-    "-language:higherKinds",
-    "-language:existentials",
-    "-language:experimental.macros",
-    "-Xlint",
-    "-deprecation",
-    "-feature",
-    "-unchecked"
-  ),
   javaOptions in Test ++= Seq(
     "-Xmx2G",
     "-Djava.net.preferIPv4Stack=true",
@@ -112,6 +171,7 @@ lazy val phantomMigrations = (project in file("phantom-migrations"))
     crossScalaVersions := Versions.scalaAll,
     moduleName := "phantom-migrations",
     libraryDependencies ++= Seq(
+      "org.typelevel" %% "cats-core" % Versions.cats,
       compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
       "org.typelevel"  %% "macro-compat" % Versions.macroCompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",

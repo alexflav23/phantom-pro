@@ -10,6 +10,7 @@ import com.datastax.driver.core.TableMetadata
 import com.outworkers.phantom.connectors.KeySpace
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.CassandraTable
+import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
 import com.outworkers.phantom.migrations.diffs.{ColumnDiff, Diff, DiffConfig}
@@ -53,7 +54,7 @@ sealed case class Migration(
     keySpace: KeySpace,
     ec: ExecutionContext
   ): QueryCollection[Seq] = {
-    new QueryCollection(queryList(table).map(ExecutableCqlQuery(_)))
+    new QueryCollection(queryList(table).map(ExecutableCqlQuery(_, QueryOptions.empty, Nil)))
   }
 }
 

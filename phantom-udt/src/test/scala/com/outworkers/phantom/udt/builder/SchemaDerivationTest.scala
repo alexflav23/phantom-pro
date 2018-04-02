@@ -15,10 +15,10 @@ class SchemaDerivationTest extends FlatSpec with Matchers with BeforeAndAfterAll
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    db.create()
+    val _ = db.create()
   }
 
-  implicit val keySpace = KeySpace("phantom_udt")
+  implicit val keySpace: KeySpace = KeySpace("phantom_udt")
 
   it should "automatically derive the type of a schema from a class instance" in {
     val p = implicitly[UDTPrimitive[Test]]

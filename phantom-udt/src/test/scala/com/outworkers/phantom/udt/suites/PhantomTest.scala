@@ -7,11 +7,14 @@
 package com.outworkers.phantom.udt.suites
 
 import java.util.concurrent.TimeUnit
+
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.udt.TestDbProvider
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, OptionValues, Suite}
+
+import scala.concurrent.duration.FiniteDuration
 
 trait PhantomTest extends Suite
   with Matchers
@@ -23,20 +26,23 @@ trait PhantomTest extends Suite
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.create()
+    val _ = database.create()
   }
 
   protected[this] val defaultScalaTimeoutSeconds = 25
 
   private[this] val defaultScalaInterval = 50L
 
-  implicit val defaultScalaTimeout = scala.concurrent.duration.Duration(defaultScalaTimeoutSeconds, TimeUnit.SECONDS)
+  implicit val defaultScalaTimeout: FiniteDuration = scala.concurrent.duration.Duration(
+    defaultScalaTimeoutSeconds,
+    TimeUnit.SECONDS
+  )
 
   private[this] val defaultTimeoutSpan = Span(defaultScalaTimeoutSeconds, Seconds)
 
   implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(defaultTimeoutSpan)
 
-  override implicit val patienceConfig = PatienceConfig(
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(
     timeout = defaultTimeoutSpan,
     interval = Span(defaultScalaInterval, Millis)
   )

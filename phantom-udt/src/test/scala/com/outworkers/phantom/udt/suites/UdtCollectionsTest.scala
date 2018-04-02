@@ -15,7 +15,7 @@ class UdtCollectionsTest extends FlatSpec with PhantomTest {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.create()
+    val _ = database.create()
   }
 
   it should "create and retrieve a list of UDTs from a Cassandra table" in {

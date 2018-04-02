@@ -18,7 +18,7 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
 package object migrations {
 
-  val defaultDuration = 20.seconds
+  val defaultDuration: FiniteDuration = 20.seconds
 
   implicit class TableMigrations(val table: Table[_, _]) extends AnyVal {
 
@@ -40,6 +40,10 @@ package object migrations {
     }
   }
 
+  implicit class QueryColOps[M[X] <: TraversableOnce[X]](val source: QueryCollection[M]) extends AnyVal {
+    def add(other: QueryCollection[M]): QueryCollection[M] = source appendAll other.queries
+  }
+
   implicit class DatabaseMigrations[DB <: Database[DB]](val db: DB) extends AnyVal {
 
     /**
@@ -59,8 +63,9 @@ package object migrations {
       ec: ExecutionContextExecutor,
       diffConfig: DiffConfig
     ): DatabaseDiff[DB, DB] = {
-      DatabaseDiff(helper.tables(db).map(Differ.automigrate).reduce(_ ++ _))
+      DatabaseDiff(helper.tables(db).map(Differ.automigrate).reduce(_ add _))
     }
+
     /**
       * Asynchronously executes all migration queries in a one by one fashion.
       * @param session The session in which to execute this operation.

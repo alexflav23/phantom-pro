@@ -12,6 +12,7 @@ import com.outworkers.phantom.builder.serializers.KeySpaceSerializer
 import com.outworkers.phantom.dsl.{context => _, _}
 import com.outworkers.phantom.udt.domain.OptionalUdt
 import com.outworkers.phantom.udt.tables._
+import shapeless.HNil
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}

@@ -40,7 +40,7 @@ package object monix extends MonixQueryContext with DefaultImports {
     str: CQLQuery,
     options: QueryOptions
   ): QueryInterface[Task] = new QueryInterface[Task]() {
-    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options)
+    override def executableQuery: ExecutableCqlQuery = ExecutableCqlQuery(str, options, Nil)
   }
 
   /**
