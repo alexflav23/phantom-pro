@@ -5,6 +5,7 @@ function fix_git {
     echo "Fixing git setup for $TRAVIS_BRANCH"
     git checkout ${TRAVIS_BRANCH}
     git branch -u origin/${TRAVIS_BRANCH}
+    git pull origin ${TRAVIS_BRANCH}
     git config branch.${TRAVIS_BRANCH}.remote origin
     git config branch.${TRAVIS_BRANCH}.merge refs/heads/${TRAVIS_BRANCH}
 }
@@ -107,5 +108,11 @@ function run_tests {
   fi
 }
 
-fix_git
+if [ "$TRAVIS_PULL_REQUEST" == "false" ]
+then
+    fix_git
+else
+    echo "Git non shallow cloning not required"
+fi
+
 run_tests

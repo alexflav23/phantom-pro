@@ -8,7 +8,7 @@ package com.outworkers.phantom.docker
 
 import java.util.concurrent.Executors
 
-import com.whisk.docker.{DockerContainer, DockerContainerManager, DockerContainerState, DockerFactory}
+import com.whisk.docker.{DockerCommandExecutor, DockerContainer, DockerContainerManager, DockerContainerState, DockerFactory}
 import sbt.Logger
 
 import scala.concurrent.duration._
@@ -32,7 +32,7 @@ class DockerSbtKit(
       Executors.newFixedThreadPool(Math.max(1, dockerContainers.length * 2))
     )
   }
-  implicit lazy val dockerExecutor = dockerFactory.createExecutor()
+  implicit lazy val dockerExecutor: DockerCommandExecutor = dockerFactory.createExecutor()
 
   lazy val containerManager = new DockerContainerManager(dockerContainers, dockerExecutor)
 
@@ -75,7 +75,7 @@ class DockerSbtKit(
         containerManager.initReadyAll(startContainerTimeout).map(x => {
           logger.info("Finished initialising containers using containerManager.")
           logger.info(s"Container states: ${x.mkString(", ")}")
-          x.map(_._2).forall(identity)
+          x.map(_._2).forall(true ==)
         })
 
       sys.addShutdownHook(
@@ -100,10 +100,9 @@ class DockerSbtKit(
     try {
       Await.result(containerManager.stopRmAll() map ( _ => { val x = f }), stopContainer)
     } catch {
-      case e: Throwable => {
+      case e: Throwable =>
         logger.error(e.getMessage)
         logger.trace(e)
-      }
     }
   }
 

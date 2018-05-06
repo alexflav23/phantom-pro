@@ -2,7 +2,7 @@ import sbt._
 import Keys._
 
 lazy val Versions = new {
-  val phantom = "2.22.0"
+  val phantom = "2.24.2"
   val util = "0.40.0"
   val logback = "1.2.1"
   val dse = "1.1.0"
@@ -64,6 +64,7 @@ val XLintOptions = Seq(
 
 val Scala212Options = Seq(
   "-Xlint:infer-any", // Warn when a type argument is inferred to be `Any`.
+  "-Ypartial-unification", // Enable partial unification in type constructor inference,
   "-Ywarn-extra-implicit", // Warn when more than one implicit parameter section is defined.
   "-Ywarn-unused:implicits", // Warn if an implicit parameter is unused.
   "-Ywarn-unused:imports", // Warn if an import selector is not referenced.
@@ -74,7 +75,6 @@ val Scala212Options = Seq(
 ) ++ XLintOptions
 
 val YWarnOptions = Seq(
-  "-Ypartial-unification", // Enable partial unification in type constructor inference,
   "-Ywarn-dead-code", // Warn when dead code is identified.
   "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures.
   "-Ywarn-nullary-override", // Warn when non-nullary `def f()' overrides nullary `def f'.
@@ -86,12 +86,11 @@ val YWarnOptions = Seq(
 val scalacOptionsFn: String => Seq[String] = { s =>
   CrossVersion.partialVersion(s) match {
     case Some((_, minor)) if minor >= 12 => ScalacOptions ++ YWarnOptions ++ Scala212Options
-    case Some((_, minor)) if minor >= 11 => ScalacOptions ++ YWarnOptions
     case _ => ScalacOptions ++ YWarnOptions
   }
 }
 
-scalacOptions in ThisBuild ++= ScalacOptions ++ YWarnOptions
+scalacOptions in ThisBuild ++= scalacOptionsFn(scalaVersion.value)
 
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
