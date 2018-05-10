@@ -65,8 +65,8 @@ object Migration {
     val phantomTable = Diff(table)
 
     Migration(
-      phantomTable diff dbTable migrations(),
-      dbTable diff phantomTable migrations()
+      additions = phantomTable diff dbTable migrations(),
+      deletions = phantomTable notIn dbTable migrations()
     )
   }
 
@@ -75,8 +75,8 @@ object Migration {
     val secondDiff = Diff(second)
 
     Migration(
-      firstDiff diff secondDiff migrations(),
-      secondDiff diff firstDiff migrations()
+      additions = firstDiff diff secondDiff migrations(),
+      deletions = secondDiff diff firstDiff migrations()
     )
   }
 }

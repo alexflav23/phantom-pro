@@ -6,9 +6,6 @@
  */
 package com.outworkers.phantom.migrations.diffs
 
-import cats.Traverse
-import cats.data.Validated.Valid
-import cats.data.{NonEmptyList, ValidatedNel}
 import com.datastax.driver.core.{ColumnMetadata, TableMetadata}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.QueryBuilder
@@ -19,6 +16,15 @@ import com.outworkers.phantom.connectors.KeySpace
 import scala.collection.JavaConverters._
 
 sealed case class Diff(columns: List[ColumnDiff], table: String, config: DiffConfig) {
+
+  final def notIn(other: Diff): Diff = {
+    Diff(
+      other.columns.filterNot(item => columns.exists(c => Comparison.NameComparison(c, item))),
+      s"$table - ${other.table}",
+      config
+    )
+  }
+
 
   final def diff(other: Diff): Diff = {
     Diff(
