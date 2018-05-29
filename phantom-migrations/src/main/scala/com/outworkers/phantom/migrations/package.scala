@@ -1,22 +1,34 @@
 /*
- * Copyright (C) 2012 - 2017 Outworkers, Limited. All rights reserved.
+ * Copyright (C) 2012 - 2018 Outworkers, Limited. All rights reserved.
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.com>, 6/2017.
  */
 package com.outworkers.phantom
 
+import cats.data.ValidatedNel
+import cats.Semigroup
+import cats.data.Validated.{Invalid, Valid}
 import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.query.execution.QueryCollection
 import com.outworkers.phantom.connectors.KeySpace
 import com.outworkers.phantom.dsl.{context => _, _}
 import com.outworkers.phantom.macros.DatabaseHelper
-import com.outworkers.phantom.migrations.diffs.{DatabaseDiff, DiffConfig, Differ}
+import com.outworkers.phantom.migrations.diffs.{DatabaseDiff, DiffConfig, DiffConflict, Differ}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+import cats.syntax.validated._
 
 package object migrations {
+
+  implicit def auto[M[X] <: TraversableOnce[X]]: Semigroup[QueryCollection[M]] = {
+    new Semigroup[QueryCollection[M]] {
+      override def combine(x: QueryCollection[M], y: QueryCollection[M]): QueryCollection[M] = x add y
+    }
+  }
+
+  type MigrationResult[T] = ValidatedNel[DiffConflict, T]
 
   val defaultDuration: FiniteDuration = 20.seconds
 
@@ -27,7 +39,7 @@ package object migrations {
       keySpace: KeySpace,
       ec: ExecutionContextExecutor,
       diffConfig: DiffConfig
-    ): QueryCollection[Seq] = {
+    ): MigrationResult[QueryCollection[Seq]] = {
       Differ.automigrate(table)
     }
 
@@ -35,7 +47,7 @@ package object migrations {
       implicit session: Session,
       space: KeySpace,
       ec: ExecutionContextExecutor
-    ): QueryCollection[Seq] = {
+    ): MigrationResult[QueryCollection[Seq]] = {
       Differ.automigrate(table)(session, space, ec, diffConfig)
     }
   }
@@ -62,9 +74,37 @@ package object migrations {
       helper: DatabaseHelper[DB],
       ec: ExecutionContextExecutor,
       diffConfig: DiffConfig
-    ): DatabaseDiff[DB, DB] = {
-      DatabaseDiff(helper.tables(db).map(Differ.automigrate).reduce(_ add _))
+    ): MigrationResult[DatabaseDiff[DB, DB]] = {
+      import cats.syntax.validated._
+      import cats.syntax.traverse._
+      import cats.instances.list._
+
+      helper.tables(db).map(Differ.automigrate).reduce(_ combine _).map(DatabaseDiff.apply)
     }
+
+
+    /**
+      * Asynchronously executes all migration queries in a one by one fashion.
+      * @param session The session in which to execute this operation.
+      * @param space The keyspace in which the migration queries would execute.
+      * @param ec The execution context in which to execute the queries.
+      * @param diffConfig An implicit diff configuration.
+      * @return An ordered list of dependent queries through [[QueryCollection[Seq]] that
+      *         will resolve all conflicts with the schema in the database.
+      */
+    def migrateAsyncNel()(
+      implicit session: Session,
+      space: KeySpace,
+      helper: DatabaseHelper[DB],
+      ec: ExecutionContextExecutor,
+      diffConfig: DiffConfig
+    ): Future[MigrationResult[Seq[ResultSet]]] = {
+      automigrate() fold(
+        nel => Future.successful(Invalid(nel)),
+        success => executeStatements(success.diffs).sequence() map (Valid(_))
+      )
+    }
+
 
     /**
       * Asynchronously executes all migration queries in a one by one fashion.
@@ -81,7 +121,13 @@ package object migrations {
       helper: DatabaseHelper[DB],
       ec: ExecutionContextExecutor,
       diffConfig: DiffConfig
-    ): Future[Seq[ResultSet]] = executeStatements(automigrate().diffs).sequence()
+    ): Future[Seq[ResultSet]] = {
+      automigrate() fold(
+        nel => Future.failed[Seq[ResultSet]](new Exception(s"Found ${nel.size} diff conflicts, unable to automatically migrate database")),
+        success => executeStatements(success.diffs).sequence()
+      )
+    }
+
 
     def migrate(timeout: Duration = defaultDuration)(
       implicit session: Session,

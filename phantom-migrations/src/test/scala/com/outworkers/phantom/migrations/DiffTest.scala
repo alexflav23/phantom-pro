@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 - 2017 Outworkers, Limited. All rights reserved.
+ * Copyright (C) 2012 - 2018 Outworkers, Limited. All rights reserved.
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.com>, 6/2017.
@@ -7,16 +7,15 @@
 package com.outworkers.phantom.migrations
 
 import com.outworkers.phantom.dsl._
-import com.outworkers.phantom.migrations.diffs.{Diff, DiffConfig}
-import com.outworkers.phantom.migrations.tables._
-import org.scalatest.{BeforeAndAfterAll, FeatureSpec, GivenWhenThen, Matchers}
+import com.outworkers.phantom.migrations.diffs.{Diff, DiffConfig, InvalidAddition}
+import com.outworkers.phantom.migrations.utils.MigrationSuite
+import org.scalatest.{FeatureSpec, GivenWhenThen}
 
-class DiffTest extends FeatureSpec with GivenWhenThen with BeforeAndAfterAll with Matchers with MigrationDbProvider {
+class DiffTest extends FeatureSpec with GivenWhenThen with MigrationSuite {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.create()
-
     database.automigrate()
   }
 
@@ -72,9 +71,11 @@ class DiffTest extends FeatureSpec with GivenWhenThen with BeforeAndAfterAll wit
 
       And("Calling the migrations method should throw an error")
 
-      intercept[Exception] {
-        diff.migrations()
-      }
+      val migrations = diff.migrations
+
+      migrations shouldBe invalid
+      migrations.invalidValue.head shouldBe an [InvalidAddition]
+
     }
   }
 }

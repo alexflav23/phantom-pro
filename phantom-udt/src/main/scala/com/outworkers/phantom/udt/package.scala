@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 - 2017 Outworkers, Limited. All rights reserved.
+ * Copyright (C) 2012 - 2018 Outworkers, Limited. All rights reserved.
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.com>, 6/2017.
@@ -15,11 +15,6 @@ package object udt {
 
   implicit class DatabaseAugmenter[DB <: Database[DB]](val db: DB) {
 
-    object ExtractSchema extends Poly1 {
-      implicit def caseGeneric[T <: Product with Serializable : UDTPrimitive]: Case.Aux[T, ExecutableCqlQuery] = {
-        at(el => implicitly[UDTPrimitive[T]].schemaQuery()(db.space))
-      }
-    }
   }
 
   def udts[HL <: HList](udts: HL)(

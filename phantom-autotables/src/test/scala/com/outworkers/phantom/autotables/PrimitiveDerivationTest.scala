@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 - 2017 Outworkers, Limited. All rights reserved.
+ * Copyright (C) 2012 - 2018 Outworkers, Limited. All rights reserved.
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.com>, 6/2017.
@@ -15,7 +15,7 @@ class PrimitiveDerivationTest extends FlatSpec with Matchers with AutoDBProvider
 
   override def beforeAll: Unit = {
     super.beforeAll()
-    db.create()
+    val _ = db.create()
   }
 
   it should "store a user and retrieve one from the db" in {

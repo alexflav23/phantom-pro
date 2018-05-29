@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2012 - 2017 Outworkers, Limited. All rights reserved.
+ * Copyright (C) 2012 - 2018 Outworkers, Limited. All rights reserved.
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.com>, 6/2017.
  */
 package com.outworkers.phantom.migrations.tables
 
+import cats.data.ValidatedNel
 import com.datastax.driver.core.TableMetadata
 import com.outworkers.phantom.connectors.KeySpace
 import com.datastax.driver.core.Session
@@ -13,15 +14,13 @@ import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.QueryOptions
 import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.builder.query.execution.{ExecutableCqlQuery, QueryCollection}
-import com.outworkers.phantom.migrations.diffs.{ColumnDiff, Diff, DiffConfig}
+import com.outworkers.phantom.migrations.diffs.{ColumnDiff, Diff, DiffConfig, DiffConflict}
 
 import scala.concurrent.ExecutionContext
 
-
-
 sealed case class Migration(
-  additions: Seq[ColumnDiff],
-  deletions: Seq[ColumnDiff]
+  additions: Diff,
+  deletions: Diff
 ) {
 
   def additiveQueries(table: CassandraTable[_, _])(
@@ -29,7 +28,7 @@ sealed case class Migration(
     keySpace: KeySpace,
     ec: ExecutionContext
   ): Seq[CQLQuery] = {
-    additions map {
+    additions.columns map {
       col: ColumnDiff => table.alter.add(col.name, col.cassandraType).qb
     }
   }
@@ -38,7 +37,10 @@ sealed case class Migration(
     implicit keySpace: KeySpace,
     ec: ExecutionContext
   ): Seq[CQLQuery] = {
-    deletions map { col => table.alter.drop(col.name).qb }
+
+    deletions.columns map { col =>
+      table.alter.drop(col.name).qb
+    }
   }
 
   def queryList(table: CassandraTable[_, _])(
@@ -59,24 +61,33 @@ sealed case class Migration(
 }
 
 object Migration {
-  def apply(metadata: TableMetadata, table: CassandraTable[_, _])(implicit diffConfig: DiffConfig): Migration = {
+  def apply(
+    metadata: TableMetadata,
+    table: CassandraTable[_, _]
+  )(implicit diffConfig: DiffConfig): ValidatedNel[DiffConflict, Migration] = {
 
     val dbTable = Diff(metadata)
     val phantomTable = Diff(table)
 
-    Migration(
-      additions = phantomTable diff dbTable migrations(),
-      deletions = phantomTable notIn dbTable migrations()
-    )
+    import cats.implicits._
+
+    (
+      phantomTable diff dbTable migrations,
+      phantomTable notIn dbTable migrations
+    ).mapN { (additions: Diff, deletions: Diff) => Migration(additions, deletions) }
   }
 
-  def diff(first: CassandraTable[_, _], second: CassandraTable[_, _])(implicit diffConfig: DiffConfig): Migration = {
+  def diff(
+    first: CassandraTable[_, _],
+    second: CassandraTable[_, _]
+  )(implicit diffConfig: DiffConfig): ValidatedNel[DiffConflict, Migration] = {
     val firstDiff = Diff(first)
     val secondDiff = Diff(second)
+    import cats.implicits._
 
-    Migration(
-      additions = firstDiff diff secondDiff migrations(),
-      deletions = secondDiff diff firstDiff migrations()
-    )
+    (
+      firstDiff diff secondDiff migrations,
+      firstDiff notIn secondDiff migrations
+    ).mapN { (additions: Diff, deletions: Diff) => Migration(additions, deletions) }
   }
 }

@@ -3,9 +3,8 @@ package com.outworkers.phantom.udt.domain
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.Date
-
 import com.outworkers.phantom.dsl.UUID
-import com.outworkers.phantom.udt.Udt
+import com.outworkers.phantom.udt.{Udt, deriveUDT}
 
 @Udt case class OptionalUdt(
   id: UUID,
@@ -25,3 +24,14 @@ import com.outworkers.phantom.udt.Udt
   optionalByteBuffer: Option[ByteBuffer],
   optionalInet: Option[InetAddress]
 )
+
+
+case class A(value: Int)
+
+object A {
+  implicit val primitive = deriveUDT[A]
+}
+
+case class B(a: A) {
+  implicit val udt = deriveUDT[B]
+}

@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2012 - 2017 Outworkers, Limited. All rights reserved.
+ * Copyright (C) 2012 - 2018 Outworkers, Limited. All rights reserved.
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.com>, 6/2017.
  */
 package com.outworkers.phantom.migrations.diffs
 
+import cats.data.ValidatedNel
 import com.datastax.driver.core.{Session, TableMetadata}
 import com.outworkers.phantom.CassandraTable
 import com.outworkers.phantom.builder.query.QueryOptions
@@ -26,8 +27,10 @@ private[phantom] object Differ {
   def queryList(table: CassandraTable[_, _])(
     implicit session: Session,
     keySpace: KeySpace, ec: ExecutionContext, diffConfig: DiffConfig
-  ): Seq[ExecutableCqlQuery] = {
-    Migration(metadata(table.tableName), table).queryList(table).map(ExecutableCqlQuery(_, QueryOptions.empty, Nil))
+  ): ValidatedNel[DiffConflict, Seq[ExecutableCqlQuery]] = {
+    Migration(metadata(table.tableName), table).map(
+      _.queryList(table).map(ExecutableCqlQuery(_, QueryOptions.empty, Nil))
+    )
   }
 
   def automigrate(table: CassandraTable[_, _])(
@@ -35,7 +38,7 @@ private[phantom] object Differ {
     keySpace: KeySpace,
     ec: ExecutionContext,
     diffConfig: DiffConfig
-  ): QueryCollection[Seq] = {
-    new QueryCollection(queryList(table))
+  ): ValidatedNel[DiffConflict, QueryCollection[Seq]] = {
+    queryList(table).map(new QueryCollection(_))
   }
 }

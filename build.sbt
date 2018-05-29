@@ -2,7 +2,7 @@ import sbt._
 import Keys._
 
 lazy val Versions = new {
-  val phantom = "2.24.3"
+  val phantom = "2.24.5"
   val util = "0.40.0"
   val logback = "1.2.1"
   val dse = "1.1.0"
@@ -20,6 +20,7 @@ lazy val Versions = new {
   val scala212 = "2.12.5"
   val monix = "2.3.0"
   val cats = "1.0.1"
+  val catsScalatest = "2.3.1"
   val scalaAll = Seq(scala210, scala211, scala212)
 }
 
@@ -104,7 +105,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   libraryDependencies ++= Seq(
      "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
-      "org.scalactic" %% "scalactic" % Versions.scalactic % Test
+      "org.scalactic" %% "scalactic" % Versions.scalactic % Test,
+      "com.ironcorelabs" %% "cats-scalatest" % Versions.catsScalatest % Test
   ),
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),

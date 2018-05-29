@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 - 2017 Outworkers, Limited. All rights reserved.
+ * Copyright (C) 2012 - 2018 Outworkers, Limited. All rights reserved.
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.com>, 6/2017.
@@ -14,14 +14,78 @@ import com.outworkers.phantom.column.OptionalColumn
 import com.outworkers.phantom.connectors.KeySpace
 
 import scala.collection.JavaConverters._
+import cats.syntax.validated._
+import cats.syntax.traverse._
+import cats.instances.list._
+import com.outworkers.phantom.migrations.MigrationResult
+
+/**
+  * The implementation of a migration diffing rule. We use this simple
+  * function 1 API to navigate over a diff between two tables, which exposes
+  * any columns that have been added or removed, or changed.
+  *
+  * We can then implement any logic on top of the diff between the tables,
+  * and we can plug in the set of diffs and whichever stage of the migration pipeline,
+  * meaning end users of the API are completely de-coupled from a static set of diffs.
+  *
+  * They can instead choose, mix and override the rules used for the final dif as they see fit.
+  */
+trait DiffRule extends (Diff => MigrationResult[List[ColumnDiff]])
+
+object DiffRule {
+
+  @deprecated("Do not rely on this as a default set of rules")
+  def rules(
+    diff: Diff
+  )(implicit config: DiffConfig): MigrationResult[List[List[ColumnDiff]]] = {
+    List(
+      new EnforceOptionality(),
+      new EnforceNoPrimaryOverrides()
+    ).map(_.apply(diff)).sequence
+  }
+
+  class EnforceNoPrimaryOverrides()(
+    implicit config: DiffConfig
+  ) extends DiffRule {
+    override def apply(v1: Diff): MigrationResult[List[ColumnDiff]] = {
+      v1.columns.map { col =>
+        if (col.isPrimary) {
+          InvalidAddition(
+            col.name,
+            col.cassandraType,
+            s"Cannot automatically migrate PRIMARY_KEY part ${col.name}. You cannot add a primary key to an existing table."
+          ).invalidNel[ColumnDiff]
+        } else {
+          col.validNel[InvalidAddition]
+        }
+      } sequence
+    }
+  }
+
+  class EnforceOptionality()(implicit config: DiffConfig) extends DiffRule {
+    override def apply(v1: Diff): MigrationResult[List[ColumnDiff]] = {
+      v1.columns.map { col =>
+        if (!col.isOptional && !config.allowNonOptional) {
+          InvalidAddition(
+            col.name,
+            col.cassandraType,
+            s"You are trying to add a non-optional column to an existing schema. This means querying will now fail because previously inserted rows will not have ${col.name} as a property."
+          ).invalidNel[ColumnDiff]
+        } else {
+          col.validNel[InvalidAddition]
+        }
+      } sequence
+    }
+  }
+}
 
 sealed case class Diff(columns: List[ColumnDiff], table: String, config: DiffConfig) {
 
   final def notIn(other: Diff): Diff = {
     Diff(
-      other.columns.filterNot(item => columns.exists(c => Comparison.NameComparison(c, item))),
-      s"$table - ${other.table}",
-      config
+      columns = other.columns.filterNot(item => columns.exists(c => Comparison.NameComparison(c, item))),
+      table = table,
+      config = config
     )
   }
 
@@ -44,38 +108,8 @@ sealed case class Diff(columns: List[ColumnDiff], table: String, config: DiffCon
     }
   }
 
-  protected[phantom] def enforceOptionality() = {
-    //import cats.instances.all._
-    import cats.implicits._
-
-    val res = columns.map { col =>
-      if (!col.isOptional && !config.allowNonOptional) {
-        InvalidAddition(
-          col.name,
-          col.cassandraType,
-          s"You are trying to add a non-optional column to an existing schema. This means querying will now fail because previously inserted rows will not have ${col.name} as a property."
-        ).invalidNel
-      } else {
-        col.validNel
-      }
-    }
-
-
-    res.sequence_
-  }
-
-  protected[phantom] def enforceNoPrimaryOverrides(): Unit = {
-    columns.foreach { col =>
-      if (col.isPrimary) {
-        throw new Exception(s"Cannot automatically migrate PRIMARY_KEY part ${col.name}. You cannot add a primary key to an existing table.")
-      }
-    }
-  }
-
-  def migrations(): Seq[ColumnDiff] = {
-    enforceOptionality()
-    enforceNoPrimaryOverrides()
-    columns
+  def migrations(implicit conf: DiffConfig): MigrationResult[Diff] = {
+    DiffRule.rules(this).map( _=> this)
   }
 }
 
