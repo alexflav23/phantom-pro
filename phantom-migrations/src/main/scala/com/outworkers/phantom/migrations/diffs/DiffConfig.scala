@@ -12,5 +12,6 @@ sealed case class DiffConfig(
   allowPrimaryOverwrites: Boolean = true,
   allowSecondaryIndexOverwrites: Boolean = true,
   allowMaterializedViewOverwrites: Boolean = true,
-  allowUdtOverwrites: Boolean = true
+  allowUdtOverwrites: Boolean = true,
+  enableCaseSensitiveAutoQuotes: Boolean = false
 )

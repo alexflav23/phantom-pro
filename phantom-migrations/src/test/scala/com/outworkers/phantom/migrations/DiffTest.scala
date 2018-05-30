@@ -16,7 +16,7 @@ class DiffTest extends FeatureSpec with GivenWhenThen with MigrationSuite {
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.create()
-    database.automigrate()
+    val _ = database.automigrate()
   }
 
 

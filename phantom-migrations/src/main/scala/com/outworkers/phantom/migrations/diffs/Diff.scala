@@ -139,8 +139,21 @@ object Diff {
     val primary = metadata.getPrimaryKey.asScala.map(_.getName).toList
 
     val columns = metadata.getColumns.asScala.toSet.foldLeft(List.empty[ColumnDiff])((acc, item) => {
+
+      val sourceName = if (config.enableCaseSensitiveAutoQuotes) {
+        if (item.getName.forall(_.isLower)) {
+          item.getName
+        } else {
+          s""""${item.getName}"""".stripMargin
+        }
+      } else {
+        item.getName
+      }
+
+      Console.println(s"Cassandra column name: $sourceName")
+
       acc :+ ColumnDiff(
-        item.getName,
+        sourceName,
         cassandraType = item.getType.getName.toString,
         isOptional = false,
         isPrimary = contains(item, primary),

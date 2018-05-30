@@ -9,6 +9,4 @@ trait MigrationSuite extends Suite
   with Matchers
   with ValidatedMatchers
   with ValidatedValues
-  with MigrationDbProvider {
-
-}
+  with MigrationDbProvider

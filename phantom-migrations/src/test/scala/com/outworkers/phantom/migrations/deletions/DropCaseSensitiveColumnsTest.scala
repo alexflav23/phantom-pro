@@ -6,24 +6,24 @@
  */
 package com.outworkers.phantom.migrations.deletions
 
-import cats.scalatest.{ValidatedMatchers, ValidatedValues}
+import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.migrations.diffs.{Diff, DiffConfig}
 import com.outworkers.phantom.migrations.utils.MigrationSuite
 import org.scalatest.{FeatureSpec, GivenWhenThen}
-import com.outworkers.phantom.dsl._
 
-class DropCaseSensitiveColumnsTest extends FeatureSpec with GivenWhenThen with MigrationSuite with ValidatedValues {
+class DropCaseSensitiveColumnsTest extends FeatureSpec with GivenWhenThen with MigrationSuite {
 
   implicit val diffConfig: DiffConfig = {
     DiffConfig(
       allowNonOptional = true,
-      allowSecondaryOverwrites = false
+      allowSecondaryOverwrites = false,
+      enableCaseSensitiveAutoQuotes = true
     )
   }
 
   override def beforeAll(): Unit = {
     super.beforeAll
-    db.create()
+    val _ = db.create()
   }
 
   feature("The column differ should compute the differences between two tables") {
@@ -31,18 +31,24 @@ class DropCaseSensitiveColumnsTest extends FeatureSpec with GivenWhenThen with M
 
       Given("A valid Cassandra table schema is used, and the Naming strategy is case sensitive")
 
+
+      val diff = Diff(database.dropQuotedTable) diff Diff(database.droppedQuotedTable)
+
       When("A table is diffed against a table with the case sensitive column being removed")
-      //val diff = Diff(database.dropQuotedTable) diff Diff(database.droppedQuotedTable)
       val migrations = database.dropQuotedTable.automigrate()
 
-      Console.println(database.dropQuotedTable.alter().drop(_.name))
+      migrations shouldBe valid
+
+      Console.println(migrations.value.queries.map(_.qb))
+
+      //Console.println(database.dropQuotedTable.alter().drop(_.name).queryString)
 
       Then("The total number of differences found should be 1")
-      //diff.columns.size shouldEqual 1
+      //migrations.value.size shouldEqual 1
       //Console.println(diff.columns)
 
-      Console.println(s"Found ${migrations.value.queries.size} migration queries required")
-      Console.println(migrations.value.queries.mkString("\n"))
+      info(s"Found ${migrations.value.queries.size} migration queries required")
+      info(migrations.value.queries.mkString("\n"))
 
       And("A primary key part should be found in the diff")
 
