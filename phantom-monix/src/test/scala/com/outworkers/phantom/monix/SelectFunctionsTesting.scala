@@ -35,7 +35,7 @@ class SelectFunctionsTesting extends PhantomSuite with MonixScalaTest with TestD
 
     whenReady(chain) { res =>
       res shouldBe defined
-      Try(new DateTime(res.value / 1000, DateTimeZone.UTC)).isSuccess shouldEqual true
+      Try(new DateTime(res.value._1 / 1000, DateTimeZone.UTC)).isSuccess shouldEqual true
     }
   }
 
@@ -83,7 +83,7 @@ class SelectFunctionsTesting extends PhantomSuite with MonixScalaTest with TestD
 
     whenReady(chain) { res =>
       res shouldBe defined
-      potentialList should contain (res.value.value)
+      potentialList should contain (res.value._1.value)
     }
   }
 

@@ -2,26 +2,32 @@ import sbt._
 import Keys._
 
 lazy val Versions = new {
-  val phantom = "2.24.5"
-  val util = "0.40.0"
-  val logback = "1.2.1"
-  val dse = "1.1.0"
+  val phantom = "2.24.11"
+  val util = "0.45.0"
+  val logback = "1.2.3"
+  val dse = "1.1.2"
   val scalaTest = "3.0.5"
-  val scalactic = "3.0.3"
+  val scalactic = "3.0.5"
   val shapeless = "2.3.3"
   val spark = "1.6.0"
-  val dseDriver = "1.1.0"
   val macroCompat = "1.1.1"
-  val macroParadise = "2.1.0"
+  val macroParadise = "2.1.1"
   val scalaGraph = "1.11.4"
-  val dockerKit = "0.9.0"
+  val dockerKit = "0.9.8"
   val scala210 = "2.10.6"
-  val scala211 = "2.11.11"
-  val scala212 = "2.12.5"
-  val monix = "2.3.0"
-  val cats = "1.0.1"
+  val scala211 = "2.11.12"
+  val scala212 = "2.12.7"
+  val monix = "2.3.3"
+  val cats = "1.2.0"
   val catsScalatest = "2.3.1"
   val scalaAll = Seq(scala210, scala211, scala212)
+
+  val scalaMacrosVersion: String => String = {
+    s => CrossVersion.partialVersion(s) match {
+      case Some((_, minor)) if minor >= 11 => macroParadise
+      case _ => "2.1.0"
+    }
+  }
 }
 
 lazy val ScalacOptions = Seq(
@@ -173,7 +179,7 @@ lazy val phantomMigrations = (project in file("phantom-migrations"))
     moduleName := "phantom-migrations",
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % Versions.cats,
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.scalaMacrosVersion(scalaVersion.value) cross CrossVersion.full),
       "org.typelevel"  %% "macro-compat" % Versions.macroCompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
@@ -187,7 +193,7 @@ lazy val phantomAutoTables = (project in file("phantom-autotables"))
     crossScalaVersions := Versions.scalaAll,
     moduleName := "phantom-autotables",
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.scalaMacrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.outworkers" 							%% "phantom-dsl" 										  % Versions.phantom,
       "com.outworkers"              %% "util-testing"                     % Versions.util % Test
     )
@@ -199,7 +205,7 @@ lazy val phantomDseGraph = (project in file("phantom-graph"))
     moduleName := "phantom-graph",
     crossScalaVersions := Versions.scalaAll,
     libraryDependencies ++= Seq(
-      "com.datastax.cassandra"       % "dse-driver"                        % Versions.dseDriver,
+      "com.datastax.cassandra"       % "dse-driver"                        % Versions.dse,
       "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
       "com.outworkers"               %% "util-testing"                     % Versions.util % Test
     )
@@ -226,7 +232,7 @@ lazy val phantomUdt = (project in file("phantom-udt"))
     moduleName := "phantom-udt",
     crossScalaVersions := Versions.scalaAll,
     libraryDependencies ++= Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.scalaMacrosVersion(scalaVersion.value) cross CrossVersion.full),
       "org.typelevel"  %% "macro-compat" % Versions.macroCompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
@@ -243,7 +249,7 @@ lazy val phantomMonix = (project in file("phantom-monix"))
     libraryDependencies ++= Seq(
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "com.outworkers" %% "util-testing" % Versions.util % Test,
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.scalaMacrosVersion(scalaVersion.value) cross CrossVersion.full),
       "io.monix" %% "monix" % Versions.monix
     )
   ).settings(
@@ -261,7 +267,7 @@ lazy val readme = (project in file("readme"))
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % Versions.macroCompat % "tut",
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "tut",
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full),
+      compilerPlugin("org.scalamacros" % "paradise" % Versions.scalaMacrosVersion(scalaVersion.value) cross CrossVersion.full),
       "com.outworkers" %% "util-samplers" % Versions.util % "tut",
       "org.scalatest" %% "scalatest" % Versions.scalaTest % "tut"
     )
