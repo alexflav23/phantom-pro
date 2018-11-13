@@ -1,6 +1,5 @@
 package com.outworkers.phantom.migrations.tables
 
-import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.dsl.{context => _, _}
 
 case class SampleRecord(
@@ -9,7 +8,7 @@ case class SampleRecord(
   date: DateTime
 )
 
-abstract class SampleTable extends Table[SampleTable, SampleRecord] with RootConnector {
+abstract class SampleTable extends Table[SampleTable, SampleRecord] {
   object id extends UUIDColumn with PartitionKey
   object name extends StringColumn
   object date extends DateTimeColumn

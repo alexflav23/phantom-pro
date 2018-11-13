@@ -40,43 +40,16 @@ function setup_git_user {
     git config user.name "Travis CI"
 }
 
-function publish_to_bintray {
+function run_publish {
   setup_git_user
   create_bintray_file
 
-  COMMIT_MSG=$(git log -1 --pretty=%B 2>&1)
-  COMMIT_SKIP_VERSION="[version skip]"
-  COMMIT_SKIP_PUBLISH="[publish skip]"
-
-  echo "Last commit message $COMMIT_MSG"
-  echo "Commit skip message $COMMIT_SKIP_VERSION"
-
-  if [[ $COMMIT_MSG == *"$COMMIT_SKIP_VERSION"* ]]
-  then
-      echo "Skipping version bump and simply tagging"
-  else
-      echo "Bumping version bump and simply tagging"
-      #sbt version-bump-patch git-tag
-  fi
-
-  if [[ $COMMIT_MSG == *"$COMMIT_SKIP_PUBLISH"* ]]
-  then
-      echo "Skipping publishing"
-  else
-      echo "Publishing new version to Bintray"
-      sbt "release with-defaults"
-  fi
-}
-
-function run_publish {
-  if [ "$TRAVIS_SCALA_VERSION" == ${TARGET_SCALA_VERSION} ] &&
-    [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ] &&
+  if [ "$PUBLISH_ARTIFACT" == "true" ] &&
     [ "$TRAVIS_PULL_REQUEST" == "false" ] &&
     [ "$TRAVIS_BRANCH" == "develop" ];
     then
         echo "Triggering publish script for Scala $TARGET_SCALA_VERSION";
-        publish_to_bintray
-        exit $?
+        sbt "release with-defaults"
     else
         echo "Scala version is not $TARGET_SCALA_VERSION";
         echo "This is either a pull request or the branch is not develop, deployment not necessary"
@@ -86,7 +59,7 @@ function run_publish {
 
 function run_tests {
 
-  if [ "${TRAVIS_SCALA_VERSION}" == ${TARGET_SCALA_VERSION} ] && [ "${TRAVIS_JDK_VERSION}" == "oraclejdk8" ];
+  if [ "${PUBLISH_ARTIFACT}" == "true" ];
   then
       echo "Running tests with coverage and report submission"
       sbt "plz $TRAVIS_SCALA_VERSION test"

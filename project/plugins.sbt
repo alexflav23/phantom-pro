@@ -5,17 +5,17 @@ resolvers ++= Seq(
   Resolver.sonatypeRepo("releases")
 )
 
+addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.3")
+
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.0")
 
 addSbtPlugin("org.scoverage" % "sbt-coveralls" % "1.1.0")
 
 addSbtPlugin("com.codacy" % "sbt-codacy-coverage" % "1.3.0")
 
-addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.7.0")
-
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
 
-addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
+addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.4")
 
 addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
 

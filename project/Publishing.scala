@@ -5,7 +5,6 @@
  * Written by Flavian Alexandru<flavian@outworkers.com>, 10/2017.
  */
 import bintray.BintrayKeys._
-import com.typesafe.sbt.SbtGit.git
 import sbt.Keys._
 import sbt._
 import sbtrelease.ReleasePlugin.autoImport.{ReleaseStep, _}

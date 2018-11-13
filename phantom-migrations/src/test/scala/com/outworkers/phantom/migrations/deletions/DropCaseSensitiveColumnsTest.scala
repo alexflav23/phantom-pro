@@ -39,13 +39,9 @@ class DropCaseSensitiveColumnsTest extends FeatureSpec with GivenWhenThen with M
 
       migrations shouldBe valid
 
-      Console.println(migrations.value.queries.map(_.qb))
-
-      //Console.println(database.dropQuotedTable.alter().drop(_.name).queryString)
-
       Then("The total number of differences found should be 1")
       //migrations.value.size shouldEqual 1
-      //Console.println(diff.columns)
+      Console.println(diff.columns)
 
       info(s"Found ${migrations.value.queries.size} migration queries required")
       info(migrations.value.queries.mkString("\n"))
