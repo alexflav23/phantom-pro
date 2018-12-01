@@ -150,8 +150,6 @@ object Diff {
         item.getName
       }
 
-      Console.println(s"Cassandra column name: $sourceName")
-
       acc :+ ColumnDiff(
         sourceName,
         cassandraType = item.getType.getName.toString,
