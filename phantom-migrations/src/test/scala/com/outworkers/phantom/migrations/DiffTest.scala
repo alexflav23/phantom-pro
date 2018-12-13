@@ -6,17 +6,21 @@
  */
 package com.outworkers.phantom.migrations
 
+import cats.scalatest.ValidatedMatchers
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.migrations.diffs.{Diff, DiffConfig, InvalidAddition}
 import com.outworkers.phantom.migrations.utils.MigrationSuite
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FeatureSpec, GivenWhenThen}
 
-class DiffTest extends FeatureSpec with GivenWhenThen with MigrationSuite {
+class DiffTest extends FeatureSpec
+  with GivenWhenThen
+  with MigrationSuite
+  with ValidatedMatchers with ScalaFutures {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     database.create()
-    val _ = database.automigrate()
   }
 
 
@@ -75,6 +79,22 @@ class DiffTest extends FeatureSpec with GivenWhenThen with MigrationSuite {
 
       migrations shouldBe invalid
       migrations.invalidValue.head shouldBe an [InvalidAddition]
+
+    }
+
+    scenario("The table on the right adds new indexes") {
+      Given("A table with no secondary indexes is used")
+
+      When("A table is diffed against a table with a new secondary index column")
+      val diff = Diff(database.missingColumnTableAdded) diff Diff(database.missingColumnTable)
+
+      println(diff.columns.size)
+      diff.columns.foreach(println)
+      println(diff.indexes())
+
+      whenReady(database.automigrate().value.diffs.future()) { res =>
+        //res.forall(_.wasApplied()) shouldEqual true
+      }
 
     }
   }

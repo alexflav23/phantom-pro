@@ -19,6 +19,9 @@ class MigrationDatabase(
   object sampleTable extends SampleTable with Connector
   object sampleTableOneDiff extends SampleTableOneDiff with Connector
   object sampleTablePrimaryDiff extends SampleTablePrimaryDiff with Connector
+
+  object missingColumnTable extends MissingColumnNameTable with Connector
+  object missingColumnTableAdded extends MissingAddedColumnNameTable with Connector
 }
 
 object MigrationDatabase extends MigrationDatabase(Defaults.connector)

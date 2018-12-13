@@ -79,12 +79,18 @@ object DiffRule {
   }
 }
 
-sealed case class Diff(columns: List[ColumnDiff], table: String, config: DiffConfig) {
+sealed case class Diff(
+  columns: List[ColumnDiff],
+  sourceTable: String,
+  comparedTable: String,
+  config: DiffConfig
+) {
 
   final def notIn(other: Diff): Diff = {
     Diff(
       columns = other.columns.filterNot(item => columns.exists(c => Comparison.NameComparison(c, item))),
-      table = table,
+      sourceTable,
+      other.sourceTable,
       config = config
     )
   }
@@ -93,7 +99,8 @@ sealed case class Diff(columns: List[ColumnDiff], table: String, config: DiffCon
   final def diff(other: Diff): Diff = {
     Diff(
       columns.filterNot(item => other.columns.exists(c => Comparison.NameComparison(c, item))),
-      s"$table - ${other.table}",
+      sourceTable,
+      other.sourceTable,
       config
     )
   }
@@ -104,7 +111,10 @@ sealed case class Diff(columns: List[ColumnDiff], table: String, config: DiffCon
 
   def indexes()(implicit keySpace: KeySpace): Seq[CQLQuery] = {
     columns.filter(_.isSecondary).map { origin =>
-      QueryBuilder.Create.index(keySpace.name, table, origin.name)
+      Console.println(s"table: $sourceTable, space: ${keySpace.name}; column: ${origin.name}")
+      val q = QueryBuilder.Create.index(sourceTable, keySpace.name, origin.name)
+      Console.println(q)
+      q
     }
   }
 
@@ -160,7 +170,12 @@ object Diff {
       )
     })
 
-    Diff(columns, metadata.getName, config)
+    Diff(
+      columns = columns,
+      sourceTable = metadata.getName,
+      comparedTable = metadata.getName,
+      config = config
+    )
   }
 
   def apply(table: CassandraTable[_, _])(implicit config: DiffConfig): Diff = {
@@ -174,6 +189,6 @@ object Diff {
         column.isStaticColumn
       )
     }
-    Diff(cols, table.tableName, config)
+    Diff.apply(cols, table.tableName, table.tableName, config)
   }
 }
