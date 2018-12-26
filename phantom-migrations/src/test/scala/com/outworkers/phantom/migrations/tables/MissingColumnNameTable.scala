@@ -14,6 +14,8 @@ abstract class MissingColumnNameTable extends Table[MissingColumnNameTable, Migr
   object productId extends IntColumn  with PartitionKey
   object name extends StringColumn
   object description extends OptionalStringColumn
+  object executionassignments extends SetColumn[Int] with Index
+  object teststepassignments extends SetColumn[Int]
 }
 
 

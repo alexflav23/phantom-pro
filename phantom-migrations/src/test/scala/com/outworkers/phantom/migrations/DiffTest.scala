@@ -23,7 +23,6 @@ class DiffTest extends FeatureSpec
     database.create()
   }
 
-
   implicit val diffConfig: DiffConfig = {
     DiffConfig(
       allowNonOptional = true,
@@ -88,11 +87,9 @@ class DiffTest extends FeatureSpec
       When("A table is diffed against a table with a new secondary index column")
       val diff = Diff(database.missingColumnTableAdded) diff Diff(database.missingColumnTable)
 
-      println(diff.columns.size)
-      diff.columns.foreach(println)
-      println(diff.indexes())
+      val migration = database.automigrate().value.diffs
 
-      whenReady(database.automigrate().value.diffs.future()) { res =>
+      whenReady(database.automigrate().value.diffs.sequence()) { res =>
         //res.forall(_.wasApplied()) shouldEqual true
       }
 

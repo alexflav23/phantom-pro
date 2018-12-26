@@ -2,8 +2,8 @@ import sbt._
 import Keys._
 
 lazy val Versions = new {
-  val phantom = "2.30.0"
-  val util = "0.47.0"
+  val phantom = "2.31.0"
+  val util = "0.48.0"
   val logback = "1.2.3"
   val dse = "1.1.2"
   val scalaTest = "3.0.5"
@@ -16,11 +16,18 @@ lazy val Versions = new {
   val dockerKit = "0.9.8"
   val scala210 = "2.10.6"
   val scala211 = "2.11.12"
-  val scala212 = "2.12.7"
+  val scala212 = "2.12.8"
   val monix = "2.3.3"
   val cats = "1.2.0"
-  val catsScalatest = "2.3.1"
+  val catsScalatest = "2.4.0"
   val scalaAll = Seq(scala210, scala211, scala212)
+
+  val catsScalaTestVersion: String => String = { v =>
+    CrossVersion.partialVersion(v) match {
+      case Some((_, minor)) if minor >= 11 => catsScalatest
+      case _ => "2.3.1"
+    }
+  }
 
   val scalaMacrosVersion: String => String = {
     s => CrossVersion.partialVersion(s) match {
@@ -111,8 +118,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   ),
   libraryDependencies ++= Seq(
      "ch.qos.logback" % "logback-classic" % Versions.logback % Test,
-      "org.scalactic" %% "scalactic" % Versions.scalactic % Test,
-      "com.ironcorelabs" %% "cats-scalatest" % Versions.catsScalatest % Test
+      "org.scalactic" %% "scalactic" % Versions.scalactic % Test
   ),
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),
@@ -183,7 +189,8 @@ lazy val phantomMigrations = (project in file("phantom-migrations"))
       "org.typelevel"  %% "macro-compat" % Versions.macroCompat,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
-      "com.outworkers"  %% "util-testing" % Versions.util % Test
+      "com.outworkers"  %% "util-testing" % Versions.util % Test,
+      "com.ironcorelabs" %% "cats-scalatest" % Versions.catsScalaTestVersion(scalaVersion.value) % Test
     )
   ).enablePlugins(CrossPerProjectPlugin)
 
