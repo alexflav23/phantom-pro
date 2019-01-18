@@ -15,8 +15,8 @@ cache:
 env:
   global:
   - PUBLISH_ARTIFACT: false
-  - CASSANDRA_VERSION: 3.11
-  - TARGET_SCALA_VERSION: "2.12.7"
+  - CASSANDRA_VERSION: 3.11.3
+  - TARGET_SCALA_VERSION: "2.12.8"
   - CASSANDRA_NODES: 1
   - GH_REF: github.com/outworkers/phantom-pro.git
   - secure: qUNp6pM5m8HfbiviFDTJ9ZVoudqTjhiVSceaY5b1iQsT8bd6JAZByc8G4culBEVsdXIoozyiHQRlcp42yQKaIdtOmssnXyT+/FZ1FSwGHeFGPQ/aHP2V8hpTtpYVymUYiZepxjNGTvW6HtFeu77te+zMp4KchaPmDgx2jbWk7T3UFktrhm+sCbt+LNdTqZ9jzyTJKxMdypWQd5DX+hy5RGPNzamk6jqEPapWbhKVpZvGgIAJJDJ6uY7CwBEHjtd9Yik8wvKDM/ONKZiHc3/Y/BTFPBotheHHzg0lQ3wOg9VoK697mhbNZ/MT/SBH1rBaLesS453TSf4P3H/oRn5L5l8WV9oFFfdHOpSRBGdYx6rp8mxNVqHA2UJe+QM/GO0NVOxQ0Ih6/xH7SOelCEhjneE5D0Kq/32J9tJXmLcGP8LCr3pOzMvkCc2RkTdZu63JLpRWvuzbgHchNzJc+NIaAFRFb4uSWDfA9iXP93GRDrAkaNY5jWB0WLSkUyogzJEhzjU8Pwu4gt1vrd7l5tRo29pZ3gQJ3jV2iLExN8yRBur2m/ih3T9vWJjBruuv3RueU42ogb0u5Ut4jsc16TTh3Z9fiZuquX79Twa3aY6kDXZ9Mwdjt0MW2RN4o1c821vl+w7kUQNgNLrEriaOmsh7TwbI351jEUKfHjafWaAllPw=
@@ -39,12 +39,12 @@ install:
 
 matrix:
   include:
-  - scala: 2.12.7
+  - scala: 2.12.8
     jdk: oraclejdk8
-  - scala: 2.12.7
+  - scala: 2.12.8
     jdk: oraclejdk8
     env: CASSANDRA_VERSION=3.11.3 PUBLISH_ARTIFACT=true
-  - scala: 2.12.7
+  - scala: 2.12.8
     jdk: oraclejdk8
     env: CASSANDRA_VERSION=3.0.17
   - scala: 2.11.12

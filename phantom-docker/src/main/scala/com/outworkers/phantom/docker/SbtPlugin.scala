@@ -38,7 +38,7 @@ object SbtPlugin extends AutoPlugin {
 
   val defaultCassandraContainer = DockerContainer("cassandra:3.11")
 
-  val client = DefaultDockerClient.fromEnv().build()
+  val client: DefaultDockerClient = DefaultDockerClient.fromEnv().build()
 
   def withLogStreamLinesRequirement(
     logger: Logger,

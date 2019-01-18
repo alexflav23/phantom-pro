@@ -2,8 +2,8 @@ import sbt._
 import Keys._
 
 lazy val Versions = new {
-  val phantom = "2.31.0"
-  val util = "0.48.0"
+  val phantom = "2.32.0"
+  val util = "0.49.0"
   val logback = "1.2.3"
   val dse = "1.1.2"
   val scalaTest = "3.0.5"
@@ -160,10 +160,8 @@ lazy val phantomPro = (project in file("."))
     phantomDseGraph,
     phantomMigrations,
     phantomUdt,
-    phantomMonix,
     phantomAutoTables,
-    phantomDocker,
-    phantomMonix
+    phantomDocker
   ).enablePlugins(CrossPerProjectPlugin)
 
 lazy val phantomDse = (project in file("phantom-dse"))
@@ -246,24 +244,6 @@ lazy val phantomUdt = (project in file("phantom-udt"))
       "com.outworkers" %% "util-testing" % Versions.util % Test
     )
   ).enablePlugins(CrossPerProjectPlugin)
-
-
-lazy val phantomMonix = (project in file("phantom-monix"))
-  .settings(
-    name := "phantom-monix",
-    crossScalaVersions := Versions.scalaAll,
-    moduleName := "phantom-monix",
-    libraryDependencies ++= Seq(
-      "com.outworkers" %% "phantom-dsl" % Versions.phantom,
-      "com.outworkers" %% "util-testing" % Versions.util % Test,
-      compilerPlugin("org.scalamacros" % "paradise" % Versions.scalaMacrosVersion(scalaVersion.value) cross CrossVersion.full),
-      "io.monix" %% "monix" % Versions.monix
-    )
-  ).settings(
-    sharedSettings: _*
-  ).dependsOn(
-    phantomDse % "test->test"
-  )
 
 lazy val readme = (project in file("readme"))
   .settings(sharedSettings)
