@@ -69,9 +69,9 @@ object Publishing {
     bintrayOrganization := Some("outworkers"),
     bintrayRepository := {
       if (scalaVersion.value.trim.endsWith("SNAPSHOT")) {
-        "oss-snapshots"
+        "enterprise-snapshots"
       } else {
-        "oss-releases"
+        "enterprise-releases"
       }
     },
     bintrayReleaseOnPublish in ThisBuild := true,
