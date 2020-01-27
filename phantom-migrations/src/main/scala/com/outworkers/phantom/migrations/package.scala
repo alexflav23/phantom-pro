@@ -18,11 +18,11 @@ import com.outworkers.phantom.migrations.diffs.{DatabaseDiff, DiffConfig, DiffCo
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
-import cats.syntax.validated._
+import scala.collection.compat._
 
 package object migrations {
 
-  implicit def auto[M[X] <: TraversableOnce[X]]: Semigroup[QueryCollection[M]] = {
+  implicit def auto[M[X] <: IterableOnce[X]]: Semigroup[QueryCollection[M]] = {
     new Semigroup[QueryCollection[M]] {
       override def combine(x: QueryCollection[M], y: QueryCollection[M]): QueryCollection[M] = x add y
     }
@@ -52,7 +52,7 @@ package object migrations {
     }
   }
 
-  implicit class QueryColOps[M[X] <: TraversableOnce[X]](val source: QueryCollection[M]) extends AnyVal {
+  implicit class QueryColOps[M[X] <: IterableOnce[X]](val source: QueryCollection[M]) extends AnyVal {
     def add(other: QueryCollection[M]): QueryCollection[M] = source appendAll other.queries
   }
 

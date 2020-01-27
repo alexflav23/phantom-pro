@@ -1,26 +1,33 @@
 resolvers ++= Seq(
-  "Twitter Repo" at "http://maven.twttr.com/",
-  Resolver.jcenterRepo,
-  Resolver.typesafeRepo("releases"),
-  Resolver.sonatypeRepo("releases")
+  "jgit-repo" at "https://download.eclipse.org/jgit/maven",
+  "Twitter Repo" at "https://maven.twttr.com/",
+  Resolver.sonatypeRepo("releases"),
+  Resolver.bintrayIvyRepo("sksamuel", "sbt-plugins"),
+  Resolver.bintrayIvyRepo("twittercsl-ivy", "sbt-plugins"),
+  Resolver.bintrayRepo("twittercsl", "sbt-plugins")
 )
 
-addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.0")
 
-addSbtPlugin("org.scoverage" % "sbt-coveralls" % "1.1.0")
+//addSbtPlugin("com.codacy" % "sbt-codacy-coverage" % "1.3.0")
 
-addSbtPlugin("com.codacy" % "sbt-codacy-coverage" % "1.3.0")
+addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
+addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.6")
 
-addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.4")
+addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.6.0")
 
-addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
+addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "1.2.7")
 
-addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.3.7")
+addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "2.5")
 
-addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.5")
+addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.0")
 
-addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.5.2")
+addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.5.0")
 
-addSbtPlugin("org.lyranthe.sbt" % "partial-unification" % "1.1.0")
+addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "19.10.0")
+
+addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.13")
+
+libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"
+
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.12")

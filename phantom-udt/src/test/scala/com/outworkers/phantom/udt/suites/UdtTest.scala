@@ -9,7 +9,7 @@ package com.outworkers.phantom.udt.suites
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.udt.UDTPrimitive
 import com.outworkers.phantom.udt.tables._
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest._
 
 class UdtTest extends FlatSpec with PhantomTest {
