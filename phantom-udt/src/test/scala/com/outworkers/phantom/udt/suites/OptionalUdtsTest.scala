@@ -16,11 +16,10 @@ import com.outworkers.phantom.udt.tables.OptionUDTRecord
 import com.outworkers.util.samplers._
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.{FlatSpec, Inside}
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import scala.concurrent.Future
 
-class OptionalUdtsTest extends FlatSpec with PhantomTest with GeneratorDrivenPropertyChecks with Inside {
+class OptionalUdtsTest extends FlatSpec with PhantomTest with ScalaCheckDrivenPropertyChecks with Inside {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration = {
     PropertyCheckConfiguration(minSuccessful = 50)

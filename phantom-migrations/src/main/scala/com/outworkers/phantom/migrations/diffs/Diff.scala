@@ -13,11 +13,12 @@ import com.outworkers.phantom.builder.query.engine.CQLQuery
 import com.outworkers.phantom.column.OptionalColumn
 import com.outworkers.phantom.connectors.KeySpace
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
+import com.outworkers.phantom.migrations.MigrationResult
+
 import cats.syntax.validated._
 import cats.syntax.traverse._
 import cats.instances.list._
-import com.outworkers.phantom.migrations.MigrationResult
 
 /**
   * The implementation of a migration diffing rule. We use this simple
@@ -51,14 +52,14 @@ object DiffRule {
       v1.columns.map { col =>
         if (col.isPrimary) {
           InvalidAddition(
-            col.name,
-            col.cassandraType,
-            s"Cannot automatically migrate PRIMARY_KEY part ${col.name}. You cannot add a primary key to an existing table."
+            column = col.name,
+            cassandraType = col.cassandraType,
+            reason = s"Cannot automatically migrate PRIMARY_KEY part ${col.name}. You cannot add a primary key to an existing table."
           ).invalidNel[ColumnDiff]
         } else {
           col.validNel[InvalidAddition]
         }
-      } sequence
+      }.sequence[MigrationResult, ColumnDiff]
     }
   }
 
@@ -67,14 +68,14 @@ object DiffRule {
       v1.columns.map { col =>
         if (!col.isOptional && !config.allowNonOptional) {
           InvalidAddition(
-            col.name,
-            col.cassandraType,
-            s"You are trying to add a non-optional column to an existing schema. This means querying will now fail because previously inserted rows will not have ${col.name} as a property."
+            column = col.name,
+            cassandraType = col.cassandraType,
+            reason = s"You are trying to add a non-optional column to an existing schema. This means querying will now fail because previously inserted rows will not have ${col.name} as a property."
           ).invalidNel[ColumnDiff]
         } else {
           col.validNel[InvalidAddition]
         }
-      } sequence
+      }.sequence[MigrationResult, ColumnDiff]
     }
   }
 }

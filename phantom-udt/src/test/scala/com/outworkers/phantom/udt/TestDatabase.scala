@@ -12,7 +12,7 @@ import com.outworkers.phantom.builder.serializers.KeySpaceSerializer
 import com.outworkers.phantom.dsl.{context => _, _}
 import com.outworkers.phantom.udt.domain.OptionalUdt
 import com.outworkers.phantom.udt.tables._
-import shapeless.HNil
+import scala.collection.Seq
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
@@ -61,7 +61,7 @@ class TestDatabase(override val connector: KeySpaceDef) extends Database[TestDat
 
   def create()(implicit ex: ExecutionContextExecutor): Seq[Seq[ResultSet]] = {
     val chain = for {
-      udts <- executeStatements(initUds).sequence()
+      _ <- executeStatements(initUds).sequence()
       db <- outer.createAsync()
     } yield db
 

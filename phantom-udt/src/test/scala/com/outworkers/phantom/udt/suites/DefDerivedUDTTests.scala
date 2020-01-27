@@ -4,9 +4,9 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.udt.tables.DerivedEncoderRecord
 import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class DefDerivedUDTTests extends FlatSpec with PhantomTest with GeneratorDrivenPropertyChecks {
+class DefDerivedUDTTests extends FlatSpec with PhantomTest with ScalaCheckDrivenPropertyChecks {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration = {
     PropertyCheckConfiguration(minSuccessful = 25)

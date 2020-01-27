@@ -8,7 +8,7 @@ package com.outworkers.phantom.udt.suites
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.udt.tables.{Address, Person}
-import com.outworkers.util.testing._
+import com.outworkers.util.samplers._
 import org.scalatest.FlatSpec
 
 class UdtCollectionsTest extends FlatSpec with PhantomTest {

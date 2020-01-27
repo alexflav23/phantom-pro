@@ -4,9 +4,10 @@ import java.nio.BufferUnderflowException
 
 import com.datastax.driver.core.exceptions.InvalidTypeException
 import com.outworkers.phantom.macros.RootMacro
-import com.outworkers.phantom.udt.Udt
-import scala.collection.generic.CanBuildFrom
+import com.outworkers.phantom.udt.{Udt, UdtRoot}
+
 import scala.reflect.macros.whitebox
+import scala.collection.compat._
 
 @macrocompat.bundle
 trait UdtRootMacro extends RootMacro {
@@ -58,7 +59,7 @@ trait UdtRootMacro extends RootMacro {
     val annotations = tpe.typeSymbol.annotations
 
     val out = annotations.collect {
-      case annot if annot.tree.tpe <:< weakTypeOf[Udt] => annot
+      case annot if annot.tree.tpe <:< c.weakTypeOf[UdtRoot] => annot
     }
 
     out.nonEmpty
@@ -71,15 +72,15 @@ trait UdtRootMacro extends RootMacro {
   ) {
     def tpe: TypeName = symbol.name.toTypeName
 
-    def symbol = paramType.typeSymbol
+    def symbol: Symbol = paramType.typeSymbol
   }
 
   object Accessors {
-    def apply[M[X] <: TraversableOnce[X]](source: M[(Name, Type)])(
-      implicit cbf: CanBuildFrom[Nothing, Accessor, M[Accessor]]
+    def apply[M[X] <: IterableOnce[X]](source: M[(Name, Type)])(
+      implicit cbf: Factory[Accessor, M[Accessor]]
     ): M[Accessor] = {
-      val builder = cbf()
-      for ((nm, tp) <- source) builder += Accessor(nm.toTermName, tp, Nil)
+      val builder = cbf.newBuilder
+      for ((nm, tp) <- source.iterator) builder += Accessor(nm.toTermName, tp, Nil)
       builder.result()
     }
   }
@@ -170,7 +171,7 @@ trait UdtRootMacro extends RootMacro {
       * }}}
       * @return
       */
-    def extractorName = TermName(field + "Opt")
+    def extractorName: TermName = TermName(field + "Opt")
 
     def typeQualifier: Tree
 
