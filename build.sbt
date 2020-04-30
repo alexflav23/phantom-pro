@@ -1,23 +1,15 @@
 
-
 lazy val Versions = new {
-  val phantom = "2.51.0"
-  val util = "0.54.0"
+  val phantom = "2.59.0"
+  val util = "0.57.0"
   val logback = "1.2.3"
   val dse = "1.1.2"
-  val scalaTest = "3.0.8"
-  val scalactic = "3.0.5"
-  val shapeless = "2.3.3"
-  val spark = "1.6.0"
-  val macroCompat = "1.1.1"
+  val scalaTest = "3.1.1"
+  val scalaTestPlus = "3.1.0.0-RC2"
   val macroParadise = "2.1.1"
-  val scalaGraph = "1.11.4"
-  val dockerKit = "0.9.9"
   val scala211 = "2.11.12"
   val scala212 = "2.12.10"
   val scala213 = "2.13.1"
-  val monix = "2.3.3"
-  val cats = "1.2.0"
   val scalaAll = Seq(scala211, scala212, scala213)
 
   val catsScalaTestVersion: String => String = { v =>
@@ -47,7 +39,9 @@ lazy val Versions = new {
       case Some((_, minor)) if minor >= 13 =>
         Nil
       case Some((_, minor)) if minor < 13 =>
-        List(compilerPlugin("org.scalamacros" % "paradise" % scalaMacrosVersion(s) cross CrossVersion.full))
+        List(
+          compilerPlugin("org.scalamacros" % "paradise" % scalaMacrosVersion(s) cross CrossVersion.full)
+        )
     }
   }
 
@@ -75,8 +69,7 @@ lazy val ScalacOptions = Seq(
   "-language:implicitConversions", // Allow definition of implicit functions called views
   "-unchecked", // Enable additional warnings where generated code depends on assumptions.
   "-Xcheckinit", // Wrap field accessors to throw an exception on uninitialized access.
-  //"-Xfatal-warnings", // Fail the compilation if there are any warnings.
-  "-Xfuture" // Turn on future language features.
+  //"-Xfatal-warnings", // Fail the compilation if there are any warnings
   //"-Yno-adapted-args" // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
 )
 
@@ -108,7 +101,8 @@ val Scala212Options = Seq(
   "-Ywarn-unused:locals", // Warn if a local definition is unused.
   "-Ywarn-unused:params", // Warn if a value parameter is unused.
   "-Ywarn-unused:patvars", // Warn if a variable bound in a pattern is unused.
-  "-Ywarn-unused:privates" // Warn if a private member is unused.
+  "-Ywarn-unused:privates", // Warn if a private member is unused.
+  "-Xfuture" // Turn on future language features.
 ) ++ XLintOptions
 
 val YWarnOptions = Seq(
@@ -122,13 +116,11 @@ val YWarnOptions = Seq(
 
 val scalacOptionsFn: String => Seq[String] = { s =>
   CrossVersion.partialVersion(s) match {
-    case Some((_, minor)) if minor >= 12 => ScalacOptions ++ YWarnOptions
+    case Some((_, minor)) if minor >= 13 => ScalacOptions ++ YWarnOptions ++ Seq("-Ymacro-annotations")
+    case Some((_, minor)) if minor >= 12 => ScalacOptions ++ Scala212Options ++ YWarnOptions
     case _ => ScalacOptions ++ YWarnOptions
   }
 }
-
-Global / scalacOptions ++= scalacOptionsFn(scalaVersion.value) ++ Seq("-Ymacro-annotations")
-
 
 val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   organization := "com.outworkers",
@@ -170,8 +162,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
 ) ++ Publishing.effectiveSettings
 
 lazy val noPublishSettings = Seq(
-  publish := (),
-  publishLocal := (),
+  publish := ((): Unit),
+  publishLocal := ((): Unit),
   publishArtifact := false
 )
 
@@ -180,6 +172,7 @@ lazy val phantomPro = (project in file("."))
   .settings(noPublishSettings: _*)
   .settings(
     moduleName := "phantom-pro",
+    scalacOptions := scalacOptionsFn(scalaVersion.value)
   ).aggregate(
     phantomDse,
     phantomDseGraph,
@@ -193,12 +186,14 @@ lazy val phantomDse = (project in file("phantom-dse"))
   .settings(sharedSettings: _*)
   .settings(
     crossScalaVersions := Versions.scalaAll,
+    scalacOptions := scalacOptionsFn(scalaVersion.value),
     moduleName := "phantom-dse",
     libraryDependencies ++= Seq(
       "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
       "com.datastax.cassandra"       %  "dse-driver"                       % Versions.dse,
       "com.outworkers"               %% "util-samplers"                    % Versions.util % Test,
-      "org.scalatest"                %% "scalatest"                        % Versions.scalaTest % Test
+      "org.scalatest"                %% "scalatest"                        % Versions.scalaTest % Test,
+      "org.scalatestplus"            %% "scalatestplus-scalacheck"         % Versions.scalaTestPlus % Test
     )
   )
 
@@ -206,6 +201,7 @@ lazy val phantomMigrations = (project in file("phantom-migrations"))
   .settings(sharedSettings: _* )
   .settings(
     crossScalaVersions := Versions.scalaAll,
+    scalacOptions := scalacOptionsFn(scalaVersion.value),
     moduleName := "phantom-migrations",
     libraryDependencies ++= Seq(
       Versions.catsVersion(scalaVersion.value),
@@ -214,7 +210,8 @@ lazy val phantomMigrations = (project in file("phantom-migrations"))
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "com.outworkers"  %% "util-samplers" % Versions.util % Test,
       "com.ironcorelabs" %% "cats-scalatest" % Versions.catsScalaTestVersion(scalaVersion.value) % Test,
-      "org.scalatest"                %% "scalatest"                        % Versions.scalaTest % Test
+      "org.scalatest"                %% "scalatest"                        % Versions.scalaTest % Test,
+      "org.scalatestplus"            %% "scalatestplus-scalacheck"         % Versions.scalaTestPlus % Test
     ) ++ Versions.paradiseVersion(scalaVersion.value)
   )
 
@@ -222,11 +219,13 @@ lazy val phantomAutoTables = (project in file("phantom-autotables"))
   .settings(sharedSettings: _*)
   .settings(
     crossScalaVersions := Versions.scalaAll,
+    scalacOptions := scalacOptionsFn(scalaVersion.value),
     moduleName := "phantom-autotables",
     libraryDependencies ++= Seq(
       "com.outworkers" 							%% "phantom-dsl" 										  % Versions.phantom,
       "com.outworkers"              %% "util-samplers"                    % Versions.util % Test,
-      "org.scalatest"               %% "scalatest"                        % Versions.scalaTest % Test
+      "org.scalatest"               %% "scalatest"                        % Versions.scalaTest % Test,
+      "org.scalatestplus"           %% "scalatestplus-scalacheck"         % Versions.scalaTestPlus % Test
     ) ++ Versions.paradiseVersion(scalaVersion.value)
   )
 
@@ -235,11 +234,13 @@ lazy val phantomDseGraph = (project in file("phantom-graph"))
   .settings(
     moduleName := "phantom-graph",
     crossScalaVersions := Versions.scalaAll,
+    scalacOptions := scalacOptionsFn(scalaVersion.value),
     libraryDependencies ++= Seq(
       "com.datastax.cassandra"       % "dse-driver"                        % Versions.dse,
       "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
       "com.outworkers"               %% "util-samplers"                    % Versions.util % Test,
-      "org.scalatest"                %% "scalatest"                        % Versions.scalaTest % Test
+      "org.scalatest"                %% "scalatest"                        % Versions.scalaTest % Test,
+      "org.scalatestplus"            %% "scalatestplus-scalacheck"         % Versions.scalaTestPlus % Test
     )
   )
 
@@ -263,26 +264,30 @@ lazy val phantomUdt = (project in file("phantom-udt"))
   .settings(
     moduleName := "phantom-udt",
     crossScalaVersions := Versions.scalaAll,
+    scalacOptions := scalacOptionsFn(scalaVersion.value),
     libraryDependencies ++= Seq(
       Versions.macroCompatVersion(scalaVersion.value),
-      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-      "com.outworkers" %% "phantom-dsl" % Versions.phantom,
-      "com.outworkers" %% "util-samplers" % Versions.util % Test,
-      "org.scalatest"  %% "scalatest"     % Versions.scalaTest % Test
+      "org.scala-lang"    % "scala-compiler" % scalaVersion.value % "provided",
+      "com.outworkers"    %% "phantom-dsl" % Versions.phantom,
+      "com.outworkers"    %% "util-samplers" % Versions.util % Test,
+      "org.scalatest"     %% "scalatest"     % Versions.scalaTest % Test,
+      "org.scalatestplus" %% "scalatestplus-scalacheck" % Versions.scalaTestPlus % Test
     ) ++ Versions.paradiseVersion(scalaVersion.value)
   )
 
 lazy val readme = (project in file("readme"))
   .settings(sharedSettings)
   .settings(
+    scalacOptions := scalacOptionsFn(scalaVersion.value),
     crossScalaVersions := Seq(Versions.scala211, Versions.scala212),
     tutSourceDirectory := sourceDirectory.value / "main" / "tut",
     tutTargetDirectory := phantomPro.base / "docs",
     libraryDependencies ++= Seq(
       Versions.macroCompatVersion(scalaVersion.value),
-      "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-      "com.outworkers" %% "util-samplers" % Versions.util,
-      "org.scalatest" %% "scalatest" % Versions.scalaTest
+      "org.scala-lang"    % "scala-compiler" % scalaVersion.value,
+      "com.outworkers"    %% "util-samplers" % Versions.util,
+      "org.scalatest"     %% "scalatest" % Versions.scalaTest,
+      "org.scalatestplus" %% "scalatestplus-scalacheck" % Versions.scalaTestPlus % Test
     ) ++ Versions.paradiseVersion(scalaVersion.value)
   ).dependsOn(
     phantomDse,

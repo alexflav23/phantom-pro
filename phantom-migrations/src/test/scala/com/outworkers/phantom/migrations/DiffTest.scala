@@ -10,10 +10,11 @@ import cats.scalatest.ValidatedMatchers
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.migrations.diffs.{Diff, DiffConfig, InvalidAddition}
 import com.outworkers.phantom.migrations.utils.MigrationSuite
+import org.scalatest.GivenWhenThen
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FeatureSpec, GivenWhenThen}
+import org.scalatest.featurespec.AnyFeatureSpec
 
-class DiffTest extends FeatureSpec
+class DiffTest extends AnyFeatureSpec
   with GivenWhenThen
   with MigrationSuite
   with ValidatedMatchers with ScalaFutures {
@@ -35,9 +36,9 @@ class DiffTest extends FeatureSpec
   info("I want to automatically resolve schema discrepancies")
   info("Between existing nodes")
 
-  feature("The column differ should compute the differences between two tables") {
+  Feature("The column differ should compute the differences between two tables") {
 
-    scenario("The table is being diffed against itself") {
+    Scenario("The table is being diffed against itself") {
       Given("A valid Cassandra table schema is used")
 
       When("A table is diffed against itself")
@@ -47,7 +48,7 @@ class DiffTest extends FeatureSpec
       diff.columns.size shouldEqual 0
     }
 
-    scenario("The tables diffed have a valid non-primary part difference") {
+    Scenario("The tables diffed have a valid non-primary part difference") {
       Given("A valid Cassandra table schema is used")
 
       When("A table is diffed against a table with one more string column")
@@ -60,7 +61,7 @@ class DiffTest extends FeatureSpec
       diff.columns.head.name shouldEqual database.sampleTableOneDiff.name2.name
     }
 
-    scenario("The table on the left hand side of the diff has one more primary key") {
+    Scenario("The table on the left hand side of the diff has one more primary key") {
       Given("A valid Cassandra table schema is used")
 
       When("A table is diffed against a table with one more primary uuid column")
@@ -81,7 +82,7 @@ class DiffTest extends FeatureSpec
 
     }
 
-    scenario("The table on the right adds new indexes") {
+    Scenario("The table on the right adds new indexes") {
       Given("A table with no secondary indexes is used")
 
       When("A table is diffed against a table with a new secondary index column")

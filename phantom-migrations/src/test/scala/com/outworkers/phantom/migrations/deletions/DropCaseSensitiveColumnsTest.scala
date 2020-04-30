@@ -9,9 +9,10 @@ package com.outworkers.phantom.migrations.deletions
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.migrations.diffs.{Diff, DiffConfig}
 import com.outworkers.phantom.migrations.utils.MigrationSuite
+import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.{FeatureSpec, GivenWhenThen}
 
-class DropCaseSensitiveColumnsTest extends FeatureSpec with GivenWhenThen with MigrationSuite {
+class DropCaseSensitiveColumnsTest extends AnyFeatureSpec with GivenWhenThen with MigrationSuite {
 
   implicit val diffConfig: DiffConfig = {
     DiffConfig(
@@ -26,8 +27,8 @@ class DropCaseSensitiveColumnsTest extends FeatureSpec with GivenWhenThen with M
     val _ = db.create()
   }
 
-  feature("The column differ should compute the differences between two tables") {
-    scenario("A single camel quoted column is dropped") {
+  Feature("The column differ should compute the differences between two tables") {
+    Scenario("A single camel quoted column is dropped") {
 
       Given("A valid Cassandra table schema is used, and the Naming strategy is case sensitive")
 

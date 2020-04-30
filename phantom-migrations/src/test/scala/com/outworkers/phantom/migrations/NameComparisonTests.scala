@@ -2,9 +2,9 @@ package com.outworkers.phantom.migrations
 
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import com.outworkers.phantom.migrations.diffs.{ColumnDiff, Comparison}
-import org.scalatest.{FlatSpec, Matchers}
-
-class NameComparisonTests extends FlatSpec with Matchers {
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+class NameComparisonTests extends AnyFlatSpec with Matchers {
 
   it should "correctly compare identical column diffs" in {
     val c1 = ColumnDiff(

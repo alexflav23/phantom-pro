@@ -2,11 +2,11 @@ package com.outworkers.phantom.udt.suites
 
 import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.udt.tables.{ParkingCharge, Policy}
-import org.scalatest.FlatSpec
 import com.outworkers.util.samplers._
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class AuthorizerPolicyTests extends FlatSpec with PhantomTest with ScalaCheckDrivenPropertyChecks {
+class AuthorizerPolicyTests extends AnyFlatSpec with PhantomTest with ScalaCheckDrivenPropertyChecks {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration = {
     PropertyCheckConfiguration(minSuccessful = 50)
@@ -31,9 +31,9 @@ class AuthorizerPolicyTests extends FlatSpec with PhantomTest with ScalaCheckDri
     val charges = genSet[ParkingCharge]()
 
     val chain = for {
-      store <- database.policies.storeRecord(policy)
+      _ <- database.policies.storeRecord(policy)
       res <- database.policies.findById(policy.uid)
-      update <- database.policies.update.where(_.uid eqs policy.uid).modify(_.parkingCharge addAll charges).future()
+      _ <- database.policies.update.where(_.uid eqs policy.uid).modify(_.parkingCharge addAll charges).future()
       res2 <- database.policies.findById(policy.uid)
     } yield (res, res2)
 
@@ -49,7 +49,7 @@ class AuthorizerPolicyTests extends FlatSpec with PhantomTest with ScalaCheckDri
   it should "store and retrieve a sequence of policy records" in {
     forAll(Sample.generator[Policy]) { sample =>
       val chain = for {
-        store <- database.policies.storeRecord(sample)
+        _ <- database.policies.storeRecord(sample)
         res <- database.policies.findById(sample.uid)
       } yield res
 
