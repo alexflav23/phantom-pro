@@ -1,4 +1,6 @@
 
+Global / onChangedBuildSource := ReloadOnSourceChanges
+
 lazy val Versions = new {
   val phantom = "2.59.0"
   val util = "0.57.0"
