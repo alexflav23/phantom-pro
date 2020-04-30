@@ -64,6 +64,7 @@ object Publishing {
   }
 
   lazy val bintraySettings: Seq[Def.Setting[_]] = Seq(
+    credentials ++= defaultCredentials,
     publishMavenStyle := true,
     bintrayOmitLicense := true,
     bintrayOrganization := Some("outworkers"),
