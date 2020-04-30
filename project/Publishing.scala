@@ -13,8 +13,8 @@ import sbtrelease.ReleaseStateTransformations._
 object Publishing {
 
   lazy val noPublishSettings = Seq(
-    publish := (),
-    publishLocal := (),
+    publish := ((): Unit),
+    publishLocal := ((): Unit),
     publishArtifact := false
   )
 
@@ -32,7 +32,7 @@ object Publishing {
       setReleaseVersion,
       commitReleaseVersion,
       tagRelease,
-      releaseStepCommandAndRemaining("such publish"),
+      releaseStepCommandAndRemaining("+publish"),
       setNextVersion,
       commitNextVersion,
       pushChanges

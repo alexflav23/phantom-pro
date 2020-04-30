@@ -161,15 +161,9 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   )
 ) ++ Publishing.effectiveSettings
 
-lazy val noPublishSettings = Seq(
-  publish := ((): Unit),
-  publishLocal := ((): Unit),
-  publishArtifact := false
-)
-
 lazy val phantomPro = (project in file("."))
   .settings(sharedSettings: _*)
-  .settings(noPublishSettings: _*)
+  .settings(Publishing.noPublishSettings: _*)
   .settings(
     moduleName := "phantom-pro",
     scalacOptions := scalacOptionsFn(scalaVersion.value)
