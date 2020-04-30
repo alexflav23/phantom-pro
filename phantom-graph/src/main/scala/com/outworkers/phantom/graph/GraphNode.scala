@@ -8,7 +8,7 @@ package com.outworkers.phantom.graph
 
 import java.util.Date
 
-import com.datastax.driver.dse.graph.GraphResultSet
+import com.datastax.dse.driver.api.core.graph.GraphResultSet
 import com.outworkers.phantom.builder.syntax.CQLSyntax
 import org.slf4j.LoggerFactory
 import shapeless.{HList, Poly1}
@@ -17,7 +17,7 @@ trait AttributeParser[T] {
   def schema: String
 
   def parse(name: String, res: GraphResultSet): T = {
-    res.one().asVertex().getProperty(name).asInstanceOf[T]
+    res.one().asVertex().property(name).asInstanceOf[T]
   }
 
 }

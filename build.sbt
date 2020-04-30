@@ -3,7 +3,7 @@ lazy val Versions = new {
   val phantom = "2.59.0"
   val util = "0.57.0"
   val logback = "1.2.3"
-  val dse = "1.1.2"
+  val dse = "2.4.0"
   val scalaTest = "3.1.1"
   val scalaTestPlus = "3.1.0.0-RC2"
   val macroParadise = "2.1.1"
@@ -184,7 +184,7 @@ lazy val phantomDse = (project in file("phantom-dse"))
     moduleName := "phantom-dse",
     libraryDependencies ++= Seq(
       "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
-      "com.datastax.cassandra"       %  "dse-driver"                       % Versions.dse,
+      "com.datastax.dse"             %  "dse-java-driver-core"             % Versions.dse,
       "com.outworkers"               %% "util-samplers"                    % Versions.util % Test,
       "org.scalatest"                %% "scalatest"                        % Versions.scalaTest % Test,
       "org.scalatestplus"            %% "scalatestplus-scalacheck"         % Versions.scalaTestPlus % Test
@@ -230,7 +230,7 @@ lazy val phantomDseGraph = (project in file("phantom-graph"))
     crossScalaVersions := Versions.scalaAll,
     scalacOptions := scalacOptionsFn(scalaVersion.value),
     libraryDependencies ++= Seq(
-      "com.datastax.cassandra"       % "dse-driver"                        % Versions.dse,
+      "com.datastax.dse"             %  "dse-java-driver-core"             % Versions.dse,
       "com.outworkers" 							 %% "phantom-dsl" 										 % Versions.phantom,
       "com.outworkers"               %% "util-samplers"                    % Versions.util % Test,
       "org.scalatest"                %% "scalatest"                        % Versions.scalaTest % Test,
