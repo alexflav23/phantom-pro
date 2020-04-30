@@ -12,7 +12,8 @@ import com.outworkers.phantom.dsl._
 import com.outworkers.phantom.udt.TestDbProvider
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
-import org.scalatest.{BeforeAndAfterAll, Matchers, OptionValues, Suite}
+import org.scalatest.{BeforeAndAfterAll, OptionValues, Suite}
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -29,7 +30,7 @@ trait PhantomTest extends Suite
     val _ = database.create()
   }
 
-  protected[this] val defaultScalaTimeoutSeconds = 25
+  protected[this] val defaultScalaTimeoutSeconds: Long = 25L
 
   private[this] val defaultScalaInterval = 50L
 

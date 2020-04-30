@@ -12,9 +12,12 @@ import com.outworkers.util.samplers._
 import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 import org.scalatest._
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest.matchers.should.Matchers
 
-import scala.concurrent.duration.{Duration => ScalaDuration, FiniteDuration}
+import scala.concurrent.duration.{FiniteDuration, Duration => ScalaDuration}
 import scala.concurrent.{Await, Future}
 
 trait PhantomBaseSuite extends Suite with Matchers
@@ -22,7 +25,7 @@ trait PhantomBaseSuite extends Suite with Matchers
   with ScalaFutures
   with OptionValues {
 
-  protected[this] val defaultScalaTimeoutSeconds = 3
+  protected[this] val defaultScalaTimeoutSeconds: Long = 3L
 
   private[this] val defaultScalaInterval = 50L
 
@@ -56,6 +59,6 @@ trait PhantomBaseSuite extends Suite with Matchers
   }
 }
 
-trait PhantomSuite extends FlatSpec with PhantomBaseSuite
+trait PhantomSuite extends AnyFlatSpec with PhantomBaseSuite
 
-trait PhantomFreeSuite extends FreeSpec with PhantomBaseSuite
+trait PhantomFreeSuite extends AnyFreeSpec with PhantomBaseSuite

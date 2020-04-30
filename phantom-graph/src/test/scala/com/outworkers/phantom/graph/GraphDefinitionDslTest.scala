@@ -6,9 +6,10 @@
  */
 package com.outworkers.phantom.graph
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class GraphDefinitionDslTest extends FlatSpec with Matchers {
+class GraphDefinitionDslTest extends AnyFlatSpec with Matchers {
 
 
 }

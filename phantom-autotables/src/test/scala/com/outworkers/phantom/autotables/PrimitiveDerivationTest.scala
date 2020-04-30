@@ -6,12 +6,19 @@
  */
 package com.outworkers.phantom.autotables
 
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers, OptionValues}
-import com.outworkers.util.samplers._
 import com.outworkers.phantom.dsl._
+import com.outworkers.util.samplers._
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.{BeforeAndAfterAll, OptionValues}
 
-class PrimitiveDerivationTest extends FlatSpec with Matchers with AutoDBProvider with OptionValues with ScalaFutures with BeforeAndAfterAll {
+class PrimitiveDerivationTest extends AnyFlatSpec
+  with Matchers
+  with AutoDBProvider
+  with OptionValues
+  with ScalaFutures
+  with BeforeAndAfterAll {
 
   override def beforeAll: Unit = {
     super.beforeAll()
