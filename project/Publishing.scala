@@ -18,7 +18,6 @@ object Publishing {
     publishArtifact := false
   )
 
-
   val ciSkipSequence = "[ci skip]"
 
   val releaseSettings = Seq(
@@ -82,7 +81,7 @@ object Publishing {
     pomIncludeRepository := { _ => true}
   )
 
-  def effectiveSettings: Seq[Def.Setting[_]] = bintraySettings ++ releaseSettings
+  def effectiveSettings: Seq[Def.Setting[_]] = releaseSettings
 
   def runningUnderCi: Boolean = sys.env.get("CI").isDefined || sys.env.get("TRAVIS").isDefined
   def travisScala211: Boolean = sys.env.get("TRAVIS_SCALA_VERSION").exists(_.contains("2.11"))

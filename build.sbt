@@ -161,7 +161,10 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     "-Djava.net.preferIPv4Stack=true",
     "-Dio.netty.resourceLeakDetection"
   )
-) ++ Publishing.effectiveSettings
+)
+
+githubOwner := "outworkers"
+githubRepository := "phantom"
 
 lazy val phantomPro = (project in file("."))
   .settings(sharedSettings: _*)

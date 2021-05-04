@@ -8,7 +8,7 @@ resolvers ++= Seq(
 )
 
 
-//addSbtPlugin("com.codacy" % "sbt-codacy-coverage" % "1.3.0")
+addSbtPlugin("com.codecommit" % "sbt-github-packages" % "0.5.2")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
 
