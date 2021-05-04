@@ -4,7 +4,6 @@
  * The contents of this file are proprietary and strictly confidential.
  * Written by Flavian Alexandru<flavian@outworkers.com>, 10/2017.
  */
-import bintray.BintrayKeys._
 import sbt.Keys._
 import sbt._
 import sbtrelease.ReleasePlugin.autoImport.{ReleaseStep, _}
@@ -41,7 +40,6 @@ object Publishing {
   lazy val defaultCredentials: Seq[Credentials] = {
     if (!Publishing.runningUnderCi) {
       Seq(
-        Credentials(Path.userHome / ".bintray" / ".credentials"),
         Credentials(Path.userHome / ".ivy2" / ".credentials")
       )
     } else {
@@ -61,25 +59,6 @@ object Publishing {
       )
     }
   }
-
-  lazy val bintraySettings: Seq[Def.Setting[_]] = Seq(
-    credentials ++= defaultCredentials,
-    publishMavenStyle := true,
-    bintrayOmitLicense := true,
-    bintrayOrganization := Some("outworkers"),
-    bintrayRepository := {
-      if (scalaVersion.value.trim.endsWith("SNAPSHOT")) {
-        "enterprise-snapshots"
-      } else {
-        "enterprise-releases"
-      }
-    },
-    bintrayReleaseOnPublish in ThisBuild := true,
-    publishArtifact in Test := false,
-    publishArtifact in (Compile, packageSrc) := false,
-    publishArtifact in (Test, packageSrc) := false,
-    pomIncludeRepository := { _ => true}
-  )
 
   def effectiveSettings: Seq[Def.Setting[_]] = releaseSettings
 

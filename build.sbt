@@ -130,6 +130,7 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   fork in Test := true,
   testOptions in Test += Tests.Argument("-oF"),
   logBuffered in Test := false,
+  publishMavenStyle := true,
   concurrentRestrictions in Test := Seq(
     Tags.limit(Tags.ForkedTestGroup, 4)
   ),
@@ -163,8 +164,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   )
 )
 
-githubOwner := "outworkers"
-githubRepository := "phantom"
+Global / githubOwner := "outworkers"
+Global / githubRepository := "phantom"
 
 lazy val phantomPro = (project in file("."))
   .settings(sharedSettings: _*)
