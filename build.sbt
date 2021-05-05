@@ -164,8 +164,8 @@ val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
   )
 )
 
-Global / githubOwner := "outworkers"
-Global / githubRepository := "phantom"
+Global / githubOwner := "alexflav23"
+Global / githubRepository := "phantom-pro"
 
 lazy val phantomPro = (project in file("."))
   .settings(sharedSettings: _*)
